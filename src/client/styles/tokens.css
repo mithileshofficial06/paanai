@@ -1,0 +1,400 @@
+/*
+ * Paanai design tokens.
+ *
+ * Dark (black and red glass) is the primary theme. The light theme (warm porcelain with
+ * deep red accents) is picked by prefers-color-scheme and can be forced either way with
+ * <html data-theme="light"> or <html data-theme="dark">.
+ *
+ * The light values appear twice (media query + [data-theme="light"]) because plain CSS
+ * cannot share one block between a media query and a selector. Keep both blocks in sync.
+ *
+ * Theme-independent groups: type, space, radius, motion, z-index, and the ceramic
+ * colours (clay bodies and glazes are real-world colours and never change with theme).
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* ---------- Typography ---------- */
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-ui: 'Atkinson Hyperlegible Next', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+
+  --text-label: 0.875rem; /* 14px: eyebrows and badges only, never body copy */
+  --text-body: 1rem; /* 16px: minimum for reading text */
+  --text-lead: 1.125rem; /* 18px */
+  --text-title: 1.25rem; /* 20px */
+  --text-headline: 1.75rem; /* 28px */
+  --text-display: clamp(2rem, 1.55rem + 1.9vw, 2.5rem); /* 32 to 40px */
+  --text-hero: clamp(2.5rem, 1.9rem + 2.6vw, 3.5rem); /* 40 to 56px, numbers */
+
+  --leading-tight: 1.08;
+  --leading-snug: 1.25;
+  --leading-body: 1.5;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --tracking-display: -0.015em;
+  --tracking-label: 0.12em;
+
+  /* ---------- Space (4-pt grid) ---------- */
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --page-gutter: 16px;
+  --content-max: 1040px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* ---------- Radius ---------- */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* ---------- Sizes ---------- */
+  --touch-min: 44px;
+  --control-sm: 44px;
+  --control-md: 48px;
+  --control-lg: 56px;
+  --icon-sm: 18px;
+  --icon-md: 22px;
+  --icon-lg: 28px;
+
+  /* ---------- Motion ---------- */
+  --dur-1: 120ms; /* press, hover, small state changes */
+  --dur-2: 240ms; /* fades, chips, tabs */
+  --dur-3: 480ms; /* sheets, step changes, reveals */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---------- Layers ---------- */
+  --z-background: 0;
+  --z-canvas: 1;
+  --z-hud: 10;
+  --z-hint: 40;
+  --z-overlay: 60;
+  --z-sheet: 80;
+  --z-toast: 100;
+
+  /* ---------- Ceramic colours (theme independent, realistic) ---------- */
+  --clay-wet: #6e5547;
+  --clay-wet-hi: #9a7c69;
+  --clay-wet-lo: #45342b;
+  --clay-bisque: #d9b9a0;
+  --clay-terracotta: #b0603a;
+  --clay-stoneware: #8d7c6c;
+  --clay-porcelain: #ece8e1;
+
+  /* Raw (unfired) glaze swatches: match GLAZE_INFO in src/shared/core/glazes.ts */
+  --glaze-copper-raw: #7d8f86;
+  --glaze-iron-raw: #8a5a3c;
+  --glaze-cobalt-raw: #5a5f8f;
+  --glaze-tin-raw: #e6e1d6;
+  --glaze-ash-raw: #a39a8a;
+  --glaze-tenmoku-raw: #3b2a22;
+  --glaze-rutile-raw: #b7905d;
+  --glaze-clear-raw: #dfe7ea;
+
+  /* Fired results */
+  --glaze-copper-red: #7c1616;
+  --glaze-copper-red-hi: #b3302a;
+  --glaze-copper-green: #3e7a5b;
+  --glaze-celadon: #a6bfa2;
+  --glaze-amber: #a5621f;
+  --glaze-cobalt: #1f3b8c;
+  --glaze-tenmoku: #21140f;
+  --glaze-tin: #ece6da;
+  --glaze-ash: #a59b77;
+  --glaze-rutile: #ae7a46;
+  --glaze-gold-luster: #c8a04a;
+  --glaze-moon-white: #eef0ea;
+
+  /* ---------- Colour: dark theme (default) ---------- */
+  --color-bg: #070203;
+  --color-bg-deep: #030101;
+  --color-bg-mid: #14050a;
+  --color-bg-red: #34080d;
+  --color-ember: #ff3b2f;
+
+  --color-ink: #fbf1ec;
+  --color-ink-muted: #dac7c0;
+  --color-ink-subtle: #ae9790;
+  --color-ink-inverse: #1c1012;
+
+  --color-line: rgba(255, 226, 218, 0.12);
+  --color-line-strong: rgba(255, 226, 218, 0.22);
+  --color-track: rgba(255, 236, 230, 0.09);
+
+  --color-accent: #d81f27;
+  --color-accent-hi: #ff5747;
+  --color-accent-lo: #8e1018;
+  --color-accent-ink: #ff9d90;
+  --color-accent-soft: rgba(255, 74, 60, 0.14);
+  --color-on-accent: #ffffff;
+
+  --color-gold: #efbe68;
+  --color-gold-ink: #f5cd86;
+  --color-gold-soft: rgba(239, 190, 104, 0.15);
+  --color-success: #72d79f;
+  --color-success-soft: rgba(114, 215, 159, 0.14);
+  --color-warning: #f4b860;
+  --color-warning-soft: rgba(244, 184, 96, 0.14);
+  --color-danger: #ff7b6c;
+  --color-danger-soft: rgba(255, 123, 108, 0.14);
+  --color-info: #a3c6ff;
+  --color-info-soft: rgba(163, 198, 255, 0.13);
+
+  --color-focus: #ffd3ca;
+  --color-scrim: rgba(4, 1, 2, 0.66);
+  --color-skeleton: rgba(255, 236, 230, 0.07);
+  --color-skeleton-hi: rgba(255, 236, 230, 0.13);
+
+  /* Background: deep black falling into oxblood red, ember light from below */
+  --bg-base: linear-gradient(180deg, #050102 0%, #0a0305 34%, #170509 62%, #2b070c 86%, #3a0a0f 100%);
+  --bg-ember: radial-gradient(closest-side, rgba(255, 64, 44, 0.42), rgba(196, 22, 30, 0.2) 45%, transparent 100%);
+  --bg-ember-2: radial-gradient(closest-side, rgba(255, 120, 60, 0.18), rgba(170, 20, 30, 0.08) 55%, transparent 100%);
+  --bg-vignette: radial-gradient(130% 90% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+  --grain-opacity: 0.07;
+
+  /* Glass */
+  --glass-fill: rgba(24, 8, 11, 0.58);
+  --glass-fill-raised: rgba(28, 9, 13, 0.78);
+  --glass-fill-inset: rgba(0, 0, 0, 0.22);
+  --glass-sheen: linear-gradient(
+    180deg,
+    rgba(255, 242, 236, 0.085) 0%,
+    rgba(255, 242, 236, 0.025) 52%,
+    rgba(255, 86, 70, 0.045) 100%
+  );
+  --glass-edge: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.26) 0%,
+    rgba(255, 255, 255, 0.07) 34%,
+    rgba(255, 255, 255, 0.04) 66%,
+    rgba(255, 92, 76, 0.26) 100%
+  );
+  --glass-border: rgba(255, 226, 218, 0.12);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --glass-blur: 22px;
+  --glass-saturate: 155%;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-panel: 0 1px 1px rgba(0, 0, 0, 0.35), 0 22px 50px -26px rgba(0, 0, 0, 0.9);
+  --shadow-float: 0 2px 6px rgba(0, 0, 0, 0.4), 0 30px 70px -24px rgba(0, 0, 0, 0.9);
+  --glow-red: 0 18px 50px -22px rgba(230, 30, 40, 0.5);
+  --glow-red-strong: 0 10px 30px -8px rgba(255, 48, 40, 0.62), 0 0 0 1px rgba(255, 118, 102, 0.32);
+  --glow-gold: 0 0 24px -4px rgba(239, 190, 104, 0.55);
+
+  --btn-primary-fill: linear-gradient(180deg, #f2463b 0%, #d41f27 48%, #a3131c 100%);
+  --btn-primary-fill-hover: linear-gradient(180deg, #ff5546 0%, #e2262d 48%, #b0161f 100%);
+  --btn-primary-edge: inset 0 1px 0 rgba(255, 255, 255, 0.34), inset 0 -1px 0 rgba(0, 0, 0, 0.28);
+
+  /* Compatibility aliases (names from the build guide, section 6.6) */
+  --ink: var(--color-ink);
+  --stone: var(--color-ink-subtle);
+  --kiln: var(--color-accent-hi);
+  --success: var(--color-success);
+  --danger: var(--color-danger);
+  --clay: var(--clay-terracotta);
+  --slip: var(--color-bg-mid);
+}
+
+@media (min-width: 720px) {
+  :root {
+    --page-gutter: 24px;
+  }
+}
+
+/* ---------- Colour: light theme (system preference) ---------- */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+
+    --color-bg: #f6f0eb;
+    --color-bg-deep: #efe6df;
+    --color-bg-mid: #f3e8e1;
+    --color-bg-red: #f0d3cc;
+    --color-ember: #e0262d;
+
+    --color-ink: #1c1012;
+    --color-ink-muted: #4d3a39;
+    --color-ink-subtle: #6b5552;
+    --color-ink-inverse: #fbf1ec;
+
+    --color-line: rgba(96, 22, 26, 0.12);
+    --color-line-strong: rgba(96, 22, 26, 0.22);
+    --color-track: rgba(96, 22, 26, 0.09);
+
+    --color-accent: #c0141f;
+    --color-accent-hi: #e2343b;
+    --color-accent-lo: #8a0c15;
+    --color-accent-ink: #a3101b;
+    --color-accent-soft: rgba(192, 20, 31, 0.09);
+    --color-on-accent: #ffffff;
+
+    --color-gold: #b07d22;
+    --color-gold-ink: #7a5306;
+    --color-gold-soft: rgba(176, 125, 34, 0.13);
+    --color-success: #1d7646;
+    --color-success-soft: rgba(29, 118, 70, 0.1);
+    --color-warning: #8a5600;
+    --color-warning-soft: rgba(138, 86, 0, 0.1);
+    --color-danger: #b3261e;
+    --color-danger-soft: rgba(179, 38, 30, 0.09);
+    --color-info: #1f5bb8;
+    --color-info-soft: rgba(31, 91, 184, 0.09);
+
+    --color-focus: #8a0c15;
+    --color-scrim: rgba(46, 16, 18, 0.34);
+    --color-skeleton: rgba(96, 22, 26, 0.07);
+    --color-skeleton-hi: rgba(255, 255, 255, 0.7);
+
+    --bg-base: linear-gradient(180deg, #faf6f2 0%, #f5eee8 40%, #f1e2dc 72%, #ecd0c9 100%);
+    --bg-ember: radial-gradient(closest-side, rgba(226, 52, 59, 0.2), rgba(226, 52, 59, 0.08) 50%, transparent 100%);
+    --bg-ember-2: radial-gradient(closest-side, rgba(240, 150, 110, 0.18), rgba(240, 150, 110, 0.06) 55%, transparent 100%);
+    --bg-vignette: radial-gradient(130% 90% at 50% 40%, transparent 60%, rgba(120, 40, 40, 0.08) 100%);
+    --grain-opacity: 0.05;
+
+    --glass-fill: rgba(255, 252, 249, 0.68);
+    --glass-fill-raised: rgba(255, 252, 249, 0.86);
+    --glass-fill-inset: rgba(96, 22, 26, 0.045);
+    --glass-sheen: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(255, 255, 255, 0.18) 58%,
+      rgba(255, 214, 206, 0.2) 100%
+    );
+    --glass-edge: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(255, 255, 255, 0.5) 40%,
+      rgba(192, 20, 31, 0.16) 100%
+    );
+    --glass-border: rgba(110, 30, 34, 0.12);
+    --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+    --shadow-1: 0 1px 2px rgba(60, 16, 18, 0.08);
+    --shadow-panel: 0 1px 2px rgba(60, 16, 18, 0.06), 0 20px 44px -26px rgba(100, 20, 26, 0.38);
+    --shadow-float: 0 2px 6px rgba(60, 16, 18, 0.08), 0 28px 60px -26px rgba(100, 20, 26, 0.45);
+    --glow-red: 0 16px 40px -24px rgba(192, 20, 31, 0.4);
+    --glow-red-strong: 0 10px 26px -10px rgba(192, 20, 31, 0.55), 0 0 0 1px rgba(160, 16, 26, 0.3);
+    --glow-gold: 0 0 20px -6px rgba(176, 125, 34, 0.45);
+
+    --btn-primary-fill: linear-gradient(180deg, #d92a33 0%, #b8121d 50%, #8e0c16 100%);
+    --btn-primary-fill-hover: linear-gradient(180deg, #e3343b 0%, #c41620 50%, #990e18 100%);
+    --btn-primary-edge: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.22);
+  }
+}
+
+/* ---------- Colour: light theme (forced) ---------- */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --color-bg: #f6f0eb;
+  --color-bg-deep: #efe6df;
+  --color-bg-mid: #f3e8e1;
+  --color-bg-red: #f0d3cc;
+  --color-ember: #e0262d;
+
+  --color-ink: #1c1012;
+  --color-ink-muted: #4d3a39;
+  --color-ink-subtle: #6b5552;
+  --color-ink-inverse: #fbf1ec;
+
+  --color-line: rgba(96, 22, 26, 0.12);
+  --color-line-strong: rgba(96, 22, 26, 0.22);
+  --color-track: rgba(96, 22, 26, 0.09);
+
+  --color-accent: #c0141f;
+  --color-accent-hi: #e2343b;
+  --color-accent-lo: #8a0c15;
+  --color-accent-ink: #a3101b;
+  --color-accent-soft: rgba(192, 20, 31, 0.09);
+  --color-on-accent: #ffffff;
+
+  --color-gold: #b07d22;
+  --color-gold-ink: #7a5306;
+  --color-gold-soft: rgba(176, 125, 34, 0.13);
+  --color-success: #1d7646;
+  --color-success-soft: rgba(29, 118, 70, 0.1);
+  --color-warning: #8a5600;
+  --color-warning-soft: rgba(138, 86, 0, 0.1);
+  --color-danger: #b3261e;
+  --color-danger-soft: rgba(179, 38, 30, 0.09);
+  --color-info: #1f5bb8;
+  --color-info-soft: rgba(31, 91, 184, 0.09);
+
+  --color-focus: #8a0c15;
+  --color-scrim: rgba(46, 16, 18, 0.34);
+  --color-skeleton: rgba(96, 22, 26, 0.07);
+  --color-skeleton-hi: rgba(255, 255, 255, 0.7);
+
+  --bg-base: linear-gradient(180deg, #faf6f2 0%, #f5eee8 40%, #f1e2dc 72%, #ecd0c9 100%);
+  --bg-ember: radial-gradient(closest-side, rgba(226, 52, 59, 0.2), rgba(226, 52, 59, 0.08) 50%, transparent 100%);
+  --bg-ember-2: radial-gradient(closest-side, rgba(240, 150, 110, 0.18), rgba(240, 150, 110, 0.06) 55%, transparent 100%);
+  --bg-vignette: radial-gradient(130% 90% at 50% 40%, transparent 60%, rgba(120, 40, 40, 0.08) 100%);
+  --grain-opacity: 0.05;
+
+  --glass-fill: rgba(255, 252, 249, 0.68);
+  --glass-fill-raised: rgba(255, 252, 249, 0.86);
+  --glass-fill-inset: rgba(96, 22, 26, 0.045);
+  --glass-sheen: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.18) 58%,
+    rgba(255, 214, 206, 0.2) 100%
+  );
+  --glass-edge: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(255, 255, 255, 0.5) 40%,
+    rgba(192, 20, 31, 0.16) 100%
+  );
+  --glass-border: rgba(110, 30, 34, 0.12);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+  --shadow-1: 0 1px 2px rgba(60, 16, 18, 0.08);
+  --shadow-panel: 0 1px 2px rgba(60, 16, 18, 0.06), 0 20px 44px -26px rgba(100, 20, 26, 0.38);
+  --shadow-float: 0 2px 6px rgba(60, 16, 18, 0.08), 0 28px 60px -26px rgba(100, 20, 26, 0.45);
+  --glow-red: 0 16px 40px -24px rgba(192, 20, 31, 0.4);
+  --glow-red-strong: 0 10px 26px -10px rgba(192, 20, 31, 0.55), 0 0 0 1px rgba(160, 16, 26, 0.3);
+  --glow-gold: 0 0 20px -6px rgba(176, 125, 34, 0.45);
+
+  --btn-primary-fill: linear-gradient(180deg, #d92a33 0%, #b8121d 50%, #8e0c16 100%);
+  --btn-primary-fill-hover: linear-gradient(180deg, #e3343b 0%, #c41620 50%, #990e18 100%);
+  --btn-primary-edge: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.22);
+}
+
+/* Users who ask for less transparency get solid panels. The selector list matches the
+   specificity of the theme blocks above so it wins in both themes. */
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  :root[data-theme],
+  :root:not([data-theme]) {
+    --glass-fill: var(--color-bg-mid);
+    --glass-fill-raised: var(--color-bg-mid);
+    --glass-blur: 0px;
+  }
+}

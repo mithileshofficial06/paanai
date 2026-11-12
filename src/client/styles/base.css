@@ -1,0 +1,236 @@
+/*
+ * Paanai base layer: bundled fonts, a light reset, type roles and utilities.
+ * Fonts are served from /fonts (repo-root public/). No external requests.
+ */
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/fraunces-latin-var.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/fraunces-italic-latin.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  src: url('/fonts/atkinson-hyperlegible-next-latin-var.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- Reset ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: var(--weight-regular);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd,
+ol,
+ul {
+  margin: 0;
+}
+
+ol,
+ul {
+  padding: 0;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* ---------- Type roles ---------- */
+.pn-display,
+.pn-headline,
+.pn-title {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-display);
+  color: var(--color-ink);
+  text-wrap: balance;
+}
+
+.pn-display {
+  font-size: var(--text-display);
+  line-height: var(--leading-tight);
+}
+
+.pn-headline {
+  font-size: var(--text-headline);
+  line-height: 1.12;
+}
+
+.pn-title {
+  font-size: var(--text-title);
+  line-height: var(--leading-snug);
+  letter-spacing: -0.005em;
+}
+
+.pn-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: var(--weight-medium);
+}
+
+.pn-eyebrow {
+  font-family: var(--font-ui);
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--color-accent-ink);
+}
+
+.pn-lead {
+  font-size: var(--text-lead);
+  line-height: 1.45;
+  color: var(--color-ink-muted);
+  text-wrap: pretty;
+}
+
+.pn-body {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--color-ink-muted);
+  text-wrap: pretty;
+}
+
+.pn-meta {
+  font-size: var(--text-body);
+  line-height: 1.35;
+  color: var(--color-ink-subtle);
+}
+
+.pn-num {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ---------- Focus and selection ---------- */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+/* ---------- Utilities ---------- */
+.pn-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.pn-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pn-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pn-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  border-radius: 3px;
+}
+
+/* Jump every CSS animation to its end state (screenshot tests: <html data-motion="static">).
+   UI components also read this attribute and skip their JS and SVG animations. */
+[data-motion='static'] *,
+[data-motion='static'] *::before,
+[data-motion='static'] *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
