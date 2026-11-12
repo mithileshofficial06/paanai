@@ -7,7 +7,7 @@ import { Sheet } from '../ui/Sheet';
 import { BottomNav } from '../ui/Tabs';
 import { pushToast, ToastHost } from '../ui/Toast';
 import { ErrorState } from '../ui/States';
-import { Skeleton } from '../ui/Skeleton';
+import { BootLoader } from './KilnHero';
 import {
   IconCodex,
   IconCommission,
@@ -50,8 +50,7 @@ function Screen({ r }: { r: Route }) {
     case 'loading':
       return (
         <section class="sc sc--center" aria-busy="true">
-          <IconPaanai size={56} class="boot__logo" />
-          <Skeleton shape="text" width={180} />
+          <BootLoader text="Warming up the wheel" />
         </section>
       );
     case 'error':

@@ -1,7 +1,7 @@
 {
   "private": true,
-  "name": "paanai",
-  "version": "0.1.0",
+  "name": "paanai-game",
+  "version": "0.0.0",
   "license": "BSD-3-Clause",
   "type": "module",
   "scripts": {
@@ -20,7 +20,7 @@
     "node": ">=24.0.0"
   },
   "dependencies": {
-    "@devvit/analytics": "^0.15.2",
+    "@devvit/analytics": "0.15.2",
     "@devvit/start": "0.15.2",
     "@devvit/web": "0.15.2",
     "@hono/node-server": "2.1.6",

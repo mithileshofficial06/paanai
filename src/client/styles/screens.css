@@ -28,14 +28,6 @@
 @keyframes sc-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
 /* ---------- Welcome ---------- */
-.welcome__title { margin: 0; max-width: 16ch; }
-.welcome__text { margin: 0; max-width: 36ch; color: var(--color-ink-muted); }
-.welcome__kiln { position: relative; display: grid; place-items: end center; width: 220px; height: 240px; border-radius: 110px 110px 24px 24px;
-  background: radial-gradient(90% 70% at 50% 100%, rgba(255, 110, 30, 0.35), transparent 70%), linear-gradient(180deg, #24100f, #120709);
-  border: 1px solid rgba(255, 120, 80, 0.25); box-shadow: inset 0 -30px 60px rgba(255, 70, 20, 0.25), 0 30px 60px -20px rgba(255, 40, 20, 0.35); padding-bottom: 18px; }
-.welcome__glow { position: absolute; inset: 20% 15% 0; border-radius: 50%; background: radial-gradient(circle, rgba(255, 140, 40, 0.55), transparent 65%); filter: blur(18px); animation: glow-breathe 3s var(--ease-in-out) infinite alternate; }
-.welcome__door { position: absolute; inset: 14px; border-radius: 100px 100px 16px 16px; background: repeating-linear-gradient(90deg, #2a1512 0 18px, #1c0d0c 18px 20px); border: 1px solid rgba(255, 255, 255, 0.06); }
-.welcome__kiln.is-open > :not(.welcome__glow) { animation: rise 900ms var(--ease-spring) both; }
 @keyframes glow-breathe { to { opacity: 0.6; transform: scale(1.08); } }
 @keyframes rise { from { opacity: 0; transform: translateY(30px) scale(0.9); } to { opacity: 1; transform: none; } }
 

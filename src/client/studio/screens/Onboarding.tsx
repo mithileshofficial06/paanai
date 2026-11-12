@@ -4,53 +4,107 @@ import { Button } from '../../ui/Button';
 import { GlassPanel } from '../../ui/GlassPanel';
 import { Stepper } from '../../ui/Stepper';
 import { IconCodex, IconCommission, IconFlame, IconKiln, IconRank, IconShelf, IconWheel } from '../../ui/icons';
-import { PotView } from '../parts';
+import { fmtCountdown, PotView, TargetView, useNow } from '../parts';
+import { KilnHero, type KilnState } from '../KilnHero';
+import { sfx } from '../../app/audio';
 import * as S from '../store';
 import { back, finishOnboarding, go, openStarter } from '../controller';
 
 export function Welcome() {
   const pot = S.revealing.value;
-  const [opening, setOpening] = useState(false);
+  const today = S.today.value;
+  const now = useNow(30_000);
+  const [state, setState] = useState<KilnState>(pot ? 'open' : 'closed');
   async function open() {
-    setOpening(true);
-    await openStarter();
-    setOpening(false);
+    setState('opening');
+    sfx.thump();
+    const started = Date.now();
+    const got = await openStarter();
+    // Let the doors finish swinging before the pot comes out.
+    await new Promise((r) => setTimeout(r, Math.max(0, 1100 - (Date.now() - started))));
+    if (got) {
+      setState('open');
+      sfx.whoosh();
+    } else setState('closed');
   }
+  const c = today?.commission;
   return (
-    <section class="sc sc--center welcome" aria-labelledby="welcome-title">
-      <p class="pn-eyebrow">Paanai · a daily pottery studio</p>
-      <h1 id="welcome-title" class="pn-display welcome__title">
-        {pot ? 'Still warm from the kiln.' : 'Someone left a pot in the kiln for you.'}
-      </h1>
-      <div class={`welcome__kiln${pot ? ' is-open' : ''}`} aria-hidden={!pot}>
-        <div class="welcome__glow" />
-        {pot ? <PotView pot={pot} width={150} height={190} /> : <div class="welcome__door" />}
-      </div>
-      {pot ? (
-        <>
-          <p class="pn-lead welcome__text">
-            An old potter fired this for you. Every day there is a new commission: throw it on the wheel, glaze it, and
-            open the kiln tomorrow to see what the fire made of it.
-          </p>
-          <div class="sc__actions">
-            <Button variant="primary" size="lg" block onClick={() => go('howto')}>
-              How to play
-            </Button>
-            <Button variant="ghost" block onClick={() => void finishOnboarding()}>
-              Skip, go to the wheel
-            </Button>
+    <section class={`welcome welcome--${state}`} aria-labelledby="welcome-title">
+      <div class="welcome__copy">
+        <p class="pn-eyebrow welcome__eyebrow">
+          <span class="welcome__flame" aria-hidden="true" />
+          Paanai · a daily pottery studio
+        </p>
+        <h1 id="welcome-title" class="welcome__title" key={pot ? 'b' : 'a'}>
+          {pot ? (
+            <>
+              Still warm from the <em>kiln</em>.
+            </>
+          ) : (
+            <>
+              Someone left a pot in the <em>kiln</em> for you.
+            </>
+          )}
+        </h1>
+        <p class="welcome__text">
+          {pot
+            ? 'An old potter fired this for you. Now make your own: throw today’s vessel on the wheel, glaze it, and open the kiln tomorrow to see what the fire made of it.'
+            : 'Every day the studio gets one commission: a real vessel from a real tradition. Throw it with your finger on a spinning wheel, glaze it, and fire it with everyone else overnight.'}
+        </p>
+        {c && today ? (
+          <div class="welcome__today">
+            <div class="welcome__target">
+              <TargetView profile={c.target} width={56} height={72} />
+            </div>
+            <div class="welcome__todayText">
+              <span class="welcome__todayLabel">Day {today.dayNumber} · today’s commission</span>
+              <strong class="welcome__todayTitle">{c.title}</strong>
+              <span class="welcome__todayMeta">
+                {c.origin} · beat <b>{c.bar}</b>
+              </span>
+            </div>
           </div>
-        </>
-      ) : (
-        <div class="sc__actions">
-          <Button variant="primary" size="lg" block loading={opening} onClick={() => void open()}>
-            Open the kiln
-          </Button>
-          <Button variant="ghost" block onClick={() => go('howto')}>
-            How to play
-          </Button>
+        ) : null}
+        <ul class="welcome__facts">
+          <li>
+            <b>35</b> vessels
+          </li>
+          <li>
+            <b>24</b> glazes
+          </li>
+          <li>
+            Fires in <b>{today ? fmtCountdown(today.nextKilnAt - now) : '…'}</b>
+          </li>
+        </ul>
+        <div class="welcome__actions">
+          {pot ? (
+            <>
+              <Button variant="primary" size="lg" block onClick={() => go('howto')}>
+                How to play
+              </Button>
+              <Button variant="ghost" block onClick={() => void finishOnboarding()}>
+                Skip, go to the wheel
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="primary" size="lg" block loading={state === 'opening'} onClick={() => void open()}>
+                Open the kiln
+              </Button>
+              <Button variant="ghost" block onClick={() => go('howto')}>
+                How to play
+              </Button>
+            </>
+          )}
         </div>
-      )}
+      </div>
+      <div class="welcome__stage">
+        <KilnHero
+          state={state}
+          label={pot ? 'The kiln door is open and a fired pot sits in the glow.' : 'A brick kiln with its iron doors shut and fire glowing through the seams.'}
+          pot={pot && state === 'open' ? <PotView pot={pot} width={180} height={180} /> : null}
+        />
+      </div>
     </section>
   );
 }
