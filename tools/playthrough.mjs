@@ -17,7 +17,7 @@ await p.waitForTimeout(1500);
 await shot('01-welcome');
 await click('Open the kiln'); await shot('02-starter');
 await click('How to play'); await shot('03-howto');
-await click('Next'); await click('Next'); await click('Next'); await click('Start throwing');
+await p.waitForTimeout(2500); await click('Skip tour');
 await p.waitForTimeout(1500); await shot('04-throw');
 // Scripted throw on the canvas.
 await click('Open'); await p.waitForTimeout(800);
@@ -41,4 +41,5 @@ if (await open.count()) { await open.first().click(); await click('Open the kiln
 await p.goto(`${base}/studio.html?user=alice`); await p.waitForTimeout(1500);
 await p.getByRole('button', { name: 'Codex' }).click(); await shot('11-codex');
 await p.getByRole('button', { name: 'Shelf' }).click(); await shot('12-shelf');
+await p.getByRole('button', { name: 'Commissions' }).click(); await shot('13-commissions');
 await b.close();

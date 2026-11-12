@@ -61,36 +61,58 @@ export function Shelf() {
 
 export function Codex() {
   const cx = S.codex.value;
+  const [pick, setPick] = useState<string | null>(null);
+  const effects = cx ? [...cx.effects].sort((x, y) => Number(!!y.discoverer) - Number(!!x.discoverer)) : [];
+  const sel = effects.find((e) => e.id === pick && e.discoverer) ?? effects.find((e) => e.discoverer) ?? null;
   return (
-    <section class="sc" aria-labelledby="codex-title">
+    <section class="sc codex" aria-labelledby="codex-title">
       <p class="pn-eyebrow">Glaze Codex</p>
       <h1 id="codex-title" class="pn-headline">{cx ? `${cx.discovered} of ${cx.total} discovered` : 'Glaze Codex'}</h1>
+      {cx ? (
+        <div class="codex__meter" role="progressbar" aria-label="Effects discovered" aria-valuemin={0} aria-valuemax={cx.total} aria-valuenow={cx.discovered}>
+          <span style={{ width: `${(cx.discovered / Math.max(1, cx.total)) * 100}%` }} />
+        </div>
+      ) : null}
       <p class="pn-body sc__lead">Every glaze effect the kiln can make. The first potter in this community to fire one gets their name on it.</p>
+      {sel ? (
+        <div class="codex__detail" key={sel.id}>
+          <span class="codex__bigtile" style={{ '--sw': effectColour(sel.id) ?? '#8a5a3c' }} aria-hidden="true" />
+          <div>
+            <h2 class="codex__detailName">
+              {sel.name} {sel.rare ? <span class="pn-badge pn-badge--gold">Rare</span> : null}
+            </h2>
+            <p class="pn-meta">First fired by u/{sel.discoverer}</p>
+            <p class="codex__blurb">{sel.blurb}</p>
+          </div>
+        </div>
+      ) : null}
       {!cx ? (
         <Skeleton shape="rect" height={240} />
       ) : (
         <ul class="codex__grid">
-          {cx.effects.map((e) => {
+          {effects.map((e) => {
             const found = !!e.discoverer;
             return (
-              <li key={e.id} class={`codex__item pn-glass pn-radius-md${found ? ' is-found' : ''}${e.rare ? ' is-rare' : ''}`}>
-                <span class="codex__swatch" style={found && effectColour(e.id) ? { '--sw': effectColour(e.id) } : undefined} aria-hidden="true">
-                  {found ? null : <IconLock size={16} />}
-                </span>
-                <div class="codex__text">
-                  <h2 class="codex__name">
-                    {found ? e.name : 'Undiscovered'} {e.rare ? <span class="pn-badge pn-badge--gold">Rare</span> : null}
-                  </h2>
-                  <p class="pn-meta">{found ? `First fired by u/${e.discoverer}` : e.kind === 'colour' ? 'A colour effect' : 'A surface effect'}</p>
-                  {found ? <p class="codex__blurb">{e.blurb}</p> : null}
-                </div>
+              <li key={e.id}>
+                <button
+                  type="button"
+                  class={`codex__item${found ? ' is-found' : ''}${e.rare ? ' is-rare' : ''}${sel?.id === e.id ? ' is-on' : ''}`}
+                  disabled={!found}
+                  onClick={() => setPick(e.id)}
+                  aria-label={found ? `${e.name}, first fired by u/${e.discoverer}` : `Undiscovered ${e.kind === 'colour' ? 'colour' : 'surface'} effect${e.rare ? ', rare' : ''}`}
+                >
+                  <span class="codex__tile" style={found ? { '--sw': effectColour(e.id) ?? '#8a5a3c' } : undefined} aria-hidden="true">
+                    {found ? null : <span class="codex__q">?</span>}
+                  </span>
+                  <span class="codex__name">{found ? e.name : e.kind === 'colour' ? 'Colour' : 'Surface'}</span>
+                </button>
               </li>
             );
           })}
         </ul>
       )}
       <p class="pn-meta">
-        <IconCodex size={14} /> Tip: glaze, wall thickness, shape and the kiln's atmosphere all decide what you get.
+        <IconCodex size={14} /> Tip: glaze, wall thickness, shape and the kiln&apos;s atmosphere all decide what you get.
       </p>
     </section>
   );
