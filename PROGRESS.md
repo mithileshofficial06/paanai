@@ -4,9 +4,9 @@
 
 ## Status
 
-- **Current milestone:** M1/M2 in parallel (core + server done; 3D stage and glass UI being built by subagents)
-- **Next action:** when the subagents report, review their work (throw-lab + ui-lab screenshots), commit; then build the app shell (`src/client/studio.html` + `src/client/app/`), splash, Throw screen, result card, onboarding wiring; then `npm run build` and a playtest upload.
-- **Last updated:** 2026-11-12 06:40 IST
+- **Current milestone:** M1-M4 server + core DONE; client in progress (3D stage + glass UI kit by subagents; studio store/controller + splash done by lead)
+- **Next action:** when the 3D and UI subagents report: review screenshots, commit their work; then (a) SendMessage the UI agent to build `src/client/studio/App.tsx` + `src/client/studio/screens/*` on top of `studio/store.ts` + `studio/controller.ts` (routes: welcome/starter reveal, howto, features, throw, result, glaze, kiln, shelf, codex, commissions, create, leaderboard; bottom nav); (b) SendMessage the 3D agent to add glaze material (`app/glazeLook.ts` params), kiln reveal scene, ghost replay pot, thumbnails with glaze; then `npm run build`, harness play-through, `devvit playtest`.
+- **Last updated:** 2026-11-12 07:05 IST
 
 ## Done
 
@@ -18,7 +18,16 @@
 - `devvit.json`: entries `default` (splash.html, tall) + `studio` (studio.html); permissions redis/media/journeys/reddit(scope user); daily-rollover cron; settings minRankToCommission, journeymanPoints (default 3), reportsToHide.
 - Tests: 24 passing (`npx vitest run`). Server typecheck clean.
 
+- Kiln + glazes: `glazes.ts` (8 glazes, 3 applications, 24 effects, shape facts; all 24 proven reachable), `fire.ts`; server kiln (glaze -> queue -> 00:00 UTC; batch + fire-on-read identical; Codex first-discoverer transaction; Kiln Report comment), Shelf (Pot of the Week), likes, reports auto-hide, delete, share-as-user, starter pot.
+- Player commissions (Beat the Commissioner): rank-gated, 1/day, word-list titles, constraints derived from the maker's own pot (always solvable), posted as user; ghost log served; patron points; mod remove.
+- Fair bar: `barFor()` = commissioner's real evenness/constraints/efficiency with shape match fixed at 85% (a pot matches itself 100%, so the raw self-score ~96 was unbeatable). Official bars ~85-88.
+- Journeys telemetry (Hono port of the analytics router, Devvit build only) + client wrapper.
+- Client infra: `app/api.ts`, `app/audio.ts` (procedural Web Audio SFX, no files), `app/glazeLook.ts`, `app/silhouette.ts`, `app/journeys.ts`; inline splash (`splash.html/ts/css`, no three.js) screenshot-verified; studio `store.ts` + `controller.ts`, `studio.html`, `studio/main.tsx`.
+- Tests: 36 passing.
+
 ## In flight (subagents)
+
+- Content (opus, medium): 35 official commissions in `src/shared/content/commissions.ts` + `tests/unit/commissions.test.ts`.
 
 - 3D throw stage (opus, max): `src/client/three/**`, `src/client/input/**`, `src/client/dev/throw-lab.*`, `tools/shoot.mjs`, `public/textures`, `public/env`.
 - Glass UI design system + HowToPlay + Features screens (opus, max): `src/client/styles/**`, `src/client/ui/**`, `src/client/dev/ui-lab.*`, `public/fonts`.
@@ -42,6 +51,12 @@
 - 2026-11-12: Practice throws can be glazed and fired but are not ranked; one ranked throw per commission.
 - 2026-11-12: Copy says "the next kiln", not "tonight".
 - 2026-11-12: Journeyman gate for commissioning is a subreddit setting with low default thresholds.
+- 2026-11-12: Dark (black-red) theme is forced everywhere (`data-theme="dark"`); the light tokens exist but are unused. Mithilesh asked for black-red glass.
+- 2026-11-12: Bar to beat = `barFor()` (85% assumed shape match), not the raw self-score.
+- 2026-11-12: Audio is synthesised (Web Audio), so no licensing or download weight.
+- 2026-11-12: Kiln atmosphere for a date = hash of the date (shown before glazing); the kiln for date D fires at 00:00 UTC on D+1.
+- 2026-11-12: Rank points = ranked throws + stars + fired pots + 5 x Codex discoveries. Journeyman at 3 (setting), Artisan 30, Master Potter 100.
+- 2026-11-12: Devvit `reddit.scope: "user"` is how apps post as the user (`asUser` is unused per the schema).
 
 ---
 

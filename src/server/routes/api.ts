@@ -10,6 +10,7 @@ import { meDTO, touchUser } from '../services/users';
 import { dayNumber, minuteBucket, nextKilnAt, today } from '../services/time';
 import { codex, glazePot, kilnWaitingCount, markOpened, myKiln } from '../services/kiln';
 import { deletePot, report, shelfPage, sharePot, toggleLike } from '../services/community';
+import { loadSummaries } from '../services/pots';
 import { starterPot } from '../services/starter';
 import { createCommission, listCommissions, removeCommission, type CreateCommissionReq } from '../services/playerCommissions';
 
@@ -166,4 +167,11 @@ api.post('/commission/delete', async (c) => {
   const { id } = await c.req.json<{ id: string }>();
   await removeCommission(String(id), userId, false);
   return c.json({ ok: true });
+});
+
+api.get('/mypots', async (c) => {
+  const ctx = platform().ctx();
+  if (!ctx.userId) return c.json({ pots: [] });
+  const ids = await platform().kv.zRange(K.myPots(ctx.userId), 0, 29, { by: 'rank', reverse: true });
+  return c.json({ pots: await loadSummaries(ids.map((m) => m.member)) });
 });

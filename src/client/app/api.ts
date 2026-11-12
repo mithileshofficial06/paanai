@@ -68,5 +68,6 @@ export const api = {
   createCommission: (potId: string, adjective: string, vessel: string, constraints: string[]) =>
     req<{ id: string; postId: string; bar: number; url: string }>('POST', 'commission', { potId, adjective, vessel, constraints }),
   commissions: () => req<{ commissions: CommissionListItem[] }>('GET', 'commissions'),
+  myPots: () => req<{ pots: PotSummary[] }>('GET', 'mypots'),
   deleteCommission: (id: string) => req<{ ok: true }>('POST', 'commission/delete', { id }),
 };
