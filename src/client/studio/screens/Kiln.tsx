@@ -11,6 +11,7 @@ import { sfx } from '../../app/audio';
 import { fmtCountdown, PotView, titleCase, useNow } from '../parts';
 import * as S from '../store';
 import { go, login, markOpened } from '../controller';
+import { KilnHero, type KilnState } from '../KilnHero';
 
 const DEFECT_TEXT: Record<string, string> = {
   collapsed: 'Collapsed in the fire.',
@@ -47,6 +48,24 @@ export function Kiln() {
     <section class="sc kiln" aria-labelledby="kiln-title">
       <p class="pn-eyebrow">The kiln</p>
       <h1 id="kiln-title" class="pn-headline">{ready.length ? `${ready.length} pot${ready.length > 1 ? 's' : ''} ready to open` : 'Your kiln'}</h1>
+      {S.today.value ? (
+        <div class={`kiln__hero${waiting.length ? ' is-loaded' : ''}`}>
+          <div class="kiln__heroArt">
+            <KilnHero
+              state="closed"
+              heat={waiting.length ? 'hot' : 'cool'}
+              label={waiting.length ? 'The kiln, loaded and waiting for tonight’s firing.' : 'The kiln, cooling.'}
+            />
+          </div>
+          <div class="kiln__heroInfo">
+            <span class="kiln__heroLabel">{waiting.length ? 'Fires in' : 'Next firing in'}</span>
+            <strong class="kiln__countdown">{fmtCountdown(S.today.value.nextKilnAt - now)}</strong>
+            <span class="pn-meta">
+              {waiting.length ? `${waiting.length} pot${waiting.length > 1 ? 's' : ''} loaded` : 'Nothing loaded yet'} · {S.today.value.atmosphere} · 00:00 UTC
+            </span>
+          </div>
+        </div>
+      ) : null}
       {S.kilnLoading.value && !items.length ? <Skeleton shape="rect" height={160} /> : null}
       {!S.kilnLoading.value && !items.length ? (
         <EmptyState icon={<IconKiln />} title="The kiln is empty" description="Throw today's commission, glaze it, and it fires at 00:00 UTC." action={<Button variant="primary" onClick={() => go('throw')}>Go to the wheel</Button>} />
@@ -100,28 +119,34 @@ export function Kiln() {
 
 /** Opening the kiln: door glow, heat shimmer, then the pot and what the fire did. */
 function Reveal({ item, onDone }: { item: KilnItem; onDone: () => void }) {
-  const [phase, setPhase] = useState<'closed' | 'open'>(item.opened ? 'open' : 'closed');
+  const [phase, setPhase] = useState<KilnState>(item.opened ? 'open' : 'closed');
   const f = item.fired;
   function open() {
-    sfx.whoosh();
-    setPhase('open');
-    if (f?.newDiscoveries.length) setTimeout(() => sfx.chime(), 900);
-    else setTimeout(() => sfx.tink(1), 700);
+    sfx.thump();
+    setPhase('opening');
+    setTimeout(() => {
+      setPhase('open');
+      sfx.whoosh();
+      if (f?.newDiscoveries.length) setTimeout(() => sfx.chime(), 1400);
+      else setTimeout(() => sfx.tink(1), 1200);
+    }, 1000);
     if (!item.opened) void markOpened(item.potId);
   }
   return (
     <section class={`sc reveal reveal--${phase}`} aria-labelledby="reveal-title">
-      <div class="reveal__stage" aria-hidden={phase === 'closed'}>
-        <div class="reveal__heat" />
-        <div class="reveal__pot">{phase === 'open' ? <PotView pot={item} width={200} height={250} /> : null}</div>
-        <div class="reveal__door reveal__door--l" />
-        <div class="reveal__door reveal__door--r" />
+      <div class="reveal__stage">
+        <KilnHero
+          state={phase}
+          heat="cool"
+          label={phase === 'open' ? `The kiln is open: ${item.title}.` : 'The kiln, cooled overnight, with its iron doors shut.'}
+          pot={phase === 'open' ? <PotView pot={item} width={200} height={200} /> : null}
+        />
       </div>
-      {phase === 'closed' ? (
+      {phase !== 'open' ? (
         <div class="sc__actions">
           <h1 id="reveal-title" class="pn-headline">{item.title}</h1>
           <p class="pn-body">The kiln has cooled. Ready?</p>
-          <Button variant="primary" size="lg" block icon={<IconFlame />} onClick={open}>
+          <Button variant="primary" size="lg" block icon={<IconFlame />} loading={phase === 'opening'} onClick={open}>
             Open the kiln
           </Button>
         </div>

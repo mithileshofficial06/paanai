@@ -142,7 +142,7 @@ export function Glaze() {
           return (
             <li key={g}>
               <button type="button" class={`swatch${on ? ' is-on' : ''}`} aria-pressed={on} onClick={() => toggle(g)}>
-                <span class="swatch__chip" style={{ background: info.raw }} />
+                <span class="swatch__chip" style={{ backgroundColor: info.raw }} />
                 <span class="swatch__name">{info.name}</span>
                 <span class="swatch__hint">{info.hint}</span>
                 {on ? <span class="swatch__order">{picked.indexOf(g) + 1}</span> : null}

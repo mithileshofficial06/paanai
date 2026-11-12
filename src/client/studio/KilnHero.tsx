@@ -61,13 +61,13 @@ const EMBERS = Array.from({ length: 18 }, (_, i) => {
 });
 const SMOKE = Array.from({ length: 5 }, (_, i) => ({ delay: -i * 1.6, drift: (i % 2 ? 1 : -1) * (10 + i * 4) }));
 
-export function KilnHero({ state, pot, label }: { state: KilnState; pot?: ComponentChildren; label: string }) {
+export function KilnHero({ state, pot, label, heat = 'hot' }: { state: KilnState; pot?: ComponentChildren; label: string; heat?: 'hot' | 'cool' }) {
   const wall = useMemo(() => bricks(7, 20, 380, 20, 410, 40, 17), []);
   const chimney = useMemo(() => bricks(23, 262, 302, -40, 70, 20, 12), []);
   const arch = useMemo(() => voussoirs(200, 270, 80, 106, 13), []);
   const mouth = pct(120, 190, 160, 220);
   return (
-    <figure class={`kh kh--${state}`} role="img" aria-label={label}>
+    <figure class={`kh kh--${state} kh--${heat}`} role="img" aria-label={label}>
       <div class="kh__halo" />
       <svg class="kh__svg" viewBox={`0 ${VB_Y} 400 ${VB_H}`} aria-hidden="true">
         <defs>

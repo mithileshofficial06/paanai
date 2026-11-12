@@ -117,6 +117,15 @@ const STEPS: Step[] = [
   { title: 'Glaze and fire', body: 'Pick glazes, place the pot in the kiln, and open it after the next firing (00:00 UTC). Rare effects go in the Codex.', demo: 'kiln' },
 ];
 
+function DemoKiln() {
+  const [st, setSt] = useState<KilnState>('closed');
+  useEffect(() => {
+    const t = setInterval(() => setSt((v) => (v === 'closed' ? 'open' : 'closed')), 2600);
+    return () => clearInterval(t);
+  }, []);
+  return <KilnHero state={st} label="" />;
+}
+
 export function HowToPlay() {
   const [i, setI] = useState(0);
   const step = STEPS[i]!;
@@ -134,12 +143,18 @@ export function HowToPlay() {
     <section class="sc sc--center howto" aria-labelledby="howto-title">
       <p class="pn-eyebrow">How to play · {i + 1} of {STEPS.length}</p>
       <GlassPanel tone="raised" padding="lg" radius="xl" class="howto__card" glow>
-        <div class={`demo demo--${step.demo}`} key={step.demo} aria-hidden="true">
-          <div class="demo__wheel" />
-          <div class="demo__pot" />
-          {step.demo === 'match' ? <div class="demo__target" /> : null}
-          {step.demo === 'kiln' ? <div class="demo__flame" /> : <div class="demo__finger" />}
-        </div>
+        {step.demo === 'kiln' ? (
+          <div class="demo demo--kilnhero" key="kiln" aria-hidden="true">
+            <DemoKiln />
+          </div>
+        ) : (
+          <div class={`demo demo--${step.demo}`} key={step.demo} aria-hidden="true">
+            <div class="demo__wheel" />
+            <div class="demo__pot" />
+            {step.demo === 'match' ? <div class="demo__target" /> : null}
+            <div class="demo__finger" />
+          </div>
+        )}
         <h1 id="howto-title" class="pn-headline howto__title">{step.title}</h1>
         <p class="pn-body howto__body">{step.body}</p>
       </GlassPanel>
