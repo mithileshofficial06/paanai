@@ -11,6 +11,7 @@ import { dayNumber, minuteBucket, nextKilnAt, today } from '../services/time';
 import { codex, glazePot, kilnWaitingCount, markOpened, myKiln } from '../services/kiln';
 import { deletePot, report, shelfPage, sharePot, toggleLike } from '../services/community';
 import { starterPot } from '../services/starter';
+import { createCommission, listCommissions, removeCommission, type CreateCommissionReq } from '../services/playerCommissions';
 
 export const api = new Hono();
 
@@ -148,4 +149,21 @@ api.post('/share', async (c) => {
   const { userId, username } = requireUser(ctx.userId, ctx.username);
   const { potId, pngDataUrl } = await c.req.json<{ potId: string; pngDataUrl: string }>();
   return c.json(await sharePot(userId, username, String(potId), String(pngDataUrl)));
+});
+
+api.post('/commission', async (c) => {
+  await limit('commission', 3);
+  const ctx = platform().ctx();
+  const { userId, username } = requireUser(ctx.userId, ctx.username);
+  return c.json(await createCommission(userId, username, await c.req.json<CreateCommissionReq>()));
+});
+
+api.get('/commissions', async (c) => c.json({ commissions: await listCommissions(20) }));
+
+api.post('/commission/delete', async (c) => {
+  const ctx = platform().ctx();
+  const { userId } = requireUser(ctx.userId, ctx.username);
+  const { id } = await c.req.json<{ id: string }>();
+  await removeCommission(String(id), userId, false);
+  return c.json({ ok: true });
 });

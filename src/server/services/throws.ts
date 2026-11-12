@@ -78,6 +78,7 @@ export async function submitThrow(req: ThrowRequest): Promise<ThrowResponse> {
     breakdown: JSON.stringify(score),
     ranked: ranked ? '1' : '0',
     strokes: String(strokes),
+    strokeLog: req.strokeLog,
     createdAt: String(now),
     date: today(),
   });
@@ -132,6 +133,7 @@ async function creditPatron(commId: string, total: number, bar: number): Promise
   if (!makerId) return;
   await kv.hIncrBy(K.user(makerId), 'patron', 1);
   await kv.hIncrBy(K.comm(commId), 'completions', 1);
+  await kv.zIncrBy(K.commQueue(), commId, 1);
   if (total > bar && total - bar < 5) await kv.hIncrBy(K.user(makerId), 'patron', 3);
 }
 

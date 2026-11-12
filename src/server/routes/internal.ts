@@ -5,6 +5,7 @@ import { ensureDaily } from '../services/daily';
 import { addDays, today } from '../services/time';
 import { kilnBatch, kilnReportText } from '../services/kiln';
 import { weeklyTally } from '../services/community';
+import { removeCommission } from '../services/playerCommissions';
 
 /** Routes Devvit itself calls: scheduler jobs, menu items, triggers, forms. */
 export const internal = new Hono();
@@ -67,6 +68,14 @@ internal.post('/menu/stats', async (c) => {
     showToast: `Today: ${s.throws ?? 0} ranked throws, ${s.practice ?? 0} practice, ${s.glazes ?? 0} glazed, ${s.shares ?? 0} shared`,
   };
   return c.json(res);
+});
+
+internal.post('/menu/remove-commission', async (c) => {
+  const ctx = platform().ctx();
+  const id = ctx.postId ? await platform().kv.hGet(K.post(ctx.postId), 'commissionId') : undefined;
+  if (!id || !id.startsWith('c')) return c.json({ showToast: 'This post is not a player commission.' } satisfies UiResponse);
+  await removeCommission(id, null, true);
+  return c.json({ showToast: 'Commission removed.' } satisfies UiResponse);
 });
 
 // ---- Triggers ----

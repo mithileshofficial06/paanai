@@ -76,6 +76,14 @@
         "location": "subreddit",
         "forUserType": "moderator",
         "endpoint": "/internal/menu/stats"
+      },
+      {
+        "label": "Paanai: remove this commission",
+        "description": "Removes a player commission and its post",
+        "location": "post",
+        "postFilter": "currentApp",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/remove-commission"
       }
     ]
   },
