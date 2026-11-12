@@ -22,6 +22,26 @@
   - at most 3 screenshot review rounds per task; screenshots at 1x device scale;
   - prefer doing small things in the main session instead of spawning agents.
 
+## REALISM SPEC (Mithilesh, 2026-11-12 07:40: "make the 3D and shaping look more realistic; people should feel like they are actually doing it")
+
+This is the top priority of step 1. The throw must look and feel like real wheel throwing, not a 3D toy. Build the core feel first, check it in 3 screenshot rounds max, then add the rest.
+
+Feel (input), highest priority:
+- **Pulling up = an upward drag along the wall** (like a real potter's pull). Default "hands" mode infers the gesture by angle: mostly upward along the wall after opening = THIN (pull), mostly sideways = PUSH. Push/Thin tool buttons stay as overrides. dr comes from finger speed.
+- **Resistance and momentum:** the clay lags the finger slightly (spring-damper on the displayed contact point, One-Euro on input); a resting finger does nothing; fast jerks are clamped. Wheel speed ramps up while touching and coasts down after.
+- **Water / dryness (client-side, deterministic-safe):** clay slowly dries during a throw; dry clay scales the recorded dr down (more resistance) and loses its sheen. An "Add water" button (or a two-finger tap) re-wets it with a splash, sheen and sound. Scaling happens BEFORE recording, so replay stays exact.
+- **Centering intro (cosmetic, about 2 s, skippable):** the lump starts slightly off-centre and wobbling; pressing and holding centres it (wobble decays, a "centred" chime). It doesn't touch the profile.
+- **Haptics:** `navigator.vibrate` pulses scaled to pressure and speed while shaping (guarded); a stronger pulse at the unsafe threshold.
+- **Sound:** use `app/audio.ts`: `wheel(speed)` continuously, `squelch(intensity)` on movement, `thump()` on open, `flop()` on slump, plus a water splash.
+
+Look:
+- **Wet clay:** a darker wet-stoneware colour with a glossy slip film; moving specular highlights as it spins; grog speckles and slurry streaks that visibly ROTATE so the spin is readable; subtle subsurface warmth; wet patches darker where touched.
+- **Throwing rings you made:** a cosmetic per-display-ring "ridge" buffer deepened where the finger passed and slowly relaxed; rendered as spiral ridges in the normal map. Your marks should stay on the pot.
+- **Contact:** a visible fingertip (or rib/sponge tool) at the contact point pressing into the clay, a small slurry lip building above it, slip droplets/spray particles flung outward at speed, water drips running down the wall.
+- **Wheel and studio:** a wet cast-metal wheel head with a slurry ring, a splash pan with slip, a water bowl and sponge as props, a soft contact shadow, window key light plus warm fill plus a red brand rim light, a gentle camera sway, background depth of field (cheap), and an ember glow.
+- **Physics read:** wobble is a real off-axis precession with a growing amplitude; slump is an animated sag where the rim folds and the walls bulge, then settle.
+- **Performance stays:** 60 fps target on a mid-range Android, adaptive DPR, everything cosmetic on the client only. The core (`src/shared/core`) never changes for looks.
+
 ## 3D stage spec (for step 1)
 
 `src/client/three/throwStage.ts` must export `createThrowStage(opts): ThrowStage` with:
