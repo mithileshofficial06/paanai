@@ -69,6 +69,7 @@ export async function boot(): Promise<void> {
   S.muted.value = sfx.muted;
   try {
     const t = await api.today();
+    (window as unknown as { __boot?: { to: (n: number) => void } }).__boot?.to(86);
     S.today.value = t;
     S.commission.value = t.commission;
     if (t.me) S.hintsDone.value = new Set([...S.hintsDone.value, ...(t.me.hintsDone as HintId[])]);
@@ -155,7 +156,7 @@ export function updateHint(): void {
   let next: HintId | null = null;
   if (!done.has('drag')) next = 'drag';
   else if (l && !l.opened && !done.has('open')) next = 'open';
-  else if (l?.opened && !done.has('even')) next = 'even';
+  // After opening, the live coach (coach.ts) takes over from the one-off hints.
   S.activeHint.value = next;
 }
 

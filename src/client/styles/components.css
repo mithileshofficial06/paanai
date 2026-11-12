@@ -286,7 +286,7 @@
 .pn-hint--fixed { position: fixed; }
 .pn-hint__target { position: absolute; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; border: 2px solid var(--color-accent-hi);
   box-shadow: 0 0 18px var(--color-accent); animation: pn-pulse 1.6s var(--ease-out) infinite; }
-.pn-hint__bubble { position: relative; pointer-events: auto; display: flex; align-items: flex-start; gap: var(--space-2); max-width: min(300px, calc(100vw - 32px));
+.pn-hint__bubble { position: relative; pointer-events: none; display: flex; align-items: flex-start; gap: var(--space-2); max-width: min(300px, calc(100vw - 32px));
   padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4); border-radius: var(--radius-lg); background: rgba(30, 10, 14, 0.9); border: 1px solid rgba(255, 90, 80, 0.45);
   box-shadow: var(--shadow-float), var(--glow-red); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); animation: pn-toast-in var(--dur-3) var(--ease-spring) both; }
 .pn-hint__arrow { position: absolute; width: 12px; height: 12px; background: inherit; border: inherit; transform: rotate(45deg); }
@@ -300,7 +300,7 @@
 .pn-hint__step { font: var(--weight-bold) 11px/1 var(--font-ui); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-accent-hi); }
 .pn-hint__title { font: var(--weight-semibold) var(--text-body) / 1.3 var(--font-ui); }
 .pn-hint__body { margin: 0; font-size: var(--text-label); line-height: var(--leading-snug); color: var(--color-ink-muted); }
-.pn-hint__dismiss { flex: none; width: 32px; height: 32px; margin: -4px -4px 0 0; border: 0; border-radius: 50%; background: transparent; color: var(--color-ink-subtle); cursor: pointer; font-size: 18px; }
+.pn-hint__dismiss { flex: none; width: 32px; height: 32px; margin: -4px -4px 0 0; border: 0; border-radius: 50%; background: transparent; color: var(--color-ink-subtle); cursor: pointer; pointer-events: auto; font-size: 18px; }
 @keyframes pn-pulse { 0% { transform: scale(0.7); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
 
 /* ---------- Stepper ---------- */

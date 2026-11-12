@@ -10,6 +10,7 @@ import { useReducedMotion } from '../../ui/hooks';
 import * as S from '../store';
 import { completeHint, profileOf, startTour, submitThrow, throwStarted, toggleGhost, updateHint } from '../controller';
 import { tourStage } from '../Tour';
+import { coach, type Coach } from '../coach';
 
 const TOOLS = [
   { id: 'hands', label: 'Hands', tip: 'Drag up the wall to pull; sideways to push' },
@@ -23,8 +24,9 @@ export function Throw() {
   const reduced = useReducedMotion();
   const c = S.commission.value;
   const live = S.live.value;
-  const [warn, setWarn] = useState<string | null>(null);
-  const [frame, setFrame] = useState<{ x: number; top: number; mid: number } | null>(null);
+  const [warn, setWarn] = useState<'thin' | 'slump' | 'limit' | null>(null);
+  const [frame, setFrame] = useState<{ x: number; top: number; mid: number; baseY: number; rimY: number; ppu: number } | null>(null);
+  const [tip, setTip] = useState<Coach | null>(null);
 
   useEffect(() => {
     const el = canvas.current;
@@ -38,8 +40,10 @@ export function Throw() {
       onChange: (s: ThrowState) => {
         S.live.value = s;
         updateHint();
-        const f = stageRef.current?.getScreenFrame();
-        if (f) setFrame({ x: f.axisX, top: f.topY, mid: (f.rimY + f.baseY) / 2 });
+        const st = stageRef.current;
+        const f = st?.getScreenFrame();
+        if (f) setFrame({ x: f.axisX, top: f.topY, mid: (f.rimY + f.baseY) / 2, baseY: f.baseY, rimY: f.rimY, ppu: f.pxPerUnit });
+        setTip(st && s.phase === 'throwing' ? coach(st.getProfile(), target, s.wetness, s.matchPreview) : null);
       },
       onEvent: (e) => {
         if (e === 'stroke-start' && !S.tour.value) {
@@ -47,9 +51,9 @@ export function Throw() {
           completeHint('drag');
         }
         if (e === 'opened' && !S.tour.value) completeHint('open');
-        if (e === 'wobble-start') setWarn('Too thin! Stop thinning or add clay back with a push.');
-        if (e === 'slumped') setWarn('It collapsed. Undo the last stroke or start again.');
-        if (e === 'limit') setWarn('Time is up for this throw. Submit it or start again.');
+        if (e === 'wobble-start') setWarn('thin');
+        if (e === 'slumped') setWarn('slump');
+        if (e === 'limit') setWarn('limit');
         if (e === 'centred') setWarn(null);
       },
     });
@@ -81,7 +85,7 @@ export function Throw() {
   }, [ghostOn, ghostLog, c?.id]);
 
   useEffect(() => {
-    if (live && !live.unsafe && !live.slumped && warn?.startsWith('Too thin')) setWarn(null);
+    if (live && !live.unsafe && !live.slumped && warn === 'thin') setWarn(null);
   }, [live?.unsafe]);
 
   if (!c) return null;
@@ -151,17 +155,49 @@ export function Throw() {
       ) : null}
 
       {warn ? (
-        <div class={`throw__warn${live?.slumped ? ' is-bad' : ''}`} role="alert">
-          {warn}
+        <div class={`throw__alert throw__alert--${warn}`} role="alert">
+          <strong class="throw__alert-title">{WARN[warn].title}</strong>
+          <span class="throw__alert-body">{WARN[warn].body}</span>
+          <div class="throw__alert-actions">
+            {warn !== 'limit' ? (
+              <button type="button" class="throw__alert-btn" onClick={() => (stage?.undo(), setWarn(null))}>
+                <IconUndo size={16} /> Undo last stroke
+              </button>
+            ) : null}
+            {warn !== 'thin' ? (
+              <button type="button" class="throw__alert-btn" onClick={() => (stage?.reset(), setWarn(null))}>
+                Start again
+              </button>
+            ) : null}
+            {warn === 'limit' ? (
+              <button type="button" class="throw__alert-btn is-primary" onClick={() => void done()}>
+                Done, score it
+              </button>
+            ) : null}
+            {warn === 'thin' ? (
+              <button type="button" class="throw__alert-btn is-ghost" onClick={() => setWarn(null)}>
+                Keep going
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : tip && !hint && !S.tour.value && live?.phase === 'throwing' ? (
+        <div class={`throw__coach throw__coach--${tip.tone}`} role="status" key={tip.text}>
+          <span class="throw__coach-dot" aria-hidden="true" />
+          {tip.text}
         </div>
       ) : null}
 
-      {hint && !S.tour.value && frame && live?.phase === 'throwing' ? (
+      {tip?.arrow && frame && !warn && !hint && !S.tour.value && live?.phase === 'throwing' ? (
+        <CoachArrows tip={tip} frame={frame} />
+      ) : null}
+
+      {hint && !warn && !S.tour.value && frame && live?.phase === 'throwing' ? (
         <HintBubble
           x={frame.x}
           y={frame.top - 8}
           placement="top"
-          step={{ index: hint === 'drag' ? 0 : hint === 'open' ? 1 : 2, total: 3 }}
+          step={{ index: hint === 'drag' ? 0 : 1, total: 2 }}
           title={hint === 'drag' ? 'Shape the clay' : hint === 'open' ? 'Open the clay' : 'Pull up the walls'}
           showTarget={hint === 'open'}
           onDismiss={() => completeHint(hint)}
@@ -222,6 +258,42 @@ export function Throw() {
         </div>
       </footer>
     </section>
+  );
+}
+
+const WARN = {
+  thin: { title: 'The walls are too thin', body: 'The pot is wobbling. Stop thinning: undo that stroke, or push a little clay back in.' },
+  slump: { title: 'Your pot collapsed', body: 'The walls got too thin to hold up the clay above them. Undo the stroke that did it, or start with a fresh lump.' },
+  limit: { title: 'Time is up for this throw', body: 'The clay has been worked as far as it can go. Score it as it is, or start again.' },
+} as const;
+
+/** Glowing chevrons on the clay: where to drag next, and which way. */
+function CoachArrows({ tip, frame }: { tip: Coach; frame: { x: number; baseY: number; rimY: number; ppu: number } }) {
+  const a = tip.arrow!;
+  const y = frame.baseY - a.frac * (frame.baseY - frame.rimY);
+  const r = a.radius * frame.ppu;
+  if (a.dir === 'up') {
+    return (
+      <div class="coach-arrow coach-arrow--up" style={{ left: `${frame.x + r + 22}px`, top: `${y}px` }} aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </div>
+    );
+  }
+  return (
+    <>
+      <div class={`coach-arrow coach-arrow--${a.dir}`} style={{ left: `${frame.x + r + 26}px`, top: `${y}px` }} aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </div>
+      <div class={`coach-arrow coach-arrow--${a.dir} coach-arrow--left`} style={{ left: `${frame.x - r - 26}px`, top: `${y}px` }} aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </div>
+    </>
   );
 }
 

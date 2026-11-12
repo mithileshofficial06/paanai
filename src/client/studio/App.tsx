@@ -7,7 +7,6 @@ import { Sheet } from '../ui/Sheet';
 import { BottomNav } from '../ui/Tabs';
 import { pushToast, ToastHost } from '../ui/Toast';
 import { ErrorState } from '../ui/States';
-import { BootLoader } from './KilnHero';
 import {
   IconCodex,
   IconCommission,
@@ -50,9 +49,7 @@ function Screen({ r }: { r: Route }) {
   switch (r) {
     case 'loading':
       return (
-        <section class="sc sc--center" aria-busy="true">
-          <BootLoader text="Warming up the wheel" />
-        </section>
+        <section class="sc sc--center" aria-busy="true" />
       );
     case 'error':
       return (
@@ -92,6 +89,10 @@ export function App() {
   const me = S.me.value;
   const [more, setMore] = useState(false);
   const t = S.toast.value;
+  useEffect(() => {
+    // Hand over from the inline loading screen in studio.html once the first real screen is up.
+    if (r !== 'loading') (window as unknown as { __boot?: { done: () => void } }).__boot?.done();
+  }, [r]);
   useEffect(() => {
     if (t) pushToast({ title: t.text, tone: t.tone === 'neutral' ? 'neutral' : t.tone });
   }, [t?.id]);
