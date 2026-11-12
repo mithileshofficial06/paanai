@@ -1,7 +1,7 @@
 import { capacityMl, decodeProfile, encodeProfile } from '../../shared/core/profile';
 import { RINGS, rdiv } from '../../shared/core/fixed';
 import { replay, strokeCount } from '../../shared/core/shape';
-import { type Constraint, scoreThrow } from '../../shared/core/score';
+import { type Constraint, barFor, scoreThrow } from '../../shared/core/score';
 import { decodeLog } from '../../shared/core/strokes';
 import { survivesKiln } from '../../shared/core/survival';
 import { isValidTitle } from '../../shared/content/words';
@@ -55,14 +55,15 @@ export async function createCommission(userId: string, username: string, req: Cr
   const constraints = (kinds as ConstraintKind[]).map((k) => deriveConstraint(k, profile, strokes));
   const check = scoreThrow(profile, profile, constraints, strokes, strokes);
   if (check.results.some((r) => !r.pass)) throw new ApiErr('unsolvable', 'The reference pot does not meet those constraints.');
+  const bar = barFor(profile, constraints, strokes);
 
   const id = `c${(await kv.incrBy(K.seq(), 1)).toString(36)}${Math.floor(platform().now() / 1000).toString(36).slice(-3)}`;
   const title = `${req.adjective} ${req.vessel}`;
   const post = await platform().reddit.submitPost({
-    title: `Commission by u/${username}: ${title} · Beat ${check.total}`,
+    title: `Commission by u/${username}: ${title} · Beat ${bar}`,
     entry: 'default',
     postData: { commissionId: id, kind: 'commission' },
-    textFallback: `u/${username} commissioned a ${title} in Paanai. Beat their score of ${check.total} on the wheel.`,
+    textFallback: `u/${username} commissioned a ${title} in Paanai. Beat their score of ${bar} on the wheel.`,
     runAsUser: true,
   });
   await kv.hSet(K.comm(id), {
@@ -70,7 +71,7 @@ export async function createCommission(userId: string, username: string, req: Cr
     title,
     maker: username,
     makerId: userId,
-    bar: String(check.total),
+    bar: String(bar),
     barStrokes: String(strokes),
     constraints: JSON.stringify(constraints),
     target: JSON.stringify(encodeProfile(profile)),
@@ -87,7 +88,7 @@ export async function createCommission(userId: string, username: string, req: Cr
   await kv.zAdd('p:comms', { member: id, score: platform().now() });
   await kv.zAdd(K.commByUser(userId), { member: id, score: platform().now() });
   await kv.set(dayKey, '1', { expiration: new Date(platform().now() + 86_400_000) });
-  return { id, postId: post.id, bar: check.total, url: post.url };
+  return { id, postId: post.id, bar, url: post.url };
 }
 
 export async function listCommissions(limit = 20): Promise<{ id: string; title: string; maker: string; bar: number; completions: number; postId: string; constraintLabels: string[] }[]> {

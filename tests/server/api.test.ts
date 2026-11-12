@@ -63,7 +63,7 @@ describe('throw', () => {
     expect(t2.me?.throws).toBe(1);
   });
 
-  it("the Master's own throw scores exactly the bar", async () => {
+  it("the Master's own throw beats the bar (bar assumes an 85% shape match)", async () => {
     const today = (await call<TodayResponse>('GET', '/api/today')).json;
     const c = OFFICIAL.find((o) => o.id === today.commission.id)!;
     const r = await call<ThrowResponse>('POST', '/api/throw', {
@@ -71,8 +71,10 @@ describe('throw', () => {
       strokeLog: encodeLog(recipeToLog(c.recipe)),
       idemKey: 'm',
     });
-    expect(r.json.score.total).toBe(today.commission.bar);
-    expect(r.json.beatBar).toBe(false);
+    expect(r.json.score.match).toBe(100);
+    expect(r.json.beatBar).toBe(true);
+    expect(today.commission.bar).toBeGreaterThanOrEqual(75);
+    expect(today.commission.bar).toBeLessThanOrEqual(92);
   });
 
   it('rejects an unopened lump and garbage logs', async () => {

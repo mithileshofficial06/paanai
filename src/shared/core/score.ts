@@ -112,3 +112,15 @@ export function scoreThrow(
   const total = clamp(rdiv(60 * match + 20 * evenness + 10 * cons + 10 * efficiency, 100), 0, 100);
   return { match, evenness, constraints: cons, efficiency, total, stars: starsFor(total), results };
 }
+
+/** Shape match assumed for the commissioner's bar: nobody throws the same pot twice. */
+export const BAR_MATCH = 85;
+
+/**
+ * The score to beat for a commission. A pot always matches itself 100%, so the bar uses the
+ * commissioner's real evenness, constraints and efficiency with shape match fixed at BAR_MATCH.
+ */
+export function barFor(ref: Profile, constraints: readonly Constraint[], strokes: number): number {
+  const s = scoreThrow(ref, ref, constraints, strokes, strokes);
+  return clamp(rdiv(60 * BAR_MATCH + 20 * s.evenness + 10 * s.constraints + 10 * s.efficiency, 100), 0, 100);
+}

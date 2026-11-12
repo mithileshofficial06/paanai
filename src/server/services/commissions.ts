@@ -2,7 +2,7 @@ import { OFFICIAL, type Format, type OfficialCommission, officialById } from '..
 import { recipeToLog } from '../../shared/content/recipes';
 import { type Profile, decodeProfile, encodeProfile } from '../../shared/core/profile';
 import { type StrokeLog, replay, strokeCount } from '../../shared/core/shape';
-import { type Constraint, scoreThrow } from '../../shared/core/score';
+import { type Constraint, barFor } from '../../shared/core/score';
 import { decodeLog, encodeLog } from '../../shared/core/strokes';
 import { hash32 } from '../../shared/core/rng';
 import type { Atmosphere, CommissionDTO } from '../../shared/api/types';
@@ -62,7 +62,7 @@ function officialData(c: OfficialCommission): OfficialCache {
   const log = recipeToLog(c.recipe);
   const target = replay(log);
   const strokes = strokeCount(log);
-  const bar = scoreThrow(target, target, c.constraints, strokes, strokes).total;
+  const bar = barFor(target, c.constraints, strokes);
   const data = { target, log, bar, strokes };
   officialCache.set(c.id, data);
   return data;

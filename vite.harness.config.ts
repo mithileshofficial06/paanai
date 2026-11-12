@@ -22,6 +22,13 @@ function mockServer(): Plugin {
   return {
     name: 'paanai-mock-server',
     configureServer(server: ViteDevServer) {
+      // Server and shared code live outside the client root: watch them and drop the SSR
+      // module cache on change so the next /api request runs the new code.
+      const watched = [path.resolve(import.meta.dirname, 'src/server'), path.resolve(import.meta.dirname, 'src/shared')];
+      server.watcher.add(watched);
+      server.watcher.on('change', (file) => {
+        if (watched.some((w) => path.resolve(file).startsWith(w))) server.environments.ssr.moduleGraph.invalidateAll();
+      });
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
         const url = req.url ?? '';
         if (!url.startsWith('/api/') && !url.startsWith('/internal/') && !url.startsWith('/__harness/')) return next();

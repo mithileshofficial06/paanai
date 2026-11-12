@@ -7,10 +7,10 @@ import { createMemoryPlatform, type MemoryPlatform } from './platform/memory';
 
 type HarnessGlobal = { __paanaiHarness?: { p: MemoryPlatform; app: ReturnType<typeof createApp> } };
 const g = globalThis as HarnessGlobal;
-if (!g.__paanaiHarness) {
-  g.__paanaiHarness = { p: createMemoryPlatform(), app: createApp() };
-}
-const state = g.__paanaiHarness;
+// Keep the fake world (Redis, posts) across hot reloads, but always rebuild the app so
+// route changes take effect.
+const state = { p: g.__paanaiHarness?.p ?? createMemoryPlatform(), app: createApp() };
+g.__paanaiHarness = state;
 setPlatform(state.p);
 
 export async function handle(req: Request): Promise<Response> {
@@ -41,7 +41,9 @@ export async function handle(req: Request): Promise<Response> {
     });
   }
   if (url.pathname === '/__harness/reset') {
-    g.__paanaiHarness = { p: createMemoryPlatform(), app: createApp() };
+    state.p = createMemoryPlatform();
+    g.__paanaiHarness = state;
+    setPlatform(state.p);
     return Response.json({ ok: true });
   }
   return state.app.fetch(req);

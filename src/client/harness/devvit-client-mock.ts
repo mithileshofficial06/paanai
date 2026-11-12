@@ -33,7 +33,7 @@ export function navigateTo(url: string | { url: string }): void {
   toastEl(`navigateTo ${typeof url === 'string' ? url : url.url}`);
 }
 
-export function requestExpandedMode(_e: MouseEvent, entry: string): void {
+export function requestExpandedMode(_e: MouseEvent, entry: string, _opts?: { title?: string }): void {
   const map: Record<string, string> = { studio: 'studio.html', default: 'splash.html' };
   location.href = `/${map[entry] ?? `${entry}.html`}${location.search}`;
 }

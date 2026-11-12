@@ -51,10 +51,10 @@ describe('player commissions', () => {
     expect(today.json.commission.commissioner).toBe('maker');
     const ghost = await call<{ ghostLog: string }>('GET', `/api/commission/${made.json.id}`);
     expect(ghost.json.ghostLog).toBe(log);
-    // Bob replays the exact ghost: ties the bar, does not beat it.
+    // Bob copies the ghost stroke for stroke: a perfect match beats the commissioner's standard.
     const bob = await call<ThrowResponse>('POST', '/api/throw', { commissionId: made.json.id, strokeLog: log, idemKey: 'b1' });
-    expect(bob.json.score.total).toBe(made.json.bar);
-    expect(bob.json.beatBar).toBe(false);
+    expect(bob.json.score.match).toBe(100);
+    expect(bob.json.beatBar).toBe(true);
     as('maker');
     expect((await call<TodayResponse>('GET', '/api/today')).json.me?.patron).toBe(1);
   });
