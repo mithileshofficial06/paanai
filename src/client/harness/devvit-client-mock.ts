@@ -4,7 +4,27 @@
 type Toast = { text: string; appearance?: 'neutral' | 'success' };
 type WebViewMode = 'inline' | 'expanded';
 
+// A shared preview link has no ?user=: give each visitor their own potter, remembered in
+// this browser, and put it in the URL so the harness server (which reads the referer) sees it.
 const params = new URLSearchParams(location.search);
+if (!params.has('user')) {
+  let id: string | null = null;
+  try {
+    id = localStorage.getItem('paanai-harness-user');
+  } catch {
+    /* storage blocked */
+  }
+  if (!id) {
+    id = `potter${Math.floor(1000 + Math.random() * 9000)}`;
+    try {
+      localStorage.setItem('paanai-harness-user', id);
+    } catch {
+      /* storage blocked */
+    }
+  }
+  params.set('user', id);
+  history.replaceState(null, '', `${location.pathname}?${params.toString()}${location.hash}`);
+}
 const user = params.get('user');
 
 export const context = {
