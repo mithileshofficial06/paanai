@@ -4,17 +4,31 @@
 
 ## Status
 
-- **Current milestone:** M1 (setup + shaping core + wheel/pot rendering + local harness)
-- **Next action:** finish M1 setup: placeholders, scripts, deps, CLAUDE.md, then `src/shared/core` shaping.
-- **Last updated:** 2026-11-12 06:25 IST
+- **Current milestone:** M1/M2 in parallel (core + server done; 3D stage and glass UI being built by subagents)
+- **Next action:** when the subagents report, review their work (throw-lab + ui-lab screenshots), commit; then build the app shell (`src/client/studio.html` + `src/client/app/`), splash, Throw screen, result card, onboarding wiring; then `npm run build` and a playtest upload.
+- **Last updated:** 2026-11-12 06:40 IST
 
 ## Done
 
 - Template cloned from github.com/reddit/devvit-template-threejs (Devvit Web 0.15.2, three 0.187, Hono 4.13, Vite 8, TS 6). Fresh git repo.
+- Deterministic core (`src/shared/core`): profile, shape (push/thin/open, clay conservation, wobble -> slump), stroke codec + recorder with undo, survival (kiln defects), score (IoU match, evenness, constraints, efficiency, stars). Property + unit tests.
+- Content: 6 official commissions as scripted Master throws (`src/shared/content`), tuned with `npx tsx tools/try-recipes.ts`; each passes its own constraints and survives the kiln.
+- Server (`src/server`): Platform interface (`platform/devvit.ts` real, `platform/memory.ts` harness/tests), keys, daily (calendar, atmosphere, idempotent rollover + post), commissions, throws (server replay scoring, ranked/practice, idempotency, rate limit, logged-out), leaderboard, users (ranks, streak, flair), routes `/api/today|throw|leaderboard|commission/:id|me/hints`, `/internal/cron/daily-rollover`, menu, install trigger.
+- Local harness: `npm run harness` -> http://127.0.0.1:5173 (Vite dev server running the REAL server routes on the in-memory platform; `?user=alice`, `?user=anon`; `/__harness/advance-day`, `/__harness/state`, `/__harness/reset`).
+- `devvit.json`: entries `default` (splash.html, tall) + `studio` (studio.html); permissions redis/media/journeys/reddit(scope user); daily-rollover cron; settings minRankToCommission, journeymanPoints (default 3), reportsToHide.
+- Tests: 24 passing (`npx vitest run`). Server typecheck clean.
+
+## In flight (subagents)
+
+- 3D throw stage (opus, max): `src/client/three/**`, `src/client/input/**`, `src/client/dev/throw-lab.*`, `tools/shoot.mjs`, `public/textures`, `public/env`.
+- Glass UI design system + HowToPlay + Features screens (opus, max): `src/client/styles/**`, `src/client/ui/**`, `src/client/dev/ui-lab.*`, `public/fonts`.
 
 ## Needs Mithilesh
 
-- (none yet: Devvit login reported done on 2026-11-12)
+- **Watchdog (auto-resume after usage limits):** auto mode blocked me from registering the Windows scheduled task. To enable it, run this once in PowerShell:
+  `Register-ScheduledTask -TaskName 'Paanai Build Watchdog' -Action (New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "D:\Projects\2-In-Progress\paanai\tools\watchdog\watchdog.ps1"') -Trigger (New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(5) -RepetitionInterval (New-TimeSpan -Hours 1) -RepetitionDuration (New-TimeSpan -Days 30)) -Settings (New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Hours 6))`
+  It runs hourly; if nothing has been committed for 75+ minutes it starts a headless Claude run (`--permission-mode auto`) that resumes from this file. Remove it with `Unregister-ScheduledTask 'Paanai Build Watchdog'`.
+- Devvit login: done (u/mithileshofficial06).
 
 ## Known issues
 

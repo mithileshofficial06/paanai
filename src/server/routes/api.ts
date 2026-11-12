@@ -7,7 +7,10 @@ import { atmosphereFor, ghostLogString, resolveCommission } from '../services/co
 import { ApiErr, requireUser } from '../services/errors';
 import { leaderboard, myThrow, submitThrow } from '../services/throws';
 import { meDTO, touchUser } from '../services/users';
-import { dayNumber, minuteBucket, nextKilnAt } from '../services/time';
+import { dayNumber, minuteBucket, nextKilnAt, today } from '../services/time';
+import { codex, glazePot, kilnWaitingCount, markOpened, myKiln } from '../services/kiln';
+import { deletePot, report, shelfPage, sharePot, toggleLike } from '../services/community';
+import { starterPot } from '../services/starter';
 
 export const api = new Hono();
 
@@ -26,10 +29,12 @@ api.get('/today', async (c) => {
   const { resolved, date } = await commissionForPost(ctx.postId);
   let me = null;
   let mine = null;
+  let kilnWaiting = 0;
   if (ctx.userId && ctx.username) {
     const u = await touchUser(ctx.userId, ctx.username);
     me = await meDTO(ctx.userId, u);
     mine = await myThrow(resolved.dto.id, ctx.userId);
+    kilnWaiting = await kilnWaitingCount(ctx.userId);
   }
   const lb = await leaderboard(resolved.dto.id, 3);
   const body: TodayResponse = {
@@ -42,7 +47,7 @@ api.get('/today', async (c) => {
     myThrow: mine,
     throwsToday: lb.players,
     top: lb.rows,
-    kilnWaiting: 0,
+    kilnWaiting,
   };
   return c.json(body);
 });
@@ -77,4 +82,70 @@ api.post('/me/hints', async (c) => {
   }
   if (onboarded) await kv.hSet(K.user(userId), { onboarded: '1' });
   return c.json({ ok: true });
+});
+
+api.post('/glaze', async (c) => {
+  await limit('glaze', 10);
+  const ctx = platform().ctx();
+  const { userId } = requireUser(ctx.userId, ctx.username);
+  const { potId, glazes, application } = await c.req.json<{ potId: string; glazes: string[]; application: string }>();
+  return c.json(await glazePot(userId, String(potId), { glazes, application }));
+});
+
+api.get('/kiln', async (c) => {
+  const ctx = platform().ctx();
+  if (!ctx.userId) return c.json({ items: [], atmosphere: null });
+  return c.json({ items: await myKiln(ctx.userId), today: today() });
+});
+
+api.post('/kiln/open', async (c) => {
+  const ctx = platform().ctx();
+  const { userId } = requireUser(ctx.userId, ctx.username);
+  const { potId } = await c.req.json<{ potId: string }>();
+  await markOpened(userId, String(potId));
+  return c.json({ ok: true });
+});
+
+api.get('/starter', async (c) => c.json(starterPot()));
+
+api.get('/codex', async (c) => {
+  const effects = await codex();
+  return c.json({ effects, discovered: effects.filter((e) => e.discoverer).length, total: effects.length });
+});
+
+api.get('/shelf', async (c) => {
+  const cursor = Math.max(0, Math.min(10_000, Number(c.req.query('cursor') ?? '0') || 0));
+  return c.json(await shelfPage(cursor));
+});
+
+api.post('/like', async (c) => {
+  await limit('like', 30);
+  const ctx = platform().ctx();
+  const { userId } = requireUser(ctx.userId, ctx.username);
+  const { potId } = await c.req.json<{ potId: string }>();
+  return c.json(await toggleLike(userId, String(potId)));
+});
+
+api.post('/report', async (c) => {
+  await limit('report', 10);
+  const ctx = platform().ctx();
+  const { userId } = requireUser(ctx.userId, ctx.username);
+  const { targetId } = await c.req.json<{ targetId: string }>();
+  return c.json(await report(userId, String(targetId)));
+});
+
+api.post('/pot/delete', async (c) => {
+  const ctx = platform().ctx();
+  const { userId } = requireUser(ctx.userId, ctx.username);
+  const { potId } = await c.req.json<{ potId: string }>();
+  await deletePot(userId, String(potId));
+  return c.json({ ok: true });
+});
+
+api.post('/share', async (c) => {
+  await limit('share', 3);
+  const ctx = platform().ctx();
+  const { userId, username } = requireUser(ctx.userId, ctx.username);
+  const { potId, pngDataUrl } = await c.req.json<{ potId: string; pngDataUrl: string }>();
+  return c.json(await sharePot(userId, username, String(potId), String(pngDataUrl)));
 });

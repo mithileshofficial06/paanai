@@ -2,7 +2,9 @@ import { Hono } from 'hono';
 import { platform } from '../platform';
 import { K, TTL } from '../store/keys';
 import { ensureDaily } from '../services/daily';
-import { today } from '../services/time';
+import { addDays, today } from '../services/time';
+import { kilnBatch, kilnReportText } from '../services/kiln';
+import { weeklyTally } from '../services/community';
 
 /** Routes Devvit itself calls: scheduler jobs, menu items, triggers, forms. */
 export const internal = new Hono();
@@ -20,7 +22,35 @@ internal.post('/cron/daily-rollover', async (c) => {
   return c.json({ status: 'ok', postId: rec.postId });
 });
 
+internal.post('/cron/kiln-batch', async (c) => {
+  return c.json(await kilnBatch(400));
+});
+
+internal.post('/cron/kiln-report', async (c) => {
+  const kv = platform().kv;
+  const date = today();
+  const kilnDate = addDays(date, -1);
+  if ((await kv.get(K.job('kiln-report', date))) === 'done') return c.json({ status: 'skipped' });
+  const left = await kilnBatch(400);
+  if (left.remaining > 0) return c.json({ status: 'waiting', remaining: left.remaining });
+  const text = await kilnReportText(kilnDate);
+  const daily = await ensureDaily(date, true);
+  if (text && daily.postId) await platform().reddit.submitComment({ postId: daily.postId, text });
+  await kv.set(K.job('kiln-report', date), 'done', { expiration: new Date(platform().now() + TTL.job * 1000) });
+  return c.json({ status: 'ok', posted: !!text });
+});
+
+internal.post('/cron/weekly-tally', async (c) => {
+  return c.json({ potOfWeek: await weeklyTally() });
+});
+
 // ---- Menu (moderators) ----
+
+internal.post('/menu/kiln-now', async (c) => {
+  const r = await kilnBatch(400);
+  const res: UiResponse = { showToast: `Kiln: fired ${r.fired} pots from ${r.date}; ${r.remaining} left.` };
+  return c.json(res);
+});
 
 internal.post('/menu/post-today', async (c) => {
   const rec = await ensureDaily(today(), true);

@@ -35,6 +35,18 @@
       "daily-rollover": {
         "endpoint": "/internal/cron/daily-rollover",
         "cron": "0 0 * * *"
+      },
+      "kiln-batch": {
+        "endpoint": "/internal/cron/kiln-batch",
+        "cron": "*/2 0-3 * * *"
+      },
+      "kiln-report": {
+        "endpoint": "/internal/cron/kiln-report",
+        "cron": "*/15 0-3 * * *"
+      },
+      "weekly-tally": {
+        "endpoint": "/internal/cron/weekly-tally",
+        "cron": "5 0 * * 1"
       }
     }
   },
@@ -50,6 +62,13 @@
         "location": "subreddit",
         "forUserType": "moderator",
         "endpoint": "/internal/menu/post-today"
+      },
+      {
+        "label": "Paanai: run the kiln now",
+        "description": "Fire any pots still waiting from yesterday",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/kiln-now"
       },
       {
         "label": "Paanai: stats",
