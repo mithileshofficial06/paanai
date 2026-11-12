@@ -14,7 +14,9 @@
     "login": "devvit login",
     "prettier": "prettier --write .",
     "test": "vitest run",
-    "test:types": "tsc --build"
+    "test:types": "tsc --build",
+    "share:build": "vite build --config vite.share.config.ts && vite build --ssr src/server/harness.ts --config vite.share.config.ts",
+    "share": "node tools/serve-share.mjs"
   },
   "engines": {
     "node": ">=24.0.0"

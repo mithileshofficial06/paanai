@@ -5,3 +5,4 @@ dist
 .paanai/
 test-results/
 playwright-report/
+dist-share/
