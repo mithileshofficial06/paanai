@@ -138,3 +138,8 @@ export function firedLook(choice: GlazeChoice, fired: FiredResultDTO): GlazeLook
   look.cracked = !fired.survived;
   return look;
 }
+
+/** Representative fired colour of a Codex effect (for swatches), or null for surface effects. */
+export function effectColour(id: string): string | null {
+  return COLOUR[id as EffectId]?.base ?? null;
+}

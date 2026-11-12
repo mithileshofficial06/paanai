@@ -578,6 +578,9 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
     const d = displayFromProfile(p);
     t.geo.update(d, { time: 0, reducedMotion: true });
     t.rig.update(0, d.height, d.maxOuter(), false, true, 0);
+    // Fill the thumbnail with the pot (the live framing leaves room for the HUD).
+    t.rig.camera.zoom = 1.9;
+    t.rig.camera.updateProjectionMatrix();
     t.renderer.render(t.scene, t.rig.camera);
     return t.renderer.domElement.toDataURL('image/png');
   }

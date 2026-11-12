@@ -72,6 +72,8 @@ export const commissions = signal<CommissionListItem[] | null>(null);
 export const myPots = signal<PotSummary[] | null>(null);
 export const toast = signal<{ id: number; text: string; tone: 'neutral' | 'success' | 'danger' } | null>(null);
 export const muted = signal(false);
+/** PNG data URL of the last thrown pot (3D render), for the result card and sharing. */
+export const lastThumb = signal<string | null>(null);
 
 export const me = computed(() => today.value?.me ?? null);
 export const loggedIn = computed(() => !!today.value?.me);

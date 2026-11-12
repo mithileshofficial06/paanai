@@ -1,0 +1,160 @@
+// The kiln: pots waiting for the next firing, and fired pots to open (the reveal).
+import { useState } from 'preact/hooks';
+import { EFFECTS } from '../../../shared/core/glazes';
+import type { KilnItem } from '../../app/api';
+import { Button } from '../../ui/Button';
+import { GlassPanel } from '../../ui/GlassPanel';
+import { Skeleton } from '../../ui/Skeleton';
+import { EmptyState } from '../../ui/States';
+import { IconCrackedPot, IconFlame, IconKiln, IconSparkle } from '../../ui/icons';
+import { sfx } from '../../app/audio';
+import { fmtCountdown, PotView, titleCase, useNow } from '../parts';
+import * as S from '../store';
+import { go, login, markOpened } from '../controller';
+
+const DEFECT_TEXT: Record<string, string> = {
+  collapsed: 'Collapsed in the fire.',
+  'thin-crack': 'Cracked where the wall was too thin.',
+  'uneven-crack': 'Cracked: the walls were too uneven.',
+  'base-split': 'The base split.',
+  'kiln-slump': 'Slumped in the heat: too much weight overhanging.',
+};
+
+function effectName(id: string): string {
+  return EFFECTS.find((e) => e.id === id)?.name ?? titleCase(id);
+}
+
+export function Kiln() {
+  const now = useNow();
+  const items = S.kilnItems.value;
+  const [revealing, setRevealing] = useState<KilnItem | null>(null);
+  if (!S.loggedIn.value)
+    return (
+      <section class="sc">
+        <EmptyState
+          icon={<IconKiln />}
+          title="Your kiln"
+          description="Log in to glaze your pots and fire them in the shared kiln every night."
+          action={<Button variant="primary" onClick={() => login()}>Log in</Button>}
+        />
+      </section>
+    );
+  if (revealing) return <Reveal item={revealing} onDone={() => setRevealing(null)} />;
+  const waiting = items.filter((i) => !i.fired);
+  const ready = items.filter((i) => i.fired && !i.opened);
+  const opened = items.filter((i) => i.fired && i.opened);
+  return (
+    <section class="sc kiln" aria-labelledby="kiln-title">
+      <p class="pn-eyebrow">The kiln</p>
+      <h1 id="kiln-title" class="pn-headline">{ready.length ? `${ready.length} pot${ready.length > 1 ? 's' : ''} ready to open` : 'Your kiln'}</h1>
+      {S.kilnLoading.value && !items.length ? <Skeleton shape="rect" height={160} /> : null}
+      {!S.kilnLoading.value && !items.length ? (
+        <EmptyState icon={<IconKiln />} title="The kiln is empty" description="Throw today's commission, glaze it, and it fires at 00:00 UTC." action={<Button variant="primary" onClick={() => go('throw')}>Go to the wheel</Button>} />
+      ) : null}
+      {ready.map((it) => (
+        <GlassPanel key={it.potId} tone="accent" padding="md" radius="xl" glow class="kiln__ready">
+          <div class="kiln__door" aria-hidden="true">
+            <span class="kiln__fire" />
+          </div>
+          <div class="kiln__info">
+            <h2 class="pn-title">{it.title}</h2>
+            <p class="pn-meta">Fired {it.kilnDate} · {it.fired?.atmosphere}</p>
+          </div>
+          <Button
+            variant="primary"
+            icon={<IconFlame />}
+            onClick={() => {
+              sfx.unlock();
+              setRevealing(it);
+            }}
+          >
+            Open
+          </Button>
+        </GlassPanel>
+      ))}
+      {waiting.length ? <h2 class="pn-eyebrow kiln__h">Waiting for the fire</h2> : null}
+      {waiting.map((it) => (
+        <GlassPanel key={it.potId} padding="md" radius="lg" class="kiln__row">
+          <PotView pot={it} width={52} height={68} />
+          <div class="kiln__info">
+            <h3 class="pn-title">{it.title}</h3>
+            <p class="pn-meta">{it.glaze ? it.glaze.glazes.map(titleCase).join(' + ') : 'Unglazed'} · fires in {fmtCountdown((it.firesAt ?? now) - now)}</p>
+          </div>
+        </GlassPanel>
+      ))}
+      {opened.length ? <h2 class="pn-eyebrow kiln__h">Fired</h2> : null}
+      <ul class="kiln__grid">
+        {opened.map((it) => (
+          <li key={it.potId}>
+            <button type="button" class="kiln__fired pn-glass pn-radius-lg" onClick={() => setRevealing({ ...it, opened: true })}>
+              <PotView pot={it} width={84} height={104} />
+              <span class="kiln__fired-title">{it.title}</span>
+              <span class="pn-meta">{it.fired?.survived ? (it.fired.effects.length ? effectName(it.fired.effects[0]!) : 'Plain') : 'Cracked'}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** Opening the kiln: door glow, heat shimmer, then the pot and what the fire did. */
+function Reveal({ item, onDone }: { item: KilnItem; onDone: () => void }) {
+  const [phase, setPhase] = useState<'closed' | 'open'>(item.opened ? 'open' : 'closed');
+  const f = item.fired;
+  function open() {
+    sfx.whoosh();
+    setPhase('open');
+    if (f?.newDiscoveries.length) setTimeout(() => sfx.chime(), 900);
+    else setTimeout(() => sfx.tink(1), 700);
+    if (!item.opened) void markOpened(item.potId);
+  }
+  return (
+    <section class={`sc reveal reveal--${phase}`} aria-labelledby="reveal-title">
+      <div class="reveal__stage" aria-hidden={phase === 'closed'}>
+        <div class="reveal__heat" />
+        <div class="reveal__pot">{phase === 'open' ? <PotView pot={item} width={200} height={250} /> : null}</div>
+        <div class="reveal__door reveal__door--l" />
+        <div class="reveal__door reveal__door--r" />
+      </div>
+      {phase === 'closed' ? (
+        <div class="sc__actions">
+          <h1 id="reveal-title" class="pn-headline">{item.title}</h1>
+          <p class="pn-body">The kiln has cooled. Ready?</p>
+          <Button variant="primary" size="lg" block icon={<IconFlame />} onClick={open}>
+            Open the kiln
+          </Button>
+        </div>
+      ) : (
+        <div class="reveal__result">
+          <h1 id="reveal-title" class="pn-headline">{f?.survived ? item.title : 'The fire won this one.'}</h1>
+          {f && !f.survived ? (
+            <p class="pn-body reveal__bad">
+              <IconCrackedPot size={18} /> {f.defects.map((d) => DEFECT_TEXT[d] ?? titleCase(d)).join(' ')}
+            </p>
+          ) : null}
+          {f?.effects.length ? (
+            <ul class="reveal__effects">
+              {f.effects.map((e) => (
+                <li key={e} class={`pn-chip ${f.newDiscoveries.includes(e) ? 'pn-chip--gold' : ''}`}>
+                  {f.newDiscoveries.includes(e) ? <IconSparkle size={14} /> : null}
+                  {effectName(e)}
+                  {f.newDiscoveries.includes(e) ? ' · new in the Codex' : ''}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {f ? <p class="pn-meta">Kiln score {f.kilnScore} · {f.atmosphere} firing</p> : null}
+          <div class="sc__actions sc__actions--row">
+            <Button variant="secondary" onClick={onDone}>
+              Back to the kiln
+            </Button>
+            <Button variant="primary" onClick={() => go('throw')}>
+              Throw today's pot
+            </Button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}

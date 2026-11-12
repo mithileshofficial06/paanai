@@ -30,7 +30,7 @@ async function req<T>(method: 'GET' | 'POST', path: string, body?: unknown): Pro
     throw new ApiFailure('network', 'No connection to the studio. Check your network and try again.', 0);
   }
   const text = await res.text();
-  let json: unknown = null;
+  let json: unknown;
   try {
     json = text ? JSON.parse(text) : null;
   } catch {
