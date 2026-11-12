@@ -1,13 +1,14 @@
 // The wheel: full-screen 3D throw stage with a glass HUD.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { decodeProfile } from '../../../shared/core/profile';
+import { decodeLog } from '../../../shared/core/strokes';
 import { createThrowStage, type ThrowStage, type ThrowState } from '../../three/throwStage';
 import { Button, IconButton } from '../../ui/Button';
 import { HintBubble } from '../../ui/HintBubble';
-import { IconCheck, IconInfo, IconOpen, IconUndo } from '../../ui/icons';
+import { IconCheck, IconGhost, IconInfo, IconOpen, IconUndo } from '../../ui/icons';
 import { useReducedMotion } from '../../ui/hooks';
 import * as S from '../store';
-import { completeHint, go, profileOf, submitThrow, throwStarted, updateHint } from '../controller';
+import { completeHint, go, profileOf, submitThrow, throwStarted, toggleGhost, updateHint } from '../controller';
 
 const TOOLS = [
   { id: 'hands', label: 'Hands', tip: 'Drag up the wall to pull; sideways to push' },
@@ -62,6 +63,15 @@ export function Throw() {
       S.live.value = null;
     };
   }, [c?.id, reduced]);
+
+  const ghostLog = S.ghostLog.value;
+  const ghostOn = S.ghostOn.value;
+  useEffect(() => {
+    const st = stageRef.current;
+    if (!st) return;
+    const d = ghostOn && ghostLog ? decodeLog(ghostLog) : null;
+    st.setGhost(d && d.ok ? d.log : null);
+  }, [ghostOn, ghostLog, c?.id]);
 
   useEffect(() => {
     if (live && !live.unsafe && !live.slumped && warn?.startsWith('Too thin')) setWarn(null);
@@ -196,6 +206,9 @@ export function Throw() {
           <Button variant="primary" icon={<IconCheck />} disabled={!started || submitting} loading={submitting} onClick={() => void done()}>
             Done
           </Button>
+          {ghostLog ? (
+            <IconButton label={ghostOn ? "Hide the commissioner's ghost" : "Show the commissioner's ghost"} variant={ghostOn ? 'primary' : 'glass'} pressed={ghostOn} onClick={() => toggleGhost()} icon={<IconGhost />} />
+          ) : null}
           <IconButton label="How to play" variant="ghost" onClick={() => go('howto')} icon={<IconInfo />} />
         </div>
       </footer>

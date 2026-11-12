@@ -8,6 +8,8 @@
 
 import {
   AdditiveBlending,
+  MeshBasicMaterial,
+  FrontSide,
   BufferAttribute,
   BufferGeometry,
   CapsuleGeometry,
@@ -81,6 +83,8 @@ export type ThrowStage = {
   setInputEnabled(on: boolean): void;
   setPaused(p: boolean): void;
   setTarget(p: Profile | null): void;
+  /** Show the commissioner's throw forming alongside yours (null hides it). Replays from your first touch. */
+  setGhost(log: StrokeLog | null): void;
   renderThumbnail(p: Profile, size: number): Promise<string>;
   /** Where the pot is on screen (CSS px), for hint placement and tests. */
   getScreenFrame(): PotScreenFrame;
@@ -186,6 +190,34 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
   scene.add(particles);
   let pNext = 0;
   for (let i = 0; i < PARTICLES; i++) pPos[i * 3 + 1] = -100;
+
+  // Ghost: the commissioner's own throw, replayed tick for tick from the player's first touch.
+  const ghostGeo = new PotGeometry();
+  const ghostMat = new MeshBasicMaterial({ color: 0xff6a3a, transparent: true, opacity: 0.16, depthWrite: false, side: FrontSide, blending: AdditiveBlending });
+  const ghostMesh = new Mesh(ghostGeo.geometry, ghostMat);
+  ghostMesh.visible = false;
+  ghostMesh.renderOrder = 5;
+  scene.add(ghostMesh);
+  let ghost: { log: StrokeLog; p: Profile; d: DisplayProfile; i: number; t: number; wait: number } | null = null;
+  function ghostTick(): void {
+    const g = ghost;
+    if (!g) return;
+    g.t++;
+    const e = g.log.entries[g.i];
+    if (!e) {
+      idle(g.p);
+      return;
+    }
+    if (g.wait <= 1) {
+      step(g.p, e);
+      g.i++;
+      g.wait = g.log.entries[g.i]?.dt ?? 0;
+    } else {
+      idle(g.p);
+      g.wait--;
+    }
+    g.d.setTarget(g.p);
+  }
 
   // ---- Simulation state ----
   let profile: Profile = createLump();
@@ -354,6 +386,7 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
     } else {
       idle(profile);
     }
+    ghostTick();
     // Wetness (cosmetic + resistance for future input only).
     wet = Math.max(0, wet - TICK / (s.contact ? DRY_SHAPING_S : DRY_IDLE_S));
     if (s.contact) {
@@ -499,6 +532,14 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
       targetOutline.setIntensity(match);
     }
 
+    if (ghost) {
+      ghostMesh.visible = started;
+      if (ghost.d.update(dt, reduced) || ghost.d.dirty) {
+        ghostGeo.update(ghost.d, { time, reducedMotion: true });
+        ghost.d.dirty = false;
+      }
+      ghostMesh.rotation.y = wheelAngle * 0.98;
+    }
     rig.update(dt, display.height, display.maxOuter(), mapper.pressed, false, time);
     sfx.wheel(phase === 'throwing' || mapper.pressed ? wheelSpeed : 0.25);
     renderer.render(scene, rig.camera);
@@ -600,10 +641,11 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
     display.setTarget(profile);
     matchDirty = true;
     match = null;
+    if (ghost) api.setGhost(ghost.log);
     emit(true);
   }
 
-  return {
+  const api: ThrowStage = {
     setTool(t) {
       tool = t;
     },
@@ -646,6 +688,7 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
       display.markDiscontinuity();
       display.setTarget(profile);
       matchDirty = true;
+      if (ghost) api.setGhost(ghost.log);
       emit(true);
       return true;
     },
@@ -677,6 +720,19 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
       match = null;
       matchDirty = true;
     },
+    setGhost(log) {
+      if (!log) {
+        ghost = null;
+        ghostMesh.visible = false;
+        return;
+      }
+      const p = createLump();
+      // Fast-forward to the player's current tick so the two throws stay in step.
+      const g = { log, p, d: displayFromProfile(p), i: 0, t: 0, wait: log.entries[0]?.dt ?? 0 };
+      ghost = g;
+      for (let k = 0; k < recorder.tick; k++) ghostTick();
+      g.d.snap();
+    },
     renderThumbnail,
     getScreenFrame() {
       return { ...frame };
@@ -696,6 +752,8 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
       fingerGeo.dispose();
       skin.dispose();
       pGeo.dispose();
+      ghostGeo.dispose();
+      ghostMat.dispose();
       pMat.dispose();
       emberMat.dispose();
       glow.dispose();
@@ -708,6 +766,7 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
       }
     },
   };
+  return api;
 }
 
 // Re-export for screens that only need the type of a display profile.

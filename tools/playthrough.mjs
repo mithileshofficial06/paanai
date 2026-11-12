@@ -21,6 +21,7 @@ await click('Next'); await click('Next'); await click('Next'); await click('Star
 await p.waitForTimeout(1500); await shot('04-throw');
 // Scripted throw on the canvas.
 await click('Open'); await p.waitForTimeout(800);
+await p.getByRole('button', { name: /Show the commissioner/ }).click().catch(() => console.log('no ghost button'));
 const box = await p.locator('.throw__canvas').boundingBox();
 const cx = box.x + box.width / 2;
 for (let k = 0; k < 4; k++) {
