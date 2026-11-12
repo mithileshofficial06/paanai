@@ -114,6 +114,14 @@ export async function openStarter(): Promise<PotSummary | null> {
   }
 }
 
+/** Start the guided tour: it runs on the wheel and plays a throw by itself. */
+export function startTour(): void {
+  sfx.unlock();
+  S.tour.value = true;
+  S.route.value = 'throw';
+  S.routeStack.value = [];
+}
+
 export async function finishOnboarding(): Promise<void> {
   S.route.value = 'throw';
   S.routeStack.value = [];

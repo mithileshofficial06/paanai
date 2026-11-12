@@ -49,6 +49,8 @@ export type LastThrow = {
 export type HintId = 'drag' | 'open' | 'even';
 
 export const route = signal<Route>('loading');
+/** The guided tour is running on the wheel. */
+export const tour = signal(false);
 export const routeStack = signal<Route[]>([]);
 export const today = signal<TodayResponse | null>(null);
 export const loadError = signal<string | null>(null);

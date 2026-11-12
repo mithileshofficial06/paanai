@@ -105,7 +105,8 @@
 .throw__tools { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--radius-pill); background: rgba(10, 5, 6, 0.6); border: 1px solid var(--color-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 .throw__tool { min-height: 36px; min-width: 64px; padding: 0 12px; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-ink-muted); font: var(--weight-semibold) 13px/1 var(--font-ui); cursor: pointer; }
 .throw__tool.is-on { background: var(--color-accent-soft); color: var(--color-ink); box-shadow: inset 0 0 0 1px rgba(255, 80, 80, 0.5); }
-.throw__actions { display: flex; align-items: center; gap: var(--space-2); }
+.throw__actions { display: flex; align-items: center; gap: var(--space-2); max-width: calc(100vw - 16px); }
+@media (max-width: 420px) { .throw__actions { gap: 6px; } .throw__actions .pn-btn { padding-inline: 14px; } .throw__actions .pn-iconbtn { width: 44px; min-width: 44px; } .throw__actions [data-tour=info] { width: 34px; min-width: 34px; } }
 .water-meter { position: relative; width: 10px; height: 18px; border-radius: 5px; border: 1.5px solid currentColor; overflow: hidden; }
 .water-meter::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: var(--wet, 100%); background: #7cc4ff; transition: height var(--dur-3); }
 .is-dry { border-color: rgba(124, 196, 255, 0.7) !important; box-shadow: 0 0 14px rgba(124, 196, 255, 0.45) !important; }

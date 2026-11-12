@@ -8,7 +8,8 @@ import { HintBubble } from '../../ui/HintBubble';
 import { IconCheck, IconGhost, IconInfo, IconOpen, IconUndo } from '../../ui/icons';
 import { useReducedMotion } from '../../ui/hooks';
 import * as S from '../store';
-import { completeHint, go, profileOf, submitThrow, throwStarted, toggleGhost, updateHint } from '../controller';
+import { completeHint, profileOf, startTour, submitThrow, throwStarted, toggleGhost, updateHint } from '../controller';
+import { tourStage } from '../Tour';
 
 const TOOLS = [
   { id: 'hands', label: 'Hands', tip: 'Drag up the wall to pull; sideways to push' },
@@ -33,7 +34,7 @@ export function Throw() {
       canvas: el,
       target,
       reducedMotion: reduced,
-      skipCentering: S.hintsDone.value.has('drag'),
+      skipCentering: !S.tour.value && S.hintsDone.value.has('drag'),
       onChange: (s: ThrowState) => {
         S.live.value = s;
         updateHint();
@@ -41,11 +42,11 @@ export function Throw() {
         if (f) setFrame({ x: f.axisX, top: f.topY, mid: (f.rimY + f.baseY) / 2 });
       },
       onEvent: (e) => {
-        if (e === 'stroke-start') {
+        if (e === 'stroke-start' && !S.tour.value) {
           throwStarted();
           completeHint('drag');
         }
-        if (e === 'opened') completeHint('open');
+        if (e === 'opened' && !S.tour.value) completeHint('open');
         if (e === 'wobble-start') setWarn('Too thin! Stop thinning or add clay back with a push.');
         if (e === 'slumped') setWarn('It collapsed. Undo the last stroke or start again.');
         if (e === 'limit') setWarn('Time is up for this throw. Submit it or start again.');
@@ -54,15 +55,21 @@ export function Throw() {
     });
     stage.setTool(S.tool.value);
     stageRef.current = stage;
+    tourStage.st = stage;
+    tourStage.canvas = el;
     const onVis = () => stage.setPaused(document.hidden);
     document.addEventListener('visibilitychange', onVis);
     return () => {
       document.removeEventListener('visibilitychange', onVis);
       stage.dispose();
       stageRef.current = null;
+      if (tourStage.st === stage) {
+        tourStage.st = null;
+        tourStage.canvas = null;
+      }
       S.live.value = null;
     };
-  }, [c?.id, reduced]);
+  }, [c?.id, reduced, S.tour.value]);
 
   const ghostLog = S.ghostLog.value;
   const ghostOn = S.ghostOn.value;
@@ -104,18 +111,18 @@ export function Throw() {
       <canvas ref={canvas} class="throw__canvas" aria-label="Wheel with clay. Drag on the clay to shape it." />
 
       <header class="throw__top">
-        <div class="throw__brief pn-glass pn-radius-lg">
+        <div class="throw__brief pn-glass pn-radius-lg" data-tour="brief">
           <div class="throw__brief-main">
             <p class="pn-eyebrow">{c.kind === 'official' ? `Commission · ${c.origin}` : `Beat ${c.commissioner}`}</p>
             <h1 class="throw__title">{c.title}</h1>
           </div>
-          <div class="throw__beat" title="Score to beat">
+          <div class="throw__beat" title="Score to beat" data-tour="beat">
             <span class="throw__beat-label">Beat</span>
             <span class="throw__beat-num">{c.bar}</span>
           </div>
         </div>
         {c.constraintLabels.length ? (
-          <ul class="throw__rules" aria-label="Constraints">
+          <ul class="throw__rules" aria-label="Constraints" data-tour="rules">
             {c.constraintLabels.map((l) => (
               <li key={l} class="pn-chip pn-chip--sm">
                 {l}
@@ -125,7 +132,7 @@ export function Throw() {
         ) : null}
       </header>
 
-      <div class="throw__gauges" aria-live="polite">
+      <div class="throw__gauges" aria-live="polite" data-tour="gauges">
         <Gauge label="Match" value={match === null ? '–' : `${match}%`} tone={match !== null && match >= 85 ? 'good' : undefined} />
         <Gauge label="Height" value={live ? `${live.heightMm} mm` : '–'} />
         <Gauge label="Wall" value={live?.opened ? `${live.minWallMm} mm` : 'solid'} tone={live?.unsafe ? 'bad' : undefined} />
@@ -133,7 +140,7 @@ export function Throw() {
         <Gauge label="Time" value={live ? fmtTime(live.secondsLeft) : '3:00'} tone={live && live.secondsLeft < 20 ? 'bad' : undefined} />
       </div>
 
-      {live && live.phase === 'centering' ? (
+      {live && live.phase === 'centering' && !S.tour.value ? (
         <div class="throw__center-tip pn-glass pn-radius-lg" role="status">
           <strong>Centre the clay</strong>
           <span>Press and hold on the clay until it runs true.</span>
@@ -149,7 +156,7 @@ export function Throw() {
         </div>
       ) : null}
 
-      {hint && frame && live?.phase === 'throwing' ? (
+      {hint && !S.tour.value && frame && live?.phase === 'throwing' ? (
         <HintBubble
           x={frame.x}
           y={frame.top - 8}
@@ -168,11 +175,12 @@ export function Throw() {
       ) : null}
 
       <footer class="throw__dock">
-        <div class="throw__tools" role="radiogroup" aria-label="Hands">
+        <div class="throw__tools" role="radiogroup" aria-label="Hands" data-tour="tools">
           {TOOLS.map((t) => (
             <button
               key={t.id}
               type="button"
+              data-tour={`tool-${t.id}`}
               role="radio"
               aria-checked={S.tool.value === t.id}
               title={t.tip}
@@ -187,13 +195,14 @@ export function Throw() {
           ))}
         </div>
         <div class="throw__actions">
-          <IconButton label="Undo last stroke" variant="glass" disabled={!started} onClick={() => stage?.undo()} icon={<IconUndo />} />
+          <IconButton data-tour="undo" label="Undo last stroke" variant="glass" disabled={!started} onClick={() => stage?.undo()} icon={<IconUndo />} />
           {live && !live.opened ? (
-            <Button variant="secondary" icon={<IconOpen />} onClick={() => stage?.open()}>
+            <Button data-tour="open" variant="secondary" icon={<IconOpen />} onClick={() => stage?.open()}>
               Open
             </Button>
           ) : (
             <Button
+              data-tour="water"
               variant="secondary"
               class={live && live.wetness < 0.35 ? 'is-dry' : undefined}
               onClick={() => stage?.addWater()}
@@ -203,13 +212,13 @@ export function Throw() {
               Water
             </Button>
           )}
-          <Button variant="primary" icon={<IconCheck />} disabled={!started || submitting} loading={submitting} onClick={() => void done()}>
+          <Button data-tour="done" variant="primary" icon={<IconCheck />} disabled={!started || submitting} loading={submitting} onClick={() => void done()}>
             Done
           </Button>
           {ghostLog ? (
-            <IconButton label={ghostOn ? "Hide the commissioner's ghost" : "Show the commissioner's ghost"} variant={ghostOn ? 'primary' : 'glass'} pressed={ghostOn} onClick={() => toggleGhost()} icon={<IconGhost />} />
+            <IconButton data-tour="ghost" label={ghostOn ? "Hide the commissioner's ghost" : "Show the commissioner's ghost"} variant={ghostOn ? 'primary' : 'glass'} pressed={ghostOn} onClick={() => toggleGhost()} icon={<IconGhost />} />
           ) : null}
-          <IconButton label="How to play" variant="ghost" onClick={() => go('howto')} icon={<IconInfo />} />
+          <IconButton data-tour="info" label="How to play" variant="ghost" onClick={() => startTour()} icon={<IconInfo />} />
         </div>
       </footer>
     </section>

@@ -8,7 +8,7 @@ import { fmtCountdown, PotView, TargetView, useNow } from '../parts';
 import { KilnHero, type KilnState } from '../KilnHero';
 import { sfx } from '../../app/audio';
 import * as S from '../store';
-import { back, finishOnboarding, go, openStarter } from '../controller';
+import { back, finishOnboarding, go, openStarter, startTour } from '../controller';
 
 export function Welcome() {
   const pot = S.revealing.value;
@@ -79,7 +79,7 @@ export function Welcome() {
         <div class="welcome__actions">
           {pot ? (
             <>
-              <Button variant="primary" size="lg" block onClick={() => go('howto')}>
+              <Button variant="primary" size="lg" block onClick={() => startTour()}>
                 How to play
               </Button>
               <Button variant="ghost" block onClick={() => void finishOnboarding()}>
@@ -91,7 +91,7 @@ export function Welcome() {
               <Button variant="primary" size="lg" block loading={state === 'opening'} onClick={() => void open()}>
                 Open the kiln
               </Button>
-              <Button variant="ghost" block onClick={() => go('howto')}>
+              <Button variant="ghost" block onClick={() => startTour()}>
                 How to play
               </Button>
             </>

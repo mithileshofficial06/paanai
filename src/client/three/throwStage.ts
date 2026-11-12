@@ -76,6 +76,8 @@ export type ThrowStage = {
   open(): void;
   addWater(): void;
   skipCentering(): void;
+  /** Put an untouched lump back off-centre (used by the guided tour before it demonstrates centring). */
+  recenter(): void;
   undo(): boolean;
   reset(): void;
   finish(): StrokeLog;
@@ -668,6 +670,13 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
       for (let r = 0; r < MARK_ROWS; r++) marks[r] = (marks[r] ?? 0) * 0.8;
       u.uMarks.value.needsUpdate = true;
       opts.onEvent?.('water');
+      emit(true);
+    },
+    recenter() {
+      if (reduced || recorder.entries.length > 0) return;
+      phase = 'centering';
+      centerWobble = 1;
+      centerAge = 0;
       emit(true);
     },
     skipCentering() {

@@ -4,6 +4,7 @@ import '../styles/base.css';
 import '../styles/components.css';
 import '../styles/screens.css';
 import '../styles/kiln-hero.css';
+import '../styles/tour.css';
 import { App } from './App';
 import { boot } from './controller';
 

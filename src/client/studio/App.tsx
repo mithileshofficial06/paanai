@@ -23,7 +23,8 @@ import {
 } from '../ui/icons';
 import * as S from './store';
 import type { Route } from './store';
-import { boot, go, login, setMuted } from './controller';
+import { boot, go, login, setMuted, startTour } from './controller';
+import { Tour } from './Tour';
 import { Welcome, HowToPlay, Features } from './screens/Onboarding';
 import { Throw } from './screens/Throw';
 import { Result, Glaze } from './screens/Result';
@@ -132,13 +133,14 @@ export function App() {
           items={NAV.map((n) => ({ id: n.id, label: n.label, icon: NAV_ICONS[n.id], badge: n.id === 'kiln' && S.kilnBadge.value > 0 ? S.kilnBadge.value : undefined }))}
         />
       ) : null}
+      {S.tour.value && r === 'throw' ? <Tour /> : null}
       <ToastHost placement="top" />
       <Sheet open={more} onClose={() => setMore(false)} title="More" eyebrow="Paanai">
         <div class="more">
           <Button variant="secondary" block icon={<IconTrophy />} onClick={() => (setMore(false), go('leaderboard'))}>
             Today's leaderboard
           </Button>
-          <Button variant="secondary" block icon={<IconInfo />} onClick={() => (setMore(false), go('howto'))}>
+          <Button variant="secondary" block icon={<IconInfo />} onClick={() => (setMore(false), startTour())}>
             How to play
           </Button>
           <Button variant="secondary" block icon={<IconSparkle />} onClick={() => (setMore(false), go('features'))}>
