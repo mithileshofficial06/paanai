@@ -129,7 +129,7 @@ function Reveal({ item, onDone }: { item: KilnItem; onDone: () => void }) {
       sfx.whoosh();
       if (f?.newDiscoveries.length) setTimeout(() => sfx.chime(), 1400);
       else setTimeout(() => sfx.tink(1), 1200);
-    }, 1000);
+    }, 1500);
     if (!item.opened) void markOpened(item.potId);
   }
   return (

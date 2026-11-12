@@ -21,7 +21,7 @@ export function Welcome() {
     const started = Date.now();
     const got = await openStarter();
     // Let the doors finish swinging before the pot comes out.
-    await new Promise((r) => setTimeout(r, Math.max(0, 1100 - (Date.now() - started))));
+    await new Promise((r) => setTimeout(r, Math.max(0, 1500 - (Date.now() - started))));
     if (got) {
       setState('open');
       sfx.whoosh();

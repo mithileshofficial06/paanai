@@ -7,6 +7,8 @@ locally; the client makes no external requests.
 
 | File (in `public/fonts/`) | Family | Licence | Source |
 |---|---|---|---|
+| `shrikhand-latin.woff2` | Shrikhand (display) | SIL Open Font License 1.1 (`OFL-Shrikhand.txt`) | github.com/jonpinhorn/shrikhand via npm @fontsource/shrikhand |
+| `bricolage-grotesque-latin-var.woff2` | Bricolage Grotesque (UI) | SIL Open Font License 1.1 (`OFL-BricolageGrotesque.txt`) | github.com/ateliertriay/bricolage via npm @fontsource-variable/bricolage-grotesque |
 | `fraunces-latin-var.woff2` (62.6 KB) | Fraunces, upright | SIL Open Font License 1.1 (`OFL-Fraunces.txt`) | github.com/undercasetype/Fraunces via github.com/google/fonts (`ofl/fraunces`) |
 | `fraunces-italic-latin.woff2` (22.7 KB) | Fraunces, italic | SIL Open Font License 1.1 (`OFL-Fraunces.txt`) | same as above |
 | `atkinson-hyperlegible-next-latin-var.woff2` (19.8 KB) | Atkinson Hyperlegible Next | SIL Open Font License 1.1 (`OFL-AtkinsonHyperlegibleNext.txt`) | github.com/googlefonts/atkinson-hyperlegible-next via github.com/google/fonts (`ofl/atkinsonhyperlegiblenext`) |
