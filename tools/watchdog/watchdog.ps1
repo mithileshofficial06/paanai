@@ -33,9 +33,9 @@ if ($idle -lt 75) { Log ("Build active (last activity {0} min ago)" -f [int]$idl
 Set-Content -Path $lock -Value (Get-Date -Format 's') -Encoding utf8
 Log ("Idle {0} min; starting headless resume run" -f [int]$idle)
 $prompt = @'
-You are the Paanai watchdog resume run (headless). Read PROGRESS.md in this folder first and continue the build from its "Next action", following the brief in that file exactly: never push, never run devvit publish or any launch script. Delegate per the brief (Agent subagents: model opus, effort medium for simple tasks, effort max for 3D/visual work). Commit after each step, update PROGRESS.md and touch .paanai/heartbeat after each step. Keep working through the milestones for as long as you can. Do not delete .paanai/watchdog.lock yourself; the watchdog removes it when you exit.
+You are the Paanai watchdog resume run (headless). Read PROGRESS.md in this folder first and continue the build from its "Next action", following the brief and the USAGE RULES in that file exactly: never push, never run devvit publish or any launch script. Work in this main session at high effort; if you delegate, use at most ONE Agent subagent at a time (model opus, effort high for 3D/visual work, effort medium for simple tasks; never effort max) and keep screenshot review rounds to at most 3 per task. Commit after each step, update PROGRESS.md and touch .paanai/heartbeat after each step. Keep working through the milestones for as long as you can. Do not delete .paanai/watchdog.lock yourself; the watchdog removes it when you exit.
 '@
 Set-Location $proj
-& 'C:\Users\MITHILESH KS\.local\bin\claude.exe' -p $prompt --model opus --effort xhigh --permission-mode auto *>> $log
+& 'C:\Users\MITHILESH KS\.local\bin\claude.exe' -p $prompt --model opus --effort high --permission-mode auto *>> $log
 Remove-Item $lock -ErrorAction SilentlyContinue
 Log 'Headless resume run exited'

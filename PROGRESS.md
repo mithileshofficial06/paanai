@@ -4,9 +4,33 @@
 
 ## Status
 
-- **Current milestone:** M1-M4 server + core DONE; client in progress (3D stage + glass UI kit by subagents; studio store/controller + splash done by lead)
-- **Next action:** when the 3D and UI subagents report: review screenshots, commit their work; then (a) SendMessage the UI agent to build `src/client/studio/App.tsx` + `src/client/studio/screens/*` on top of `studio/store.ts` + `studio/controller.ts` (routes: welcome/starter reveal, howto, features, throw, result, glaze, kiln, shelf, codex, commissions, create, leaderboard; bottom nav); (b) SendMessage the 3D agent to add glaze material (`app/glazeLook.ts` params), kiln reveal scene, ghost replay pot, thumbnails with glaze; then `npm run build`, harness play-through, `devvit playtest`.
-- **Last updated:** 2026-11-12 07:05 IST
+- **Current milestone:** M1-M4 server + core DONE; client in progress. PAUSED 07:15 IST by Mithilesh (5-hour usage hit 79%); auto-resume via the watchdog task from 10:55 IST.
+- **Next action (in order, ONE subagent at a time, see USAGE RULES):**
+  1. Finish the 3D throw stage. Committed WIP (unreviewed) in `src/client/three/` (renderer, cameraRig, environment, wheel, potMesh, displayProfile, clayMaterial, textures, overlays) and `src/client/input/` (oneEuro, pointerMapper). Still missing: `src/client/three/throwStage.ts` (the public API spec is in the "3D stage spec" section below), studio scene assembly, `src/client/dev/throw-lab.html/.ts`, `tools/shoot.mjs`. Read the WIP files first, then finish (opus, effort high), typecheck, at most 3 screenshot rounds.
+  2. Finish the UI kit. Committed WIP in `src/client/ui/` (AppBackground, Avatar, Button, Chip, CommissionCard, GlassPanel, HintBubble, PotSilhouette, ProgressBar, ScoreRing, Sheet, Skeleton, Stars, StatRow, States, Stepper, Tabs, Toast, icons, hooks) and `src/client/styles/` (tokens.css, base.css; components.css may be missing). Still missing: `ui/screens/HowToPlay.tsx`, `ui/screens/Features.tsx`, `src/client/dev/ui-lab.*`. Fonts are in `public/fonts` (done).
+  3. Build `src/client/studio/App.tsx` + `src/client/studio/screens/*` on top of `studio/store.ts` + `studio/controller.ts` (routes: welcome/starter reveal, howto, features, throw, result, glaze, kiln, shelf, codex, commissions, create, leaderboard; bottom nav: Wheel, Kiln, Shelf, Codex, Commissions; More: leaderboard, how to play, features, sound).
+  4. 3D additions: glaze material driven by `app/glazeLook.ts`, kiln reveal scene, ghost replay pot, thumbnails with glaze.
+  5. 35 official commissions (content task was stopped before it changed anything): see the "Content task" section below.
+  6. `npm run build`, harness play-through, `npm run dev` (devvit playtest), then M5 polish + README.
+- **Last updated:** 2026-11-12 07:20 IST
+
+## USAGE RULES (Mithilesh, 2026-11-12, after the 5-hour window hit 79% in about an hour)
+
+- Two max-effort subagents running in parallel with screenshot loops burned the session window. From now on:
+  - at most ONE subagent at a time;
+  - visual/3D work at effort **high** (not max), simple work at **medium**; never max;
+  - at most 3 screenshot review rounds per task; screenshots at 1x device scale;
+  - prefer doing small things in the main session instead of spawning agents.
+
+## 3D stage spec (for step 1)
+
+`src/client/three/throwStage.ts` must export `createThrowStage(opts): ThrowStage` with:
+`setTool('push'|'thin')`, `open()`, `undo(): boolean`, `reset()`, `finish(): StrokeLog`, `getProfile(): Profile`, `setInputEnabled(on)`, `setPaused(p)`, `setTarget(profile|null)`, `renderThumbnail(profile, size): Promise<string>` (PNG data URL), `dispose()`; options `{ canvas, target?, reducedMotion?, onChange?(ThrowState) (<=10 Hz), onEvent?('opened'|'wobble-start'|'slumped'|'stroke-start'|'stroke-end'|'limit') }`; `ThrowState = { heightMm, capacityMl, minWallMm, maxDiameterMm, opened, unsafe, wobble, slumped, strokes, ticks, secondsLeft, matchPreview }`.
+Determinism contract: fixed 30 Hz sim via accumulator; every tick `recorder.record(inputOrNull)` then `step()` or `idle()` exactly like `replay()`; `recorder.endStroke()` on pointer up; stop at `recorder.full`. Input: vertical finger position -> ring (0..47 over the pot's on-screen height); Push tool = horizontal drag (toward axis narrows, away widens), dr clamped -64..63, One-Euro filtered, dead zone; Thin tool = drag along the wall thins it; tap on the lump top (or `open()`) opens. `touch-action: none` only on this canvas. Visual bar: realistic wet clay with throwing rings and sheen, metal wheel head + splash pan, dark studio with red rim light and ember glow, target outline glow, wobble shake, cosmetic slump droop.
+
+## Content task (for step 5)
+
+Expand `OFFICIAL` in `src/shared/content/commissions.ts` from 6 to 35 (keep the first 6 unchanged). Each: unique id, real symmetric historical vessel (no handles/spouts), origin, factual note <= 110 chars, 0-2 constraints; the Master's own pot must not slump, must have no kiln defects and must pass its own constraints (check with `npx tsx tools/try-recipes.ts`). Add `tests/unit/commissions.test.ts` asserting those plus variety (no two silhouettes with silhouetteMatch >= 92). Tuning notes: 4-5 pulls of dr 8 give 150-195 mm pots with 6-8 mm walls; a 6th pass slumps; big outward pushes (dr > ~14 mid-height on thin walls) cause kiln-slump.
 
 ## Done
 
@@ -27,16 +51,11 @@
 
 ## In flight (subagents)
 
-- Content (opus, medium): 35 official commissions in `src/shared/content/commissions.ts` + `tests/unit/commissions.test.ts`.
-
-- 3D throw stage (opus, max): `src/client/three/**`, `src/client/input/**`, `src/client/dev/throw-lab.*`, `tools/shoot.mjs`, `public/textures`, `public/env`.
-- Glass UI design system + HowToPlay + Features screens (opus, max): `src/client/styles/**`, `src/client/ui/**`, `src/client/dev/ui-lab.*`, `public/fonts`.
+- None. All three helpers were stopped at 07:15 IST to save usage; their partial work is committed as WIP (commit dcfdb1f).
 
 ## Needs Mithilesh
 
-- **Watchdog (auto-resume after usage limits):** auto mode blocked me from registering the Windows scheduled task. To enable it, run this once in PowerShell:
-  `Register-ScheduledTask -TaskName 'Paanai Build Watchdog' -Action (New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "D:\Projects\2-In-Progress\paanai\tools\watchdog\watchdog.ps1"') -Trigger (New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(5) -RepetitionInterval (New-TimeSpan -Hours 1) -RepetitionDuration (New-TimeSpan -Days 30)) -Settings (New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Hours 6))`
-  It runs hourly; if nothing has been committed for 75+ minutes it starts a headless Claude run (`--permission-mode auto`) that resumes from this file. Remove it with `Unregister-ScheduledTask 'Paanai Build Watchdog'`.
+- **Watchdog: INSTALLED 2026-11-12 07:22 IST.** Windows task "Paanai Build Watchdog" runs `tools/watchdog/watchdog.ps1` hourly from 10:55 IST. If nothing has been committed for 75+ minutes and PROGRESS.md does not contain "ALL MILESTONES DONE", it starts a headless Claude run (opus, effort high, `--permission-mode auto`) that resumes from this file. Logs: `.paanai/watchdog-<date>.log`. Remove with `Unregister-ScheduledTask 'Paanai Build Watchdog' -Confirm:$false`.
 - Devvit login: done (u/mithileshofficial06).
 
 ## Known issues
