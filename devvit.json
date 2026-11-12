@@ -102,9 +102,7 @@
             "value": "artisan"
           }
         ],
-        "defaultValue": [
-          "journeyman"
-        ]
+        "defaultValue": "journeyman"
       },
       "journeymanPoints": {
         "type": "number",

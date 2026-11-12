@@ -4,15 +4,15 @@
 
 ## Status
 
-- **Current milestone:** M1-M4 server + core DONE; client in progress. PAUSED 07:15 IST by Mithilesh (5-hour usage hit 79%); auto-resume via the watchdog task from 10:55 IST.
+- **Current milestone:** M1-M4 server + core DONE; client in progress. Mithilesh back 12:30; building in the main session, one step at a time. Watchdog task DISABLED by request.
 - **Next action (in order, ONE subagent at a time, see USAGE RULES):**
-  1. Finish the 3D throw stage TO THE REALISM SPEC below (top priority). Committed WIP (unreviewed) in `src/client/three/` (renderer, cameraRig, environment, wheel, potMesh, displayProfile, clayMaterial, textures, overlays) and `src/client/input/` (oneEuro, pointerMapper). Still missing: `src/client/three/throwStage.ts` (the public API spec is in the "3D stage spec" section below), studio scene assembly, `src/client/dev/throw-lab.html/.ts`, `tools/shoot.mjs`. Read the WIP files first, then finish (opus, effort high), typecheck, at most 3 screenshot rounds.
-  2. Finish the UI kit. Committed WIP in `src/client/ui/` (AppBackground, Avatar, Button, Chip, CommissionCard, GlassPanel, HintBubble, PotSilhouette, ProgressBar, ScoreRing, Sheet, Skeleton, Stars, StatRow, States, Stepper, Tabs, Toast, icons, hooks) and `src/client/styles/` (tokens.css, base.css; components.css may be missing). Still missing: `ui/screens/HowToPlay.tsx`, `ui/screens/Features.tsx`, `src/client/dev/ui-lab.*`. Fonts are in `public/fonts` (done).
-  3. Build `src/client/studio/App.tsx` + `src/client/studio/screens/*` on top of `studio/store.ts` + `studio/controller.ts` (routes: welcome/starter reveal, howto, features, throw, result, glaze, kiln, shelf, codex, commissions, create, leaderboard; bottom nav: Wheel, Kiln, Shelf, Codex, Commissions; More: leaderboard, how to play, features, sound).
-  4. 3D additions: glaze material driven by `app/glazeLook.ts`, kiln reveal scene, ghost replay pot, thumbnails with glaze.
-  5. 35 official commissions (content task was stopped before it changed anything): see the "Content task" section below.
-  6. `npm run build`, harness play-through, `npm run dev` (devvit playtest), then M5 polish + README.
-- **Last updated:** 2026-11-12 07:20 IST
+  1. DONE 12:40 (a11c947): `three/throwStage.ts` (API per spec + addWater, skipCentering, getScreenFrame; ThrowState adds wetness, phase), throw-lab (`/dev/throw-lab.html`, `?target=id&skip=1&debug=1`), `tools/shoot.mjs`. Not done from REALISM SPEC: slurry lip, water drips, water bowl/sponge props, camera sway, DOF.
+  2. DONE 13:20: `styles/components.css` (all pn-* classes), How to play + Features live in `studio/screens/Onboarding.tsx`.
+  3. DONE 13:20 (f0b8657): `studio/App.tsx` + `studio/screens/*` (Onboarding, Throw, Result+Glaze, Kiln+Reveal, Community), `styles/screens.css`, `tools/playthrough.mjs` (harness click-through with screenshots, all screens verified).
+  4. DONE (dd79eea): `three/glazeMaterial.ts` (fired glaze shader from GlazeLook), `three/potRenderer.ts` (offscreen cached 3D pot renders used by PotView everywhere), ghost replay on the wheel (toggle). Kiln reveal is a CSS door-opening scene around the 3D pot render.
+  5. DONE (abe1f36): 35 official commissions + `tests/unit/commissions.test.ts` + `tools/check-commissions.ts`. 39 tests pass.
+  6. IN PROGRESS: `npm run build` passes (studio.js 193 KB gzip). README rewritten for judges. devvit.json select default fixed (must be a string). **`devvit playtest` BLOCKED: Reddit says the developer account setup is unfinished (Needs Mithilesh).** Next: once unblocked, playtest on Reddit and fix real-platform issues; then M5 polish (REALISM SPEC leftovers: slurry lip, drips, water bowl/sponge props, camera sway; audio/perf pass; seed the subreddit for judging).
+- **Last updated:** 2026-11-12 13:20 IST
 
 ## USAGE RULES (Mithilesh, 2026-11-12, after the 5-hour window hit 79% in about an hour)
 
@@ -77,6 +77,7 @@ Expand `OFFICIAL` in `src/shared/content/commissions.ts` from 6 to 35 (keep the 
 
 - **Watchdog: INSTALLED 2026-11-12 07:22 IST.** Windows task "Paanai Build Watchdog" runs `tools/watchdog/watchdog.ps1` hourly from 10:55 IST. If nothing has been committed for 75+ minutes and PROGRESS.md has no line starting with the finished marker (see watchdog.ps1), it starts a headless Claude run (opus, effort high, `--permission-mode auto`) that resumes from this file. Logs: `.paanai/watchdog-<date>.log`. Remove with `Unregister-ScheduledTask 'Paanai Build Watchdog' -Confirm:$false`.
 - Devvit login: done (u/mithileshofficial06).
+- **Finish the Reddit developer account setup** at https://developers.reddit.com/create-account?cli=true (playtest stops at this prompt). Then run `npm run dev` in the project folder.
 
 ## Known issues
 
