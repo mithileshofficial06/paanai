@@ -164,7 +164,7 @@ export function createWheel(): Wheel {
   const headGeo = new LatheGeometry(head.points, 160);
   const tex = makeWheelTextures(head.vTopStart, TOP_R);
   const headMat = new MeshPhysicalMaterial({
-    color: 0xffffff,
+    color: 0x5a5a62, // dark cast metal, not polished aluminium
     map: tex.color,
     roughnessMap: tex.orm,
     metalnessMap: tex.orm,
@@ -175,7 +175,7 @@ export function createWheel(): Wheel {
     // Lathe UVs: +u runs around the head. Rotate the stretch so highlights run radially.
     anisotropyRotation: Math.PI / 2,
     clearcoat: 0.0001,
-    envMapIntensity: 1,
+    envMapIntensity: 0.5,
   });
   headMat.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);

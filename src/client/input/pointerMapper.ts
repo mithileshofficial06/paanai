@@ -13,7 +13,8 @@ import { RINGS, TICK_HZ } from '../../shared/core/fixed';
 import { Mode, type Input, type ModeId } from '../../shared/core/shape';
 import { OneEuroFilter } from './oneEuro';
 
-export type ThrowToolId = 'push' | 'thin';
+/** 'hands' infers the gesture: an upward drag along an opened wall is a pull (THIN), sideways is a PUSH. */
+export type ThrowToolId = 'hands' | 'push' | 'thin';
 
 /** Where the pot sits on screen this tick, in CSS px relative to the canvas. */
 export type PotScreenFrame = {
@@ -38,7 +39,11 @@ export const INPUT_TUNING = {
   /** Clay units of radius change per (clay unit of horizontal finger travel per tick). */
   pushGain: 0.5,
   /** Same for thinning; thinning is gentler than pushing. */
-  thinGain: 0.2,
+  /** Thinning per ring travelled (dr = thinPerRing x rings moved this tick), so a pull of any speed
+   *  thins about as much as one Master recipe pull (dr 8 at ~2.7 rings/tick). */
+  thinPerRing: 3,
+  /** Largest thinning per tick (a pull squeezes gently; most of the clay goes up, not away). */
+  maxThin: 7,
   /** Speeds below this (clay units/tick, after gain) are ignored, so a resting finger never jitters the clay. */
   deadZone: 1.25,
   /** Movement (px) before a press turns into a shaping stroke. */
@@ -50,9 +55,20 @@ export const INPUT_TUNING = {
   sideHysteresis: 0.3,
   /** One-Euro filter on the pointer (px). */
   euro: { minCutoff: 1.6, beta: 0.006, dCutoff: 1.2 },
+  /** Hands mode: a drag counts as a pull-up when it rises this many times faster than it moves sideways. */
+  pullRatio: 1.3,
+  /** Largest |dr| a single tick may apply (fast jerks are clamped, the clay resists). */
+  maxDr: 26,
 } as const;
 
-export type MapperContext = { opened: boolean; slumped: boolean; tool: ThrowToolId; canRecord: boolean };
+export type MapperContext = {
+  opened: boolean;
+  slumped: boolean;
+  tool: ThrowToolId;
+  canRecord: boolean;
+  /** 0.4..1: drier clay resists more; scales dr BEFORE it is recorded, so replay stays exact. */
+  resistance?: number;
+};
 
 export type Contact = {
   ring: number;
@@ -207,6 +223,11 @@ export class PointerMapper {
     // 3) Ring from height: base..rim on screen -> 0..47.
     const span = frame.baseY - frame.rimY;
     const ring = span > 4 ? clamp(Math.floor(((frame.baseY - y) / span) * RINGS), 0, RINGS - 1) : 0;
+    // Past the rim or below the wheel the finger is off the clay: keep the stroke, change nothing.
+    if (y < frame.rimY - 8 || y > frame.baseY + 14) {
+      out.input = { ring, mode: Mode.PUSH, dr: 0 };
+      return out;
+    }
 
     // 4) Which side of the axis (decides what "toward the axis" means), with hysteresis.
     const off = x - frame.axisX;
@@ -221,17 +242,20 @@ export class PointerMapper {
     const ppu = Math.max(1e-4, frame.pxPerUnit);
     let mode: ModeId;
     let v: number;
-    if (ctx.tool === 'push') {
+    const pull = ctx.tool === 'hands' && ctx.opened && vy < 0 && -vy > T.pullRatio * Math.abs(vx);
+    if (ctx.tool === 'push' || (ctx.tool === 'hands' && !pull)) {
       mode = Mode.PUSH;
       v = ((this.side * vx) / ppu) * T.pushGain;
     } else {
       mode = Mode.THIN;
-      v = (Math.hypot(vx, vy) / ppu) * T.thinGain;
+      const ringPx = Math.max(2, span / RINGS);
+      v = (Math.hypot(vx, vy) / ringPx) * T.thinPerRing + T.deadZone;
     }
-    const mag = Math.abs(v) - T.deadZone;
+    v *= ctx.resistance ?? 1;
+    const mag = Math.min(T.maxDr, Math.abs(v)) - T.deadZone;
     let dr = mag > 0 ? Math.round(Math.sign(v) * mag) : 0;
     dr = clamp(dr, -64, 63);
-    if (mode === Mode.THIN) dr = Math.max(0, dr);
+    if (mode === Mode.THIN) dr = Math.min(T.maxThin, Math.max(0, dr));
     // Normalise -0 so logs and hashes never see it.
     if (dr === 0) dr = 0;
 

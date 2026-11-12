@@ -5,6 +5,7 @@
 // - OpenRing: pulsing target on the lump's top until the pot is opened.
 
 import {
+  DoubleSide,
   AdditiveBlending,
   BufferAttribute,
   BufferGeometry,
@@ -130,6 +131,7 @@ export class GlowLine {
         depthFunc: pass.depth === 'hidden' ? GreaterDepth : LessEqualDepth,
         blending: AdditiveBlending,
         toneMapped: false,
+        side: DoubleSide,
       });
       const mesh = new Mesh(this.geometry, mat);
       mesh.frustumCulled = false;

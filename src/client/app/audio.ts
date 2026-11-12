@@ -123,6 +123,12 @@ class Sfx {
     this.noiseBurst(0.12 + i * 0.1, 420 + Math.random() * 500, 1.6, 0.05 + i * 0.12, 0.02);
   }
 
+  /** Water poured on the clay: a bright splash plus a soft trickle. */
+  splash(): void {
+    this.noiseBurst(0.3, 2200, 0.8, 0.1, 0.004);
+    this.noiseBurst(0.7, 900, 1.4, 0.05, 0.05);
+  }
+
   /** Opening the clay: a soft thump. */
   thump(): void {
     const r = this.ready();

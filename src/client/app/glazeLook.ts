@@ -80,10 +80,10 @@ export function firedLook(choice: GlazeChoice, fired: FiredResultDTO): GlazeLook
   if (fired.defects.includes('collapsed')) {
     return { ...zero(), base: body, secondary: body, gloss: 0.1, opacity: 0, body, collapsed: true, breakEdges: 0 };
   }
-  const colourFx = fired.effects.find((e) => COLOUR[e]);
+  const colourFx = fired.effects.find((e) => COLOUR[e as EffectId]) as EffectId | undefined;
   const plain = FIRED_PLAIN[(choice.glazes.at(-1) ?? 'clear') as GlazeId];
   const c = colourFx ? COLOUR[colourFx]! : plain;
-  const look: GlazeLook = { ...zero(), base: c.base, secondary: c.secondary, gloss: c.gloss, opacity: c.opacity, body, luster: COLOUR[colourFx ?? 'amber']?.luster ?? 0 };
+  const look: GlazeLook = { ...zero(), base: c.base, secondary: c.secondary, gloss: c.gloss, opacity: c.opacity, body, luster: COLOUR[(colourFx ?? 'amber') as EffectId]?.luster ?? 0 };
   if (!colourFx) look.luster = 0;
   if (choice.application === 'double-dip') look.drips = 0.25;
   for (const e of fired.effects) {

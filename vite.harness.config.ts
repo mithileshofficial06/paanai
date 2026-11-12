@@ -42,7 +42,7 @@ function mockServer(): Plugin {
           const request = new Request(`http://localhost${url}`, {
             method: req.method ?? 'GET',
             headers,
-            ...(body ? { body } : {}),
+            ...(body ? { body: new Uint8Array(body) } : {}),
           });
           const response = await mod.handle(request);
           res.statusCode = response.status;

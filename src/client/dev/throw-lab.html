@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Throw lab</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: radial-gradient(120% 90% at 50% 20%, #3a0a0c 0%, #14070a 45%, #050506 100%); color: #f3e9e4; font: 14px system-ui, sans-serif; overflow: hidden; }
+      canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+      #hud { position: fixed; left: 12px; top: 10px; white-space: pre; opacity: .85; pointer-events: none; }
+      #bar { position: fixed; left: 0; right: 0; bottom: 14px; display: flex; gap: 8px; justify-content: center; }
+      button { min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #ffffff2a; background: #ffffff14; color: inherit; backdrop-filter: blur(10px); }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <div id="hud"></div>
+    <div id="bar">
+      <button data-a="open">Open</button><button data-a="water">Water</button><button data-a="undo">Undo</button><button data-a="reset">Reset</button><button data-a="tool">Tool: hands</button>
+    </div>
+    <script type="module" src="./throw-lab.ts"></script>
+  </body>
+</html>

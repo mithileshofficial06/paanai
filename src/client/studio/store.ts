@@ -33,6 +33,9 @@ export type LiveThrow = {
   ticks: number;
   secondsLeft: number;
   matchPreview: number | null;
+  /** 1 = freshly wet, 0 = dry (drier clay resists). */
+  wetness: number;
+  phase: 'centering' | 'throwing';
 };
 
 export type LastThrow = {
@@ -54,7 +57,7 @@ export const commission = signal<CommissionDTO | null>(null);
 export const ghostLog = signal<string | null>(null);
 export const ghostOn = signal(false);
 export const live = signal<LiveThrow | null>(null);
-export const tool = signal<'push' | 'thin'>('push');
+export const tool = signal<'hands' | 'push' | 'thin'>('hands');
 export const submitting = signal(false);
 export const lastThrow = signal<LastThrow | null>(null);
 export const hintsDone = signal<Set<HintId>>(new Set());

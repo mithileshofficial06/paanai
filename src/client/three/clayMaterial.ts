@@ -8,7 +8,10 @@
 // - fake interior occlusion and shadowing from a per-vertex attribute (no shadow maps)
 // The mesh rotates with the wheel, so every object-space pattern turns with it.
 
-import { Color, MeshPhysicalMaterial } from 'three';
+import { Color, DataTexture, LinearFilter, MeshPhysicalMaterial, RedFormat, FloatType } from 'three';
+
+/** Per-height ridge depth left by the player's fingers (64 rows, 0..1), sampled by y / uMarkH. */
+export const MARK_ROWS = 64;
 
 export type ClayUniforms = {
   uTime: { value: number };
@@ -29,6 +32,8 @@ export type ClayUniforms = {
   uFloorR: { value: number };
   uFloorY: { value: number };
   uSlipColor: { value: Color };
+  uMarks: { value: DataTexture };
+  uMarkH: { value: number };
 };
 
 export type ClayMaterialOptions = {
@@ -62,6 +67,8 @@ uniform float uPuddle;
 uniform float uFloorR;
 uniform float uFloorY;
 uniform vec3 uSlipColor;
+uniform sampler2D uMarks;
+uniform float uMarkH;
 varying vec2 vShade;
 varying float vKind;
 varying vec3 vObjPos;
@@ -116,7 +123,8 @@ float pnFine = sin(6.2831853 * pnFinePhase);
 // Water pooled on the inner floor: flat and glassy.
 float pnPuddle = uPuddle * pnFloor * (1.0 - smoothstep(uFloorR * 0.55, uFloorR * 0.95, pnRad))
                * (1.0 - smoothstep(uFloorY + 0.05, uFloorY + 0.35, vObjPos.y));
-float pnH = (pnRidge * pnAmpMod * pnAA1 + pnFine * 0.2 * pnAA2) * uRidgeAmp * (1.0 - pnPuddle);
+float pnMark = texture2D(uMarks, vec2(0.5, clamp(vObjPos.y / max(0.1, uMarkH), 0.0, 1.0))).r * (1.0 - pnFloor);
+float pnH = (pnRidge * pnAmpMod * pnAA1 + pnFine * 0.2 * pnAA2) * uRidgeAmp * (0.45 + 1.1 * pnMark) * (1.0 - pnPuddle);
 // Fresh contact band: the finger just smoothed and wetted the clay here.
 float pnBand = uContact * exp(-pow((vObjPos.y - uContactY) / 0.8, 2.0)) * (1.0 - pnFloor);
 `;
@@ -127,7 +135,9 @@ const FRAG_COLOR = /* glsl */ `
   float grog = smoothstep(0.82, 0.95, pnNoise(vObjPos * 26.0)) * pnAA2;
   vec3 c = diffuseColor.rgb * tone * (1.0 - 0.18 * grog);
   c *= 1.0 - 0.06 * pnRidge * pnAmpMod * pnAA1;
-  c = mix(c, uSlipColor, pnSlip * 0.5);
+  c = mix(c, uSlipColor, pnSlip * 0.26);
+  // Wet clay is darker; the fresh contact band darkest.
+  c *= 1.0 - 0.16 * uWet - 0.12 * pnBand;
   c = mix(c, c * 0.72, pnPuddle * 0.8);
   c *= mix(1.0, 0.86, pnInner);
   diffuseColor.rgb = c;
@@ -192,15 +202,17 @@ export function createClayMaterial(opts: ClayMaterialOptions = {}): { material: 
     uContact: { value: 0 },
     uSlip: { value: 1 },
     uRingSpacing: { value: 0.78 },
-    uRidgeAmp: { value: 0.022 },
+    uRidgeAmp: { value: 0.016 },
     uPuddle: { value: 0 },
     uFloorR: { value: 0 },
     uFloorY: { value: 0 },
     uSlipColor: { value: new Color('#b58468') },
+    uMarks: { value: makeMarksTexture() },
+    uMarkH: { value: 10 },
   };
 
   const material = new MeshPhysicalMaterial({
-    color: new Color(opts.color ?? '#8a4630'),
+    color: new Color(opts.color ?? '#7c3f2b'),
     roughness: 0.62,
     metalness: 0,
     clearcoat: 1,
@@ -226,7 +238,15 @@ export function createClayMaterial(opts: ClayMaterialOptions = {}): { material: 
       .replace('#include <lights_physical_fragment>', `#include <lights_physical_fragment>\n${FRAG_MATERIAL}`)
       .replace('#include <aomap_fragment>', `#include <aomap_fragment>\n${FRAG_SHADE}`);
   };
-  material.customProgramCacheKey = () => 'paanai-clay-v1';
+  material.customProgramCacheKey = () => 'paanai-clay-v2';
 
   return { material, uniforms };
+}
+
+function makeMarksTexture(): DataTexture {
+  const t = new DataTexture(new Float32Array(MARK_ROWS), 1, MARK_ROWS, RedFormat, FloatType);
+  t.magFilter = LinearFilter;
+  t.minFilter = LinearFilter;
+  t.needsUpdate = true;
+  return t;
 }
