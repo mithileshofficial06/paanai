@@ -5,11 +5,11 @@
     "dir": "dist/client",
     "entrypoints": {
       "default": {
-        "inline": true,
-        "entry": "splash.html"
+        "entry": "splash.html",
+        "height": "tall"
       },
-      "game": {
-        "entry": "game.html"
+      "studio": {
+        "entry": "studio.html"
       }
     }
   },
@@ -17,29 +17,80 @@
     "dir": "dist/server",
     "entry": "index.cjs"
   },
+  "permissions": {
+    "redis": true,
+    "media": true,
+    "realtime": false,
+    "journeys": true,
+    "http": {
+      "enable": false
+    },
+    "reddit": {
+      "enable": true,
+      "scope": "user"
+    }
+  },
+  "scheduler": {
+    "tasks": {
+      "daily-rollover": {
+        "endpoint": "/internal/cron/daily-rollover",
+        "cron": "0 0 * * *"
+      }
+    }
+  },
+  "triggers": {
+    "onAppInstall": "/internal/triggers/install",
+    "onAppUpgrade": "/internal/triggers/upgrade"
+  },
   "menu": {
     "items": [
       {
-        "label": "Create a new post",
-        "description": "<% name %>",
+        "label": "Paanai: post today's commission now",
+        "description": "Creates today's daily post if it does not exist",
         "location": "subreddit",
         "forUserType": "moderator",
-        "endpoint": "/internal/menu/post-create"
+        "endpoint": "/internal/menu/post-today"
       },
       {
-        "label": "Example form",
-        "description": "Show a simple form",
+        "label": "Paanai: stats",
+        "description": "Today's activity",
         "location": "subreddit",
         "forUserType": "moderator",
-        "endpoint": "/internal/menu/example-form"
+        "endpoint": "/internal/menu/stats"
       }
     ]
   },
-  "forms": {
-    "exampleForm": "/internal/form/example-submit"
-  },
-  "triggers": {
-    "onAppInstall": "/internal/triggers/on-app-install"
+  "settings": {
+    "subreddit": {
+      "minRankToCommission": {
+        "type": "select",
+        "label": "Rank needed to create commissions",
+        "options": [
+          {
+            "label": "Journeyman",
+            "value": "journeyman"
+          },
+          {
+            "label": "Artisan",
+            "value": "artisan"
+          }
+        ],
+        "defaultValue": [
+          "journeyman"
+        ]
+      },
+      "journeymanPoints": {
+        "type": "number",
+        "label": "Rank points needed for Journeyman",
+        "helpText": "Low for small or test communities. Points: 1 per ranked throw, star and fired pot; 5 per Codex discovery.",
+        "defaultValue": 3
+      },
+      "reportsToHide": {
+        "type": "number",
+        "label": "Reports before a pot or commission is auto-hidden",
+        "defaultValue": 3
+      }
+    }
   },
   "scripts": {
     "build": "vite build",

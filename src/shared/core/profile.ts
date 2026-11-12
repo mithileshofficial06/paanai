@@ -32,7 +32,7 @@ export type Profile = {
 };
 
 /** Dome taper for the top rings of the starting lump (x / 1024). */
-const DOME = [1024, 1012, 990, 958, 912, 850, 768, 650];
+const DOME = [1024, 1018, 1006, 988, 960];
 
 export function createLump(): Profile {
   const outer = new Int32Array(RINGS);

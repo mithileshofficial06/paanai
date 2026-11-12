@@ -26,9 +26,9 @@ export type Input = { ring: number; mode: ModeId; dr: number };
 export const KERNEL = [1024, 980, 862, 698, 520, 356, 224] as const;
 const SPAN = KERNEL.length - 1;
 
-/** Safe minimum wall: taller pots need thicker walls. 90 mm tall -> 4.5 mm. */
+/** Safe minimum wall: taller pots need thicker walls. 90 mm tall -> 3.6 mm, 200 mm -> 5 mm. */
 export function safeWall(height: number): number {
-  return 30 + rdiv(height, 60);
+  return 25 + rdiv(height, 80);
 }
 
 /** Is the current shape unstable? Thin walls or an overhang too steep for its thickness. */
