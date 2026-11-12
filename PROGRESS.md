@@ -75,7 +75,7 @@ Expand `OFFICIAL` in `src/shared/content/commissions.ts` from 6 to 35 (keep the 
 
 ## Needs Mithilesh
 
-- **Watchdog: INSTALLED 2026-11-12 07:22 IST.** Windows task "Paanai Build Watchdog" runs `tools/watchdog/watchdog.ps1` hourly from 10:55 IST. If nothing has been committed for 75+ minutes and PROGRESS.md does not contain "ALL MILESTONES DONE", it starts a headless Claude run (opus, effort high, `--permission-mode auto`) that resumes from this file. Logs: `.paanai/watchdog-<date>.log`. Remove with `Unregister-ScheduledTask 'Paanai Build Watchdog' -Confirm:$false`.
+- **Watchdog: INSTALLED 2026-11-12 07:22 IST.** Windows task "Paanai Build Watchdog" runs `tools/watchdog/watchdog.ps1` hourly from 10:55 IST. If nothing has been committed for 75+ minutes and PROGRESS.md has no line starting with the finished marker (see watchdog.ps1), it starts a headless Claude run (opus, effort high, `--permission-mode auto`) that resumes from this file. Logs: `.paanai/watchdog-<date>.log`. Remove with `Unregister-ScheduledTask 'Paanai Build Watchdog' -Confirm:$false`.
 - Devvit login: done (u/mithileshofficial06).
 
 ## Known issues
@@ -131,3 +131,5 @@ Build the Paanai Reddit daily game autonomously. Do not wait for Mithilesh or as
 **Quality:** run typecheck, lint, tests and build after each milestone; fix failures before moving on. Render screens in a local browser (Playwright; the laptop has a dedicated RTX GPU, use it) and look at screenshots; iterate until it looks premium.
 
 **Pacing:** after each step, continue. If a usage limit or error stops the run, the next run reads this file and continues from **Next action**. Stop only when all 5 milestones are done, then write a final summary at the top of this file.
+
+- To mark the build finished for the watchdog, add a line containing exactly BUILD-COMPLETE-MARKER at the very end of this file.

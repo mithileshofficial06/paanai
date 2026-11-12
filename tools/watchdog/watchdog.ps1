@@ -10,7 +10,7 @@ function Log([string]$m) { Add-Content -Path $log -Value ('[' + (Get-Date -Forma
 
 $progress = Join-Path $proj 'PROGRESS.md'
 if (-not (Test-Path $progress)) { Log 'No PROGRESS.md; exiting'; exit 0 }
-if (Select-String -Path $progress -Pattern 'ALL MILESTONES DONE' -SimpleMatch -Quiet) { Log 'Build finished; nothing to do'; exit 0 }
+if (Select-String -Path $progress -Pattern '^BUILD-COMPLETE-MARKER$' -CaseSensitive -Quiet) { Log 'Build finished; nothing to do'; exit 0 }
 
 $lock = Join-Path $state 'watchdog.lock'
 if (Test-Path $lock) {
