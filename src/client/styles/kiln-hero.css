@@ -1,4 +1,4 @@
-/* Landing page: welcome layout, the brick kiln (KilnHero) and the boot loader. */
+/* Landing page: welcome layout, the brick kiln (KilnHero). */
 
 /* ---------- Welcome layout ---------- */
 .welcome {
@@ -197,25 +197,10 @@
   100% { transform: none; filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 16px rgba(255, 90, 30, 0.25)); opacity: 1; }
 }
 
-.demo--kilnhero { display: grid; place-items: center; }
-.demo--kilnhero .kh { width: auto; height: 100%; }
 
-/* ---------- Boot loader ---------- */
-.boot { display: grid; justify-items: center; gap: 10px; }
-.boot__art { width: 190px; height: auto; overflow: visible; }
-.boot__spin { animation: boot-spin 0.7s linear infinite; }
-.boot__glow { transform-box: fill-box; transform-origin: center; animation: kh-breathe 1.4s ease-in-out infinite alternate; }
-.boot__rise { transform-box: fill-box; transform-origin: 50% 100%; animation: boot-rise 2.6s var(--ease-in-out) infinite; }
-.boot__outline { stroke-dasharray: 260; filter: drop-shadow(0 0 4px rgba(255, 90, 60, 0.8)); animation: boot-draw 2.6s var(--ease-in-out) infinite; }
-.boot__text { margin: 0; font-family: var(--font-display); font-size: 1.15rem; color: var(--color-ink-muted); letter-spacing: 0.01em; }
-.boot__text::after { content: ''; display: inline-block; width: 1.2em; text-align: left; animation: boot-dots 1.2s steps(1) infinite; }
-@keyframes boot-spin { to { stroke-dashoffset: -30; } }
-@keyframes boot-rise { 0% { transform: scaleY(0.05); } 62%, 88% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0.2; } }
-@keyframes boot-draw { 0% { stroke-dashoffset: 260; opacity: 1; } 62% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
-@keyframes boot-dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .welcome__stage, .welcome__copy > *, .kh *, .boot * { animation: none !important; }
+  .welcome__stage, .welcome__copy > *, .kh * { animation: none !important; }
   .kh__door, .kh__spill { transition-duration: 1ms !important; }
   .kh__smoke, .kh__embers { display: none; }
 }

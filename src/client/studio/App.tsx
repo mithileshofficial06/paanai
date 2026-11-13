@@ -24,7 +24,7 @@ import * as S from './store';
 import type { Route } from './store';
 import { boot, go, login, setMuted, startTour } from './controller';
 import { Tour } from './Tour';
-import { Welcome, HowToPlay, Features } from './screens/Onboarding';
+import { Welcome, Features } from './screens/Onboarding';
 import { Throw } from './screens/Throw';
 import { Result, Glaze } from './screens/Result';
 import { Kiln } from './screens/Kiln';
@@ -59,8 +59,6 @@ function Screen({ r }: { r: Route }) {
       );
     case 'welcome':
       return <Welcome />;
-    case 'howto':
-      return <HowToPlay />;
     case 'features':
       return <Features />;
     case 'throw':
@@ -96,7 +94,7 @@ export function App() {
   useEffect(() => {
     if (t) pushToast({ title: t.text, tone: t.tone === 'neutral' ? 'neutral' : t.tone });
   }, [t?.id]);
-  const chrome = !['loading', 'error', 'welcome', 'howto'].includes(r);
+  const chrome = !['loading', 'error', 'welcome'].includes(r);
   const navValue = NAV.some((n) => n.id === r) ? r : r === 'result' || r === 'glaze' ? 'throw' : r === 'create' ? 'commissions' : '';
   return (
     <div class={`app app--${r}`}>

@@ -430,33 +430,3 @@ export function KilnHero({ state, pot, label, heat = 'hot' }: { state: KilnState
     </figure>
   );
 }
-
-/** Boot screen: a lump of clay rising into a pot on a spinning wheel. */
-export function BootLoader({ text }: { text: string }) {
-  return (
-    <div class="boot" role="status" aria-live="polite">
-      <svg class="boot__art" viewBox="0 0 160 140" aria-hidden="true">
-        <defs>
-          <linearGradient id="boot-clay" x1="0" x2="1">
-            <stop offset="0" stop-color="#3b1d14" />
-            <stop offset="0.45" stop-color="#9a5a3d" />
-            <stop offset="0.7" stop-color="#7a4330" />
-            <stop offset="1" stop-color="#2c140e" />
-          </linearGradient>
-          <clipPath id="boot-rise">
-            <rect class="boot__rise" x="0" y="0" width="160" height="112" />
-          </clipPath>
-        </defs>
-        <ellipse class="boot__glow" cx="80" cy="112" rx="70" ry="18" fill="#ff4a1c" opacity="0.25" />
-        <ellipse cx="80" cy="114" rx="64" ry="13" fill="#2a2a30" />
-        <ellipse class="boot__spin" cx="80" cy="112" rx="64" ry="13" fill="none" stroke="#6b6b75" stroke-width="2" stroke-dasharray="6 9" />
-        <g clip-path="url(#boot-rise)">
-          <path d="M58 112 C50 100 46 84 52 70 C56 60 62 54 62 46 L60 40 L100 40 L98 46 C98 54 104 60 108 70 C114 84 110 100 102 112 Z" fill="url(#boot-clay)" />
-          <path class="boot__rings" d="M52 70 H108 M50 84 H110 M52 98 H108" stroke="#000" stroke-opacity="0.18" stroke-width="1.5" />
-        </g>
-        <path class="boot__outline" d="M58 112 C50 100 46 84 52 70 C56 60 62 54 62 46 L60 40 L100 40 L98 46 C98 54 104 60 108 70 C114 84 110 100 102 112" fill="none" stroke="#ff7a5a" stroke-width="1.6" stroke-linecap="round" />
-      </svg>
-      <p class="boot__text">{text}</p>
-    </div>
-  );
-}

@@ -215,6 +215,36 @@ class Sfx {
     o.stop(t + 0.08);
   }
 
+  /** Rubber stamp landing on paper: a short, damped thud with a papery slap. */
+  stamp(): void {
+    const r = this.ready();
+    if (!r) return;
+    const { ctx, out } = r;
+    const t = ctx.currentTime;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(160, t);
+    o.frequency.exponentialRampToValueAtTime(60, t + 0.12);
+    g.gain.setValueAtTime(0.35, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    o.connect(g).connect(out);
+    o.start(t);
+    o.stop(t + 0.2);
+    const n = ctx.createBufferSource();
+    const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * 0.06), ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 3;
+    n.buffer = buf;
+    const f = ctx.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.value = 1800;
+    const ng = ctx.createGain();
+    ng.gain.value = 0.18;
+    n.connect(f).connect(ng).connect(out);
+    n.start(t);
+  }
+
   /** Score reveal / success chord. */
   chime(): void {
     [1, 1.25, 1.5].forEach((m, i) => setTimeout(() => this.tink(0.5 * m), i * 90));

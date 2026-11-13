@@ -30,7 +30,7 @@ for (let k = 0; k < 4; k++) {
   await p.mouse.up(); await p.waitForTimeout(200);
 }
 await shot('05-thrown');
-await click('Done'); await p.waitForTimeout(1500); await shot('06-result');
+await click('Done'); await p.waitForTimeout(2800); await shot('06-result');
 await click('Glaze and fire it'); await shot('07-glaze');
 await p.getByRole('button', { name: /Copper/ }).click(); await p.getByRole('button', { name: /Iron/ }).click();
 await click('Place in the kiln'); await p.waitForTimeout(1200); await shot('08-kiln');

@@ -8,7 +8,6 @@ export type Route =
   | 'loading'
   | 'error'
   | 'welcome' // first visit: "an old potter left a pot in the kiln for you"
-  | 'howto'
   | 'features'
   | 'throw'
   | 'result'

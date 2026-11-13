@@ -45,7 +45,6 @@ export function go(r: Route): void {
     journeys.interaction('commission_open');
     void loadCommissions();
   }
-  if (r === 'howto') journeys.interaction('how_to_play');
 }
 
 export function back(): void {
@@ -183,7 +182,6 @@ export async function submitThrow(log: StrokeLog, profile: number[]): Promise<bo
     S.lastThrow.value = { res, profile, strokeLog, commission: c };
     journeys.progress(0.33, 'shaped');
     if (!res.potId) journeys.end(true, res.beatBar, res.score.total);
-    sfx.chime();
     go('result');
     void refreshToday();
     return true;

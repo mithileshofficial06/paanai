@@ -1,5 +1,6 @@
 // After a throw: the score, then glazing for the kiln.
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
+import { sfx } from '../../app/audio';
 import { GLAZES, GLAZE_INFO, APPLICATIONS, type GlazeId } from '../../../shared/core/glazes';
 import { Button } from '../../ui/Button';
 import { BeatBar } from '../../ui/CommissionCard';
@@ -8,7 +9,9 @@ import { ScoreRing } from '../../ui/ScoreRing';
 import { Stars } from '../../ui/Stars';
 import { IconFlame, IconGlaze, IconRetry, IconShare } from '../../ui/icons';
 import { EmptyState } from '../../ui/States';
-import { PotView } from '../parts';
+import { PotView, TargetView } from '../parts';
+
+const VERDICT = ['Rough, but every potter starts here.', 'A fair pot. The order wanted more.', 'A good pot. The buyer will be pleased.', 'A master’s pot. Worthy of the shelf.'];
 import * as S from '../store';
 import { go, login, newThrow, placeInKiln, sharePot } from '../controller';
 
@@ -17,6 +20,15 @@ export function Result() {
   const thumb = S.lastThumb.value;
   const [sharing, setSharing] = useState(false);
   const [shared, setShared] = useState(false);
+  const win = lt?.res.beatBar ?? false;
+  useEffect(() => {
+    if (!lt) return;
+    const id = setTimeout(() => {
+      sfx.stamp();
+      if (win) setTimeout(() => sfx.chime(), 120);
+    }, 1900);
+    return () => clearTimeout(id);
+  }, [lt]);
   if (!lt) return <EmptyState title="No throw yet" description="Throw today's commission first." action={<Button onClick={() => go('throw')}>Go to the wheel</Button>} />;
   const { res, commission } = lt;
   const sc = res.score;
@@ -30,28 +42,47 @@ export function Result() {
     <section class="sc result" aria-labelledby="result-title">
       <p class="pn-eyebrow">{res.ranked ? 'Ranked throw' : res.practiceReason === 'logged-out' ? 'Practice (log in to rank)' : 'Practice throw'}</p>
       <h1 id="result-title" class="pn-headline">{res.beatBar ? 'You beat the bar.' : sc.total >= res.bar - 5 ? 'So close.' : 'Fired up for another go?'}</h1>
-      <GlassPanel tone="raised" padding="lg" radius="xl" glow class="result__hero">
-        <div class="result__pot">{thumb ? <img src={thumb} alt="Your pot" width={180} height={180} /> : <PotView pot={{ profile: lt.profile, glaze: null, fired: null }} width={120} height={160} />}</div>
+      <div class={`result__stage${res.beatBar ? ' is-win' : ''}`}>
+        <div class="result__spot" aria-hidden="true" />
+        <div class="result__wheel" aria-hidden="true" />
+        <div class="result__pot">{thumb ? <img src={thumb} alt="Your pot" width={200} height={200} /> : <PotView pot={{ profile: lt.profile, glaze: null, fired: null }} width={130} height={170} />}</div>
+        <div class="result__order" aria-label={`${commission.commissioner}'s order`}>
+          <TargetView profile={commission.target} width={44} height={56} />
+          <span>The order</span>
+        </div>
+        {res.beatBar ? (
+          <div class="result__sparks" aria-hidden="true">
+            {Array.from({ length: 16 }, (_, i) => (
+              <i key={i} style={{ '--i': i }} />
+            ))}
+          </div>
+        ) : null}
+        <div class={`result__stamp ${res.beatBar ? 'is-ok' : 'is-no'}`} aria-hidden="true">
+          {res.beatBar ? 'Accepted' : 'Not yet'}
+        </div>
+      </div>
+      <GlassPanel tone="raised" padding="md" radius="xl" glow class="result__hero">
+        <ScoreRing value={sc.total} size={128} label="Score" target={res.bar} targetLabel={`Beat ${res.bar}`} delay={500} />
         <div class="result__score">
-          <ScoreRing value={sc.total} size={140} label="Score" target={res.bar} targetLabel={`Beat ${res.bar}`} />
-          <Stars value={sc.stars} size={26} label={`${sc.stars} of 3 stars`} />
+          <Stars value={sc.stars} size={26} label={`${sc.stars} of 3 stars`} delay={1500} />
+          <p class="result__verdict">{VERDICT[sc.stars] ?? VERDICT[0]}</p>
+          {res.rank !== null ? (
+            <p class="result__rank">
+              <span class="pn-num">#{res.rank}</span> of {res.players} potters today
+            </p>
+          ) : null}
         </div>
       </GlassPanel>
       <BeatBar beat={res.bar} score={sc.total} commissioner={commission.commissioner} showCommissioner />
-      {res.rank !== null ? (
-        <p class="pn-body result__rank">
-          #{res.rank} of {res.players} potters today
-        </p>
-      ) : null}
       <GlassPanel padding="md" radius="lg" class="result__breakdown">
         <h2 class="pn-eyebrow">How it scored</h2>
         <ul>
-          {parts.map((p) => (
-            <li key={p.label}>
+          {parts.map((p, i) => (
+            <li key={p.label} style={{ '--i': i }}>
               <span>{p.label}</span>
               <span class="result__weight">{p.w}</span>
               <span class="result__bar">
-                <span style={{ width: `${p.v}%` }} />
+                <span class={p.v >= 80 ? 'is-high' : p.v < 50 ? 'is-low' : ''} style={{ width: `${p.v}%` }} />
               </span>
               <span class="pn-num">{p.v}</span>
             </li>
@@ -111,6 +142,7 @@ export function Glaze() {
   if (!lt?.res.potId) return <EmptyState title="Nothing to glaze" description="Throw a pot first." action={<Button onClick={() => go('throw')}>Go to the wheel</Button>} />;
   const potId = lt.res.potId;
   function toggle(g: GlazeId) {
+    sfx.tink(picked.includes(g) ? 0.62 : 0.74 + GLAZES.indexOf(g) * 0.03);
     setPicked((p) => (p.includes(g) ? p.filter((x) => x !== g) : p.length >= 2 ? [p[1]!, g] : [...p, g]));
   }
   const raw = picked.length ? GLAZE_INFO[picked[picked.length - 1]!].raw : '#9a6b52';
