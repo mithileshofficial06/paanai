@@ -2,6 +2,9 @@ import type {
   ApiError,
   CommissionDTO,
   LeaderboardResponse,
+  LevelThrowRequest,
+  LevelThrowResponse,
+  LevelsResponse,
   PotSummary,
   ThrowRequest,
   ThrowResponse,
@@ -69,5 +72,8 @@ export const api = {
     req<{ id: string; postId: string; bar: number; url: string }>('POST', 'commission', { potId, adjective, vessel, constraints }),
   commissions: () => req<{ commissions: CommissionListItem[] }>('GET', 'commissions'),
   myPots: () => req<{ pots: PotSummary[] }>('GET', 'mypots'),
+  levels: () => req<LevelsResponse>('GET', 'levels'),
+  levelThrow: (r: LevelThrowRequest) => req<LevelThrowResponse>('POST', 'level/throw', r),
+  tutorialDone: () => req<{ ok: true }>('POST', 'tutorial/done', {}),
   deleteCommission: (id: string) => req<{ ok: true }>('POST', 'commission/delete', { id }),
 };

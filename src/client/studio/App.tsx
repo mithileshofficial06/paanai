@@ -12,6 +12,7 @@ import {
   IconCommission,
   IconInfo,
   IconKiln,
+  IconLevels,
   IconPaanai,
   IconShelf,
   IconSoundOff,
@@ -22,7 +23,8 @@ import {
 } from '../ui/icons';
 import * as S from './store';
 import type { Route } from './store';
-import { boot, go, login, setMuted, startTour } from './controller';
+import { boot, go, login, playDaily, setMuted, startTour } from './controller';
+import { Levels, LevelResult } from './screens/Levels';
 import { Tour } from './Tour';
 import { Welcome, Features } from './screens/Onboarding';
 import { Throw } from './screens/Throw';
@@ -31,13 +33,14 @@ import { Kiln } from './screens/Kiln';
 import { Shelf, Codex, Commissions, Create, Leaderboard } from './screens/Community';
 
 const NAV: { id: Route; label: string }[] = [
-  { id: 'throw', label: 'Wheel' },
+  { id: 'levels', label: 'Levels' },
+  { id: 'throw', label: 'Daily' },
   { id: 'kiln', label: 'Kiln' },
   { id: 'shelf', label: 'Shelf' },
   { id: 'codex', label: 'Codex' },
-  { id: 'commissions', label: 'Commissions' },
 ];
 const NAV_ICONS: Record<string, ComponentChildren> = {
+  levels: <IconLevels />,
   throw: <IconWheel />,
   kiln: <IconKiln />,
   shelf: <IconShelf />,
@@ -57,6 +60,10 @@ function Screen({ r }: { r: Route }) {
           <ErrorState title="The studio is closed" description={S.loadError.value ?? 'Please try again.'} onRetry={() => void boot()} />
         </section>
       );
+    case 'levels':
+      return <Levels />;
+    case 'levelResult':
+      return <LevelResult />;
     case 'welcome':
       return <Welcome />;
     case 'features':
@@ -95,7 +102,15 @@ export function App() {
     if (t) pushToast({ title: t.text, tone: t.tone === 'neutral' ? 'neutral' : t.tone });
   }, [t?.id]);
   const chrome = !['loading', 'error', 'welcome'].includes(r);
-  const navValue = NAV.some((n) => n.id === r) ? r : r === 'result' || r === 'glaze' ? 'throw' : r === 'create' ? 'commissions' : '';
+  const levelMode = S.mode.value !== 'daily';
+  const navValue =
+    r === 'levelResult' || (r === 'throw' && levelMode)
+      ? 'levels'
+      : NAV.some((n) => n.id === r)
+        ? r
+        : r === 'result' || r === 'glaze'
+          ? 'throw'
+          : '';
   return (
     <div class={`app app--${r}`}>
       <AppBackground variant={r === 'kiln' ? 'kiln' : 'studio'} />
@@ -128,7 +143,7 @@ export function App() {
         <BottomNav
           fixed
           value={navValue}
-          onChange={(id) => go(id as Route)}
+          onChange={(id) => (id === 'throw' ? playDaily() : go(id as Route))}
           items={NAV.map((n) => ({ id: n.id, label: n.label, icon: NAV_ICONS[n.id], badge: n.id === 'kiln' && S.kilnBadge.value > 0 ? S.kilnBadge.value : undefined }))}
         />
       ) : null}
@@ -139,8 +154,11 @@ export function App() {
           <Button variant="secondary" block icon={<IconTrophy />} onClick={() => (setMore(false), go('leaderboard'))}>
             Today's leaderboard
           </Button>
+          <Button variant="secondary" block icon={<IconCommission />} onClick={() => (setMore(false), go('commissions'))}>
+            Commissions
+          </Button>
           <Button variant="secondary" block icon={<IconInfo />} onClick={() => (setMore(false), startTour())}>
-            How to play
+            Tutorial
           </Button>
           <Button variant="secondary" block icon={<IconSparkle />} onClick={() => (setMore(false), go('features'))}>
             What's in Paanai

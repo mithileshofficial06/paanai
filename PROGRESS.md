@@ -134,3 +134,9 @@ Build the Paanai Reddit daily game autonomously. Do not wait for Mithilesh or as
 **Pacing:** after each step, continue. If a usage limit or error stops the run, the next run reads this file and continues from **Next action**. Stop only when all 5 milestones are done, then write a final summary at the top of this file.
 
 - To mark the build finished for the watchdog, add a line containing exactly BUILD-COMPLETE-MARKER at the very end of this file.
+
+## 2026-11-13: Levels 1-100 and the tutorial
+- `src/shared/content/levels.ts`: 100 deterministic levels (cylinders -> one to four shape features -> rules; every 10th is a Master vessel). Clearing = shape match >= the level's pass mark (30% -> 60% of the gap between the untouched lump and 100) and every rule met. Stars by how much of the remaining gap is closed.
+- Server: `GET /api/levels`, `POST /api/level/throw` (replayed and scored on the server, locked levels refused), `POST /api/tutorial/done`; progress in `p:levels:<user>`. Logged-out progress lives in localStorage.
+- Client: Levels tab (sealed boxes: blurred pot, iron straps, padlock, embers), level result with "Box N unsealed", tutorial = 4 narrated steps + hands-on step 5 checklist -> "Enter level 1". Commissions moved into More; Wheel tab renamed Daily.
+- Typecheck is `npx tsc -b` (plain `tsc -p .` checks nothing: the root tsconfig only has references).

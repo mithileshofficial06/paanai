@@ -25,6 +25,7 @@ export const K = {
   reports: (targetId: string) => `p:reports:${targetId}`, // zset reporter -> time
   modQueue: () => `p:modq`, // zset targetId -> report count
   seq: () => `p:seq`, // id counter
+  levels: (user: string) => `p:levels:${user}`, // hash: unlocked, tutorial, b<n> = best score on level n
 };
 
 export const TTL = {
@@ -41,4 +42,5 @@ export const TTL = {
   job: 3 * DAY_S,
   stats: 60 * DAY_S,
   reports: 30 * DAY_S,
+  levels: 365 * DAY_S,
 };

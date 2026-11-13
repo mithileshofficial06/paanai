@@ -46,11 +46,11 @@ export function Throw() {
         setTip(st && s.phase === 'throwing' ? coach(st.getProfile(), target, s.wetness, s.matchPreview) : null);
       },
       onEvent: (e) => {
-        if (e === 'stroke-start' && !S.tour.value) {
+        if (e === 'stroke-start' && (!S.tour.value || S.practice.value)) {
           throwStarted();
           completeHint('drag');
         }
-        if (e === 'opened' && !S.tour.value) completeHint('open');
+        if (e === 'opened' && (!S.tour.value || S.practice.value)) completeHint('open');
         if (e === 'wobble-start') setWarn('thin');
         if (e === 'slumped') setWarn('slump');
         if (e === 'limit') setWarn('limit');
@@ -117,11 +117,19 @@ export function Throw() {
       <header class="throw__top">
         <div class="throw__brief pn-glass pn-radius-lg" data-tour="brief">
           <div class="throw__brief-main">
-            <p class="pn-eyebrow">{c.kind === 'official' ? `Commission · ${c.origin}` : `Beat ${c.commissioner}`}</p>
+            <p class="pn-eyebrow">
+              {c.kind === 'official'
+                ? `Commission · ${c.origin}`
+                : c.kind === 'level'
+                  ? `${c.origin}${c.formatLabel === 'Master level' ? ' · Master level' : ''}`
+                  : c.kind === 'tutorial'
+                    ? 'Tutorial · practice pot'
+                    : `Beat ${c.commissioner}`}
+            </p>
             <h1 class="throw__title">{c.title}</h1>
           </div>
-          <div class="throw__beat" title="Score to beat" data-tour="beat">
-            <span class="throw__beat-label">Beat</span>
+          <div class="throw__beat" title={c.kind === 'level' || c.kind === 'tutorial' ? 'Score to pass' : 'Score to beat'} data-tour="beat">
+            <span class="throw__beat-label">{c.kind === 'level' || c.kind === 'tutorial' ? 'Pass' : 'Beat'}</span>
             <span class="throw__beat-num">{c.bar}</span>
           </div>
         </div>

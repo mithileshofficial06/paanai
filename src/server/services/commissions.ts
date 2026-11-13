@@ -1,5 +1,6 @@
 import { OFFICIAL, type Format, type OfficialCommission, officialById } from '../../shared/content/commissions';
 import { recipeToLog } from '../../shared/content/recipes';
+import { TUTORIAL_ID, levelDTO, levelData, levelNumberOf, tutorialData } from '../../shared/content/levels';
 import { type Profile, decodeProfile, encodeProfile } from '../../shared/core/profile';
 import { type StrokeLog, replay, strokeCount } from '../../shared/core/shape';
 import { type Constraint, barFor } from '../../shared/core/score';
@@ -38,20 +39,8 @@ export function atmosphereFor(date: string): Atmosphere {
   return (hash32(`atmosphere:${date}`) & 1) === 0 ? 'oxidation' : 'reduction';
 }
 
-export function constraintLabel(c: Constraint): string {
-  switch (c.kind) {
-    case 'capacity':
-      return `Holds ${(c.ml / 1000).toFixed(c.ml % 1000 === 0 ? 1 : 2)} L (within ${c.tolPct}%)`;
-    case 'rim':
-      return c.rule === 'narrower' ? 'Rim narrower than the base' : 'Rim wider than the base';
-    case 'height':
-      return `Height ${Math.round(c.min / 10)}-${Math.round(c.max / 10)} mm`;
-    case 'survive':
-      return 'Must survive the kiln';
-    case 'maxStrokes':
-      return `At most ${c.n} strokes`;
-  }
-}
+import { constraintLabel } from '../../shared/content/labels';
+export { constraintLabel };
 
 type OfficialCache = { target: Profile; log: StrokeLog; bar: number; strokes: number };
 const officialCache = new Map<string, OfficialCache>();
@@ -101,6 +90,11 @@ export function officialFor(date: string): OfficialCommission {
 
 /** Resolve any commission id (official or player-made). */
 export async function resolveCommission(id: string, format?: Format, postId: string | null = null): Promise<ResolvedCommission> {
+  const lv = levelNumberOf(id);
+  if (lv !== null || id === TUTORIAL_ID) {
+    const d = lv !== null ? levelData(lv) : tutorialData();
+    return { dto: levelDTO(d), target: d.target, ghostLog: d.log };
+  }
   const off = officialById(id);
   if (off) return officialDTO(off, format ?? 'match', postId);
   const rec = await platform().kv.hGetAll(K.comm(id));

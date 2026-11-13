@@ -54,6 +54,17 @@ export function IconWheel(p: IconProps) {
 }
 
 /** Domed kiln with an arched firing door and a chimney. */
+/** Levels: a staircase with a small pot on the top step. */
+export function IconLevels(p: IconProps) {
+  return (
+    <Svg {...p} name="levels">
+      <path d="M2.75 20.25h18.5" />
+      <path d="M2.75 20.25v-4.5h5.5v-4.5h5.5v-4.5h7.5v13.5" />
+      <path d="M16.6 2.9h2.3M17.75 6.5c-1.25 0-1.9-.7-1.9-1.55 0-.7.45-1.25.75-2.05h2.3c.3.8.75 1.35.75 2.05 0 .85-.65 1.55-1.9 1.55z" />
+    </Svg>
+  );
+}
+
 export function IconKiln(p: IconProps) {
   return (
     <Svg {...p} name="kiln">

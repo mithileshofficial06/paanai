@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
-import type { LeaderboardResponse, ThrowRequest, TodayResponse } from '../../shared/api/types';
+import type { LeaderboardResponse, LevelThrowRequest, ThrowRequest, TodayResponse } from '../../shared/api/types';
+import { levelProgress, markTutorialDone, submitLevelThrow } from '../services/levels';
 import { platform } from '../platform';
 import { K } from '../store/keys';
 import { commissionForPost } from '../services/daily';
@@ -59,6 +60,16 @@ api.post('/throw', async (c) => {
   const body = await c.req.json<ThrowRequest>();
   return c.json(await submitThrow(body));
 });
+
+api.get('/levels', async (c) => c.json(await levelProgress()));
+
+api.post('/level/throw', async (c) => {
+  await limit('level-throw', 12);
+  const body = await c.req.json<LevelThrowRequest>();
+  return c.json(await submitLevelThrow(body));
+});
+
+api.post('/tutorial/done', async (c) => c.json(await markTutorialDone()));
 
 api.get('/leaderboard', async (c) => {
   const id = c.req.query('id');

@@ -85,3 +85,21 @@
 .tour__beats i.is-on { width: 30px; background: linear-gradient(90deg, #ffb340, #ffe08a); box-shadow: 0 0 8px rgba(255, 190, 70, 0.7); }
 @keyframes tour-say { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .tour__text { animation: none; } }
+
+/* Step 5: the player throws; the guide only points (no blocking, light dimming). */
+.tour__spot--soft { box-shadow: 0 0 0 200vmax rgba(6, 2, 2, 0.16), 0 0 26px 6px rgba(255, 196, 80, 0.45), inset 0 0 18px rgba(255, 200, 90, 0.2); }
+.tour__card--practice { padding: 12px 16px 12px; }
+.tour__card--practice .tour__title { margin: 6px 0 6px; }
+.tour__tasks { display: grid; gap: 6px; margin: 0 0 10px; padding: 0; list-style: none; }
+.tour__tasks li { display: flex; align-items: flex-start; gap: 10px; color: rgba(241, 227, 214, 0.55); font-size: 0.92rem; line-height: 1.35; transition: color 300ms; }
+.tour__tasks li.is-on { color: #fff3e2; }
+.tour__tasks li.is-done { color: rgba(200, 235, 190, 0.75); }
+.tour__task { display: grid; gap: 2px; }
+.tour__task em { font-style: normal; font-size: 0.86rem; color: #f1d9b8; animation: tour-say 320ms var(--ease-out) both; }
+.tour__tick { flex: none; width: 20px; height: 20px; margin-top: 1px; border-radius: 50%; border: 2px solid rgba(255, 210, 140, 0.35); display: grid; place-items: center; transition: background 300ms, border-color 300ms; }
+.tour__tasks li.is-on .tour__tick { border-color: #ffd27a; box-shadow: 0 0 10px rgba(255, 190, 70, 0.7); animation: tour-pulse 1.6s ease-in-out infinite; }
+.tour__tasks li.is-done .tour__tick { border-color: transparent; background: linear-gradient(180deg, #8fe39c, #3fa857); }
+.tour__tasks li.is-done .tour__tick::after { content: ''; width: 8px; height: 4px; margin-top: -2px; border-left: 2px solid #0b2a10; border-bottom: 2px solid #0b2a10; rotate: -45deg; }
+.tour__complete { display: grid; justify-items: center; gap: 4px; padding: 6px 0 2px; text-align: center; }
+.tour__seal { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; color: #2a1704; background: radial-gradient(circle at 40% 35%, #fff2c2, #f0b53a 60%, #a8650f); box-shadow: 0 0 0 4px rgba(255, 210, 120, 0.25), 0 0 30px rgba(255, 190, 70, 0.8); animation: res-stamp 520ms cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+.tour__btn--wide { width: 100%; margin-top: 6px; }

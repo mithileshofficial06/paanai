@@ -9,7 +9,7 @@ export type ApiError = { error: { code: string; message: string } };
 
 export type CommissionDTO = {
   id: string;
-  kind: 'official' | 'player';
+  kind: 'official' | 'player' | 'level' | 'tutorial';
   title: string;
   note: string;
   origin: string;
@@ -108,6 +108,25 @@ export type ThrowResponse = {
   rank: number | null;
   players: number;
   starsEarned: number;
+};
+
+/** Level ladder progress. best[i] = best shape match on level i + 1 (0 = not played; at or above the pass mark = cleared). */
+export type LevelsResponse = { unlocked: number; best: number[]; tutorialDone: boolean; saved: boolean };
+export type LevelThrowRequest = { level: number; strokeLog: string };
+export type LevelThrowResponse = {
+  level: number;
+  score: ScoreBreakdown;
+  /** Shape match needed to clear. */
+  pass: number;
+  passed: boolean;
+  /** 0 when not cleared, else 1-3. */
+  stars: number;
+  /** True the first time this level is cleared. */
+  firstClear: boolean;
+  /** Highest level the player may now play. */
+  unlocked: number;
+  best: number;
+  saved: boolean;
 };
 
 export type LeaderboardResponse = { rows: LeaderRow[]; me: LeaderRow | null; players: number };

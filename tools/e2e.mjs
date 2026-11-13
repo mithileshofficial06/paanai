@@ -1,8 +1,9 @@
 // End-to-end workflow check of the studio, as a player would use it (phone size).
 //   node tools/e2e.mjs [baseUrl]      default http://127.0.0.1:5173
-// Resets the harness world, then walks: loading -> welcome -> starter kiln -> tour -> throw ->
-// coach -> collapse card -> score -> glaze -> kiln -> next day -> reveal -> codex -> shelf ->
-// like -> commissions -> create -> leaderboard. Prints PASS/FAIL per step; screenshots failures.
+// Resets the harness world, then walks: loading -> welcome -> starter kiln -> tutorial -> level 1
+// wheel -> coach -> collapse card -> clear level 1 -> level map -> daily throw -> score -> glaze ->
+// kiln -> next day -> reveal -> codex -> shelf -> like -> commissions -> create -> leaderboard.
+// Prints PASS/FAIL per step; screenshots failures.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 
@@ -65,17 +66,18 @@ await step('Open the kiln gives the starter pot', async () => {
   await expectVisible(p.getByText('Still warm from the'), 'opened headline');
   await expectVisible(p.locator('.kh__pot img, .kh__pot svg'), 'starter pot', 10000);
 });
-await step('How to play starts the guided tour', async () => {
-  await btn('How to play').click();
+await step('Start the tutorial: narrated steps', async () => {
+  await btn('Start the tutorial').click();
   await expectVisible(p.locator('.tour__card'), 'tour card');
   await p.waitForTimeout(1500);
-  await btn('Next').click();
+  await btn('Next', true).click();
   await expectVisible(p.locator('.tour__title', { hasText: 'Hands, Push and Thin' }), 'tour step 2');
 });
-await step('Skip tour lands on a fresh wheel', async () => {
-  await btn('Skip tour').click();
+await step('Skip tutorial lands on level 1', async () => {
+  await btn('Skip tutorial').click();
   await p.locator('.tour').waitFor({ state: 'detached' });
   await expectVisible(p.locator('.throw__canvas'), 'wheel canvas');
+  await expectVisible(p.getByText('Level 1 of 100'), 'level 1 header');
 });
 
 const box = await p.locator('.throw__canvas').boundingBox();
@@ -116,9 +118,33 @@ await step('Undo from the card restores the pot', async () => {
   if (await p.locator('.throw__alert--slump').count()) throw new Error('still collapsed after undo');
   await p.locator('[data-tour=tool-hands]').click();
 });
-await step('Fresh lump for the ranked throw (reload keeps the throw unsubmitted)', async () => {
+await step('Clear level 1: result, next box unsealed', async () => {
   await p.reload();
   await p.locator('#boot').waitFor({ state: 'detached', timeout: 15000 });
+  await expectVisible(p.locator('.lv__grid'), 'level map after reload');
+  await btn('Play level 1').click();
+  await p.waitForTimeout(800);
+  await btn('Open', true).click();
+  await p.waitForTimeout(1500);
+  for (let k = 0; k < 2; k++) await drag(cx + 62, 560, cx + 58, 400, 40, 30);
+  await btn('Done').click();
+  await expectVisible(p.locator('.lvr'), 'level result', 10000);
+  const h = (await p.locator('.lvr .pn-headline').textContent()).trim();
+  console.log(`      level 1: ${h}`);
+  if (!/cleared/i.test(h)) throw new Error(`level 1 not cleared (${h})`);
+  await expectVisible(p.locator('.lvr__unlock'), 'unsealed card', 6000);
+});
+await step('Level map: level 2 to play, the rest sealed', async () => {
+  await p.getByRole('button', { name: 'Levels' }).first().click();
+  await expectVisible(p.locator('.lv__tile.is-cleared[data-level="1"]'), 'cleared level 1');
+  await expectVisible(p.locator('.lv__tile.is-current[data-level="2"]'), 'level 2 to play');
+  const sealed = await p.locator('.lv__tile.is-locked').count();
+  if (sealed !== 98) throw new Error(`${sealed} sealed boxes, expected 98`);
+  const w = await p.locator('.lv__tiles').first().evaluate((el) => el.scrollWidth - el.clientWidth);
+  if (w > 1) throw new Error(`level grid overflows by ${w}px`);
+});
+await step('Daily tab: fresh lump for the ranked throw', async () => {
+  await btn('Daily').click();
   await p.waitForTimeout(800);
   await btn('Open', true).click();
   await p.waitForTimeout(1500);
@@ -163,7 +189,8 @@ await step('Shelf shows the fired pot and likes work', async () => {
   const after = await like.textContent();
   if (before === after) throw new Error(`likes did not change (${before})`);
 });
-await step('Commissions page and create flow', async () => {
+await step('Commissions page (in More) and create flow', async () => {
+  await p.getByRole('button', { name: 'More' }).click();
   await btn('Commissions').click();
   await expectVisible(p.locator('#comm-title'), 'commissions title');
   const post = btn('Post one of your pots');

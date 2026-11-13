@@ -142,7 +142,7 @@
 .pn-beat.is-beaten .pn-beat__marker { background: var(--color-success); box-shadow: 0 0 0 2px var(--color-success), 0 0 14px var(--color-success); }
 
 .pn-ring { position: relative; display: inline-grid; place-items: center; width: var(--ring-size, 132px); height: var(--ring-size, 132px); }
-.pn-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.pn-ring > svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
 .pn-ring__track { fill: none; stroke: var(--color-track); }
 .pn-ring__arc { fill: none; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(255, 60, 60, 0.6)); }
 .pn-ring.is-gold .pn-ring__arc { filter: drop-shadow(0 0 8px rgba(230, 180, 90, 0.7)); }
@@ -150,7 +150,7 @@
 .pn-ring__center { position: relative; display: grid; justify-items: center; gap: 2px; text-align: center; }
 .pn-ring__value { font: var(--weight-bold) calc(var(--ring-size, 132px) * 0.3) / 1 var(--font-display); font-variant-numeric: tabular-nums; }
 .pn-ring__label { font: var(--weight-semibold) 11px/1 var(--font-ui); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-subtle); }
-.pn-ring__target { font-size: 12px; color: var(--color-ink-muted); }
+.pn-ring__target { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; color: var(--color-ink-muted); }
 .pn-ring__target.is-beaten { color: var(--color-success); }
 
 /* ---------- Stars ---------- */

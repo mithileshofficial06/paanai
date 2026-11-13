@@ -1,11 +1,13 @@
-// Guided tour: plays one throw on the real wheel by itself, spotlighting every control with a
-// shining gold frame, a caption card and spoken narration (Web Speech API, if available).
-// Gestures are real pointer events sent to the canvas, so what you see is exactly what a
-// finger would do. Nothing is submitted: the tour never presses Done.
+// The tutorial. Steps 1-4: the guide throws a practice cup on the real wheel by itself,
+// spotlighting every control with a shining gold frame, a caption card and spoken narration
+// (Web Speech API, if available). Gestures are real pointer events sent to the canvas.
+// Step 5: the player throws it themselves while a checklist ticks off each move, then
+// "Enter level 1". The practice cup is never scored or saved.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { ThrowStage } from '../three/throwStage';
 import * as S from './store';
-import { finishOnboarding } from './controller';
+import { finishTutorial } from './controller';
+import { tutorialData } from '../../shared/content/levels';
 
 /** The live wheel, registered by the Throw screen. */
 export const tourStage: { st: ThrowStage | null; canvas: HTMLCanvasElement | null } = { st: null, canvas: null };
@@ -25,12 +27,12 @@ type Step = { title: string; beats: Beat[] };
 
 const opened = () => tourStage.st?.getProfile().opened ?? false;
 
-// Four short steps: the idea, the three tools, how scoring works, and what happens after Done.
+// Four narrated steps (the guide throws), then step 5 where the player throws (TASKS).
 const STEPS: Step[] = [
   {
     title: 'How it works',
     beats: [
-      { target: '[data-tour=brief]', say: 'Every day there is one commission, and everyone throws the same pot.' },
+      { target: '[data-tour=brief]', say: 'Each level asks for one vessel. A hundred levels, each a little harder than the last.' },
       {
         target: 'pot',
         say: 'Shape the spinning clay to match the glowing outline. Hold to centre it, then tap Open.',
@@ -41,7 +43,7 @@ const STEPS: Step[] = [
           if (!opened()) await c.click('[data-tour=open]');
         },
       },
-      { target: '[data-tour=beat]', say: 'Beat this score, set by the Master. Your first throw each day is the ranked one.' },
+      { target: '[data-tour=beat]', say: 'This is the pass mark. Score above it to clear the level.' },
     ],
   },
   {
@@ -81,17 +83,27 @@ const STEPS: Step[] = [
     beats: [
       { target: '[data-tour=gauges]', say: 'Matching the shape is most of your score. Even walls, the rules, and using few strokes add the rest.' },
       { target: '[data-tour=ghost]', say: 'Stuck? The ghost replays the Master’s own strokes so you can copy them.' },
-      { target: '[data-tour=done]', say: 'Tap Done to score. Your ranked throw goes on today’s leaderboard, and stars raise your potter rank.' },
+      { target: '[data-tour=done]', say: 'Tap Done to score: up to three stars a level. The daily commission also ranks you on today’s leaderboard.' },
     ],
   },
   {
     title: 'After you tap Done',
     beats: [
-      { target: '.pn-bottomnav__cell:nth-child(2)', say: 'Glaze your pot and load the kiln. It fires at midnight UTC, so come back tomorrow to open it.' },
-      { target: '.pn-bottomnav__cell:nth-child(4)', say: 'New glaze effects go in the Codex, and the Shelf shows every fired pot for likes.' },
-      { target: '[data-tour=info]', say: 'Tap here to watch this again. The wheel is yours, potter.' },
+      { target: '.pn-bottomnav__cell:nth-child(1)', say: 'Clear a level and the next one unlocks on the Levels map. Replay any level for more stars.' },
+      { target: '.pn-bottomnav__cell:nth-child(2)', say: 'Every day there is also a daily commission. Glaze it and fire it in the kiln overnight.' },
+      { target: '[data-tour=info]', say: 'Tap here to watch this again. Now it is your turn.' },
     ],
   },
+];
+
+/** Step 5: what the player does by themselves, in order. */
+type Task = { key: 'centre' | 'open' | 'pull' | 'push' | 'done'; label: string; say: string };
+const TASKS: Task[] = [
+  { key: 'centre', label: 'Centre the clay', say: 'Press and hold on the clay until it stops wobbling.' },
+  { key: 'open', label: 'Open it', say: 'Tap Open to press a hollow into the middle.' },
+  { key: 'pull', label: 'Pull the walls up', say: 'With Hands, drag up along the wall, two or three times, to pull it taller.' },
+  { key: 'push', label: 'Swell the belly', say: 'Tap Push, then drag the middle of the wall outward.' },
+  { key: 'done', label: 'Tap Done', say: 'Happy with it? Tap Done.' },
 ];
 
 // ---------- narration ----------
@@ -164,16 +176,74 @@ export function Tour() {
   const [rect, setRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const [finger, setFinger] = useState<{ x: number; y: number; down: boolean } | null>(null);
   const run = useRef(0);
-  const step = STEPS[i]!;
+  const total = STEPS.length + 1;
+  const practicing = i === STEPS.length;
+  const step = STEPS[Math.min(i, STEPS.length - 1)]!;
   const beat = step.beats[bi] ?? step.beats[0]!;
-  const last = i === STEPS.length - 1;
   const lastBeat = bi >= step.beats.length - 1;
+
+  // ----- step 5: the player's own throw, ticked off live -----
+  const live = S.live.value;
+  const tool = S.tool.value;
+  const finished = S.practiceDone.value;
+  const [done, setDone] = useState<Set<Task['key']>>(new Set());
+  const pushBase = useRef<number | null>(null);
+  const goalMm = useRef(Math.round((tutorialData().target.height / 10) * 0.8));
+  function freshLump() {
+    const st = tourStage.st;
+    st?.reset();
+    st?.recenter();
+    st?.setInputEnabled(true);
+    S.tool.value = 'hands';
+    st?.setTool('hands');
+    S.practiceDone.value = false;
+    pushBase.current = null;
+    setDone(new Set());
+  }
+  useEffect(() => {
+    if (!practicing) {
+      S.practice.value = false;
+      return;
+    }
+    // A fresh lump that still needs centring, and the guide stops blocking the wheel.
+    S.practice.value = true;
+    setFinger(null);
+    freshLump();
+  }, [practicing]);
+  useEffect(() => {
+    if (!practicing) return;
+    const next = new Set(done);
+    if (live?.phase === 'throwing') next.add('centre');
+    if (live?.opened) next.add('open');
+    if (live?.opened && live.heightMm >= goalMm.current) next.add('pull');
+    if (tool === 'push' && pushBase.current === null && live) pushBase.current = live.strokes;
+    if (tool === 'push' && pushBase.current !== null && live && live.strokes > pushBase.current) next.add('push');
+    if (finished) next.add('done');
+    if (next.size !== done.size) setDone(next);
+  }, [practicing, live?.phase, live?.opened, live?.heightMm, live?.strokes, tool, finished]);
+  const task = TASKS.find((t) => !done.has(t.key)) ?? null;
+  useEffect(() => {
+    if (!practicing) return;
+    void speak(task ? task.say : 'Well thrown! The tutorial is complete. Enter level one when you are ready.', voiceOn);
+  }, [practicing, task?.key]);
+
+  const target: Target = practicing
+    ? !task
+      ? null
+      : task.key === 'open'
+        ? '[data-tour=open]'
+        : task.key === 'push' && tool !== 'push'
+          ? '[data-tour=tool-push]'
+          : task.key === 'done'
+            ? '[data-tour=done]'
+            : 'pot'
+    : beat.target;
 
   // Track the target's position (it can move: the pot grows, the HUD reflows).
   useEffect(() => {
     let raf = 0;
     const measure = () => {
-      const t = beat.target;
+      const t = target;
       if (t === null) setRect(null);
       else if (t === 'pot') {
         const f = frameClient();
@@ -193,11 +263,12 @@ export function Tour() {
     };
     measure();
     return () => clearTimeout(raf);
-  }, [i, bi]);
+  }, [i, bi, target]);
 
   // Run the step: narrate and act together, then advance when both are done.
   useEffect(() => {
     const id = ++run.current;
+    if (practicing) return;
     const alive = () => run.current === id;
     const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
     const moveFinger = async (x: number, y: number, down: boolean) => {
@@ -288,7 +359,7 @@ export function Tour() {
       await wait(350);
       if (!alive() || !playing) return;
       if (!lastBeat) setBeat(bi + 1);
-      else if (!last) setI(i + 1);
+      else setI(i + 1);
     })();
     return () => {
       run.current++;
@@ -302,32 +373,35 @@ export function Tour() {
   function end() {
     run.current++;
     window.speechSynthesis?.cancel();
-    S.tour.value = false;
-    if (S.me.value && !S.me.value.onboarded) void finishOnboarding();
+    void finishTutorial();
   }
 
   const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
   const below = !rect || rect.y + rect.h / 2 < vh * 0.45;
-  const cardStyle = rect
-    ? below
-      ? { top: `${Math.min(vh - 230, rect.y + rect.h + 14)}px` }
-      : { bottom: `${Math.min(vh - 230, vh - rect.y + 14)}px` }
-    : { top: '50%', transform: 'translate(-50%, -50%)' };
+  const cardStyle = practicing
+    ? { top: 'calc(var(--safe-top, 0px) + 10px)' }
+    : rect
+      ? below
+        ? { top: `${Math.min(vh - 230, rect.y + rect.h + 14)}px` }
+        : { bottom: `${Math.min(vh - 230, vh - rect.y + 14)}px` }
+      : { top: '50%', transform: 'translate(-50%, -50%)' };
+  const firstTime = !S.levels.value?.tutorialDone;
+  const progress = practicing ? 1 : (i + (bi + 1) / step.beats.length) / total;
 
   return (
-    <div class="tour" role="dialog" aria-modal="true" aria-labelledby="tour-title">
-      <div class="tour__block" />
+    <div class={`tour${practicing ? ' tour--practice' : ''}`} role="dialog" aria-modal={!practicing} aria-labelledby="tour-title">
+      {practicing ? null : <div class="tour__block" />}
       {rect ? (
-        <div class="tour__spot" style={{ left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.w}px`, height: `${rect.h}px` }} />
-      ) : (
+        <div class={`tour__spot${practicing ? ' tour__spot--soft' : ''}`} style={{ left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.w}px`, height: `${rect.h}px` }} />
+      ) : practicing ? null : (
         <div class="tour__dim" />
       )}
       {finger ? <div class={`tour__finger${finger.down ? ' is-down' : ''}`} style={{ left: `${finger.x}px`, top: `${finger.y}px` }} /> : null}
-      <div class="tour__card" style={cardStyle} key={i}>
-        <div class="tour__progress" style={{ '--p': `${((i + (bi + 1) / step.beats.length) / STEPS.length) * 100}%` }} />
+      <div class={`tour__card${practicing ? ' tour__card--practice' : ''}`} style={cardStyle} key={i}>
+        <div class="tour__progress" style={{ '--p': `${progress * 100}%` }} />
         <div class="tour__head">
           <span class="tour__count">
-            Step {i + 1} of {STEPS.length}
+            Step {i + 1} of {total}
           </span>
           <button type="button" class={`tour__voice${voiceOn ? ' is-on' : ''}`} aria-pressed={voiceOn} aria-label={voiceOn ? 'Turn narration off' : 'Turn narration on'} onClick={() => setVoiceOn(!voiceOn)}>
             {voiceOn ? (
@@ -336,36 +410,80 @@ export function Tour() {
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" /><path d="M17 9l5 6M22 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
             )}
           </button>
-          <button type="button" class="tour__skip" onClick={end}>
-            Skip tour
-          </button>
-        </div>
-        <h2 id="tour-title" class="tour__title">{step.title}</h2>
-        <p class="tour__text" key={bi}>
-          {beat.say}
-        </p>
-        <div class="tour__beats" aria-hidden="true">
-          {step.beats.map((_, k) => (
-            <i key={k} class={k < bi ? 'is-done' : k === bi ? 'is-on' : ''} />
-          ))}
-        </div>
-        <div class="tour__nav">
-          <button type="button" class="tour__btn" disabled={i === 0} onClick={() => setI(i - 1)}>
-            Back
-          </button>
-          <button type="button" class="tour__btn" onClick={() => setPlaying(!playing)} aria-pressed={!playing}>
-            {playing ? 'Pause' : 'Play'}
-          </button>
-          {last ? (
-            <button type="button" class="tour__btn tour__btn--gold" onClick={end}>
-              Throw now
-            </button>
-          ) : (
-            <button type="button" class="tour__btn tour__btn--gold" onClick={() => setI(i + 1)}>
-              Next
+          {practicing && !task ? null : (
+            <button type="button" class="tour__skip" onClick={end}>
+              Skip tutorial
             </button>
           )}
         </div>
+        {practicing ? (
+          task ? (
+            <>
+              <h2 id="tour-title" class="tour__title">
+                Your turn
+              </h2>
+              <ol class="tour__tasks">
+                {TASKS.map((t) => (
+                  <li key={t.key} class={done.has(t.key) ? 'is-done' : t === task ? 'is-on' : ''}>
+                    <span class="tour__tick" aria-hidden="true" />
+                    <span class="tour__task">
+                      <b>{t.label}</b>
+                      {t === task ? <em>{t.say}</em> : null}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <div class="tour__nav">
+                <button type="button" class="tour__btn" onClick={() => setI(STEPS.length - 1)}>
+                  Back
+                </button>
+                <button type="button" class="tour__btn" onClick={freshLump}>
+                  Start over
+                </button>
+              </div>
+            </>
+          ) : (
+            <div class="tour__complete">
+              <div class="tour__seal" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="30" height="30">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <h2 id="tour-title" class="tour__title">
+                Tutorial complete
+              </h2>
+              <p class="tour__text">You centred, opened, pulled and shaped a pot by yourself. The wheel is yours.</p>
+              <button type="button" class="tour__btn tour__btn--gold tour__btn--wide" onClick={end}>
+                {firstTime ? 'Enter level 1' : `Continue to level ${S.levels.value?.unlocked ?? 1}`}
+              </button>
+            </div>
+          )
+        ) : (
+          <>
+            <h2 id="tour-title" class="tour__title">
+              {step.title}
+            </h2>
+            <p class="tour__text" key={bi}>
+              {beat.say}
+            </p>
+            <div class="tour__beats" aria-hidden="true">
+              {step.beats.map((_, k) => (
+                <i key={k} class={k < bi ? 'is-done' : k === bi ? 'is-on' : ''} />
+              ))}
+            </div>
+            <div class="tour__nav">
+              <button type="button" class="tour__btn" disabled={i === 0} onClick={() => setI(i - 1)}>
+                Back
+              </button>
+              <button type="button" class="tour__btn" onClick={() => setPlaying(!playing)} aria-pressed={!playing}>
+                {playing ? 'Pause' : 'Play'}
+              </button>
+              <button type="button" class="tour__btn tour__btn--gold" onClick={() => setI(i + 1)}>
+                {i === STEPS.length - 1 ? 'Try it' : 'Next'}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

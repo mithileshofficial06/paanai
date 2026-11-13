@@ -33,6 +33,7 @@ export async function submitThrow(req: ThrowRequest): Promise<ThrowResponse> {
   const decoded = decodeLog(req.strokeLog);
   if (!decoded.ok) throw new ApiErr('bad-log', `Throw rejected: ${decoded.error}.`);
   const c = await resolveCommission(req.commissionId);
+  if (c.dto.kind === 'level' || c.dto.kind === 'tutorial') throw new ApiErr('bad-request', 'Level throws go to the level endpoint.');
   const profile = replay(decoded.log);
   if (!profile.opened) throw new ApiErr('not-opened', 'Open the clay first: tap the centre of the lump.');
   const strokes = strokeCount(decoded.log);

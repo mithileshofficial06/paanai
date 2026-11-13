@@ -11,9 +11,11 @@ import { IconFlame, IconGlaze, IconRetry, IconShare } from '../../ui/icons';
 import { EmptyState } from '../../ui/States';
 import { PotView, TargetView } from '../parts';
 
-const VERDICT = ['Rough, but every potter starts here.', 'A fair pot. The order wanted more.', 'A good pot. The buyer will be pleased.', 'A master’s pot. Worthy of the shelf.'];
 import * as S from '../store';
 import { go, login, newThrow, placeInKiln, sharePot } from '../controller';
+
+const VERDICT = ['Rough, but every potter starts here.', 'A fair pot. The order wanted more.', 'A good pot. The buyer will be pleased.', 'A master’s pot. Worthy of the shelf.'];
+
 
 export function Result() {
   const lt = S.lastThrow.value;

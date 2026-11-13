@@ -1,14 +1,13 @@
-// First visit (starter pot from "an old potter"), How to play, and What's in Paanai.
-import { useEffect, useState } from 'preact/hooks';
+// First visit (starter pot from "an old potter"), then the tutorial; and What's in Paanai.
+import { useState } from 'preact/hooks';
 import { Button } from '../../ui/Button';
 import { GlassPanel } from '../../ui/GlassPanel';
-import { Stepper } from '../../ui/Stepper';
 import { IconCodex, IconCommission, IconFlame, IconKiln, IconRank, IconShelf, IconWheel } from '../../ui/icons';
 import { fmtCountdown, PotView, TargetView, useNow } from '../parts';
 import { KilnHero, type KilnState } from '../KilnHero';
 import { sfx } from '../../app/audio';
 import * as S from '../store';
-import { back, finishOnboarding, go, openStarter, startTour } from '../controller';
+import { back, finishTutorial, go, openStarter, startTour } from '../controller';
 
 export function Welcome() {
   const pot = S.revealing.value;
@@ -67,7 +66,7 @@ export function Welcome() {
         ) : null}
         <ul class="welcome__facts">
           <li>
-            <b>35</b> vessels
+            <b>100</b> levels
           </li>
           <li>
             <b>24</b> glazes
@@ -80,10 +79,10 @@ export function Welcome() {
           {pot ? (
             <>
               <Button variant="primary" size="lg" block onClick={() => startTour()}>
-                How to play
+                Start the tutorial
               </Button>
-              <Button variant="ghost" block onClick={() => void finishOnboarding()}>
-                Skip, go to the wheel
+              <Button variant="ghost" block onClick={() => void finishTutorial()}>
+                Skip to level 1
               </Button>
             </>
           ) : (

@@ -4,7 +4,8 @@ import { showLoginPrompt, navigateTo } from '@devvit/web/client';
 import { encodeLog } from '../../shared/core/strokes';
 import { encodeProfile } from '../../shared/core/profile';
 import type { StrokeLog } from '../../shared/core/shape';
-import type { PotSummary } from '../../shared/api/types';
+import type { LevelsResponse, PotSummary } from '../../shared/api/types';
+import { LEVEL_COUNT, levelDTO, levelData, levelGhost, tutorialData } from '../../shared/content/levels';
 import { api, ApiFailure } from '../app/api';
 import { journeys } from '../app/journeys';
 import { sfx } from '../app/audio';
@@ -28,7 +29,7 @@ function fail(err: unknown): void {
 
 // ---------- Routing ----------
 
-const TABS: Route[] = ['throw', 'kiln', 'shelf', 'codex', 'commissions'];
+const TABS: Route[] = ['levels', 'throw', 'kiln', 'shelf', 'codex', 'commissions'];
 
 export function go(r: Route): void {
   if (S.route.value === r) return;
@@ -36,6 +37,7 @@ export function go(r: Route): void {
   else S.routeStack.value = [...S.routeStack.value, S.route.value];
   S.route.value = r;
   if (r === 'kiln') void loadKiln();
+  if (r === 'levels') void loadLevels();
   if (r === 'shelf') void loadShelf(true);
   if (r === 'codex') {
     journeys.interaction('codex_open');
@@ -67,17 +69,19 @@ export async function boot(): Promise<void> {
   }
   S.muted.value = sfx.muted;
   try {
-    const t = await api.today();
+    const [t] = await Promise.all([api.today(), loadLevels()]);
     (window as unknown as { __boot?: { to: (n: number) => void } }).__boot?.to(86);
     S.today.value = t;
     S.commission.value = t.commission;
     if (t.me) S.hintsDone.value = new Set([...S.hintsDone.value, ...(t.me.hintsDone as HintId[])]);
     void loadGhost(t.commission.id);
     journeys.appReady();
-    if (t.me && !t.me.onboarded) S.route.value = 'welcome';
-    else if (!t.me && !S.hintsDone.value.has('drag')) S.route.value = 'welcome';
+    const lv = S.levels.value;
+    // New players: the welcome kiln, then the tutorial, then level 1. Returning players: the level map.
+    if (t.me && !t.me.onboarded && !lv?.tutorialDone) S.route.value = 'welcome';
+    else if (!t.me && !lv?.tutorialDone && !S.hintsDone.value.has('drag')) S.route.value = 'welcome';
     else if (t.kilnWaiting > 0) go('kiln');
-    else S.route.value = 'throw';
+    else S.route.value = 'levels';
   } catch (err) {
     S.loadError.value = err instanceof ApiFailure ? err.message : 'Could not reach the studio.';
     S.route.value = 'error';
@@ -114,24 +118,102 @@ export async function openStarter(): Promise<PotSummary | null> {
   }
 }
 
-/** Start the guided tour: it runs on the wheel and plays a throw by itself. */
+/**
+ * The tutorial: four narrated steps that throw a practice cup by themselves, then a fifth
+ * where the player throws it with a guide. It ends with "Enter level 1". Separate from level 1.
+ */
 export function startTour(): void {
   sfx.unlock();
+  const d = tutorialData();
+  S.commission.value = levelDTO(d);
+  S.ghostLog.value = levelGhost(d);
+  S.ghostOn.value = false;
+  S.tool.value = 'hands';
+  S.lastThrow.value = null;
+  S.practice.value = false;
+  S.practiceDone.value = false;
   S.tour.value = true;
   S.route.value = 'throw';
   S.routeStack.value = [];
 }
 
-export async function finishOnboarding(): Promise<void> {
-  S.route.value = 'throw';
-  S.routeStack.value = [];
+/** Leave the tutorial (finished or skipped) and go to the next level to play. */
+export async function finishTutorial(): Promise<void> {
+  const firstTime = !S.levels.value?.tutorialDone;
+  S.tour.value = false;
+  S.practice.value = false;
+  S.practiceDone.value = false;
+  const lv = S.levels.value ?? emptyLevels();
+  S.levels.value = { ...lv, tutorialDone: true };
+  saveLocalLevels();
+  playLevel(firstTime ? 1 : lv.unlocked);
   if (S.loggedIn.value) {
-    try {
-      await api.onboarded();
-    } catch {
-      /* non-critical */
-    }
+    await Promise.all([api.tutorialDone().catch(() => undefined), S.me.value?.onboarded ? null : api.onboarded().catch(() => undefined)]);
   }
+}
+
+// ---------- Levels ----------
+
+const LOCAL_LEVELS = 'paanai.levels';
+
+function emptyLevels(): LevelsResponse {
+  return { unlocked: 1, best: Array.from({ length: LEVEL_COUNT }, () => 0), tutorialDone: false, saved: false };
+}
+
+function saveLocalLevels(): void {
+  const lv = S.levels.value;
+  if (!lv || lv.saved) return;
+  try {
+    localStorage.setItem(LOCAL_LEVELS, JSON.stringify({ unlocked: lv.unlocked, best: lv.best, tutorialDone: lv.tutorialDone }));
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+export async function loadLevels(): Promise<void> {
+  try {
+    const lv = await api.levels();
+    if (!lv.saved) {
+      // Logged out: progress lives in this browser.
+      try {
+        const raw = JSON.parse(localStorage.getItem(LOCAL_LEVELS) ?? 'null') as Partial<LevelsResponse> | null;
+        if (raw) {
+          lv.unlocked = Math.max(1, Math.min(LEVEL_COUNT, Number(raw.unlocked) || 1));
+          if (Array.isArray(raw.best)) lv.best = lv.best.map((_, i) => Number(raw.best?.[i]) || 0);
+          lv.tutorialDone = !!raw.tutorialDone;
+        }
+      } catch {
+        /* storage unavailable */
+      }
+    }
+    S.levels.value = lv;
+  } catch {
+    S.levels.value ??= emptyLevels();
+  }
+}
+
+/** Load level n onto the wheel. */
+export function playLevel(n: number): void {
+  const d = levelData(n);
+  S.commission.value = levelDTO(d);
+  S.ghostLog.value = levelGhost(d);
+  S.ghostOn.value = false;
+  S.tool.value = 'hands';
+  S.lastThrow.value = null;
+  S.lastLevel.value = null;
+  S.route.value = 'throw';
+  S.routeStack.value = ['levels'];
+}
+
+/** The Daily tab: today's commission on the wheel. */
+export function playDaily(): void {
+  const t = S.today.value;
+  if (t && S.commission.value?.id !== t.commission.id) {
+    S.commission.value = t.commission;
+    S.lastThrow.value = null;
+    void loadGhost(t.commission.id);
+  }
+  go('throw');
 }
 
 // ---------- Hints ----------
@@ -175,8 +257,33 @@ export function throwStarted(): void {
 export async function submitThrow(log: StrokeLog, profile: number[]): Promise<boolean> {
   const c = S.commission.value;
   if (!c || S.submitting.value) return false;
+  if (c.kind === 'tutorial') {
+    // The practice cup is not scored on the server: the guide just congratulates you.
+    S.practiceDone.value = true;
+    sfx.chime();
+    return true;
+  }
   S.submitting.value = true;
   const strokeLog = encodeLog(log);
+  if (c.kind === 'level') {
+    const n = Number(c.id.slice('level-'.length));
+    try {
+      const res = await api.levelThrow({ level: n, strokeLog });
+      S.lastLevel.value = { res, profile, commission: c };
+      const lv = S.levels.value ?? emptyLevels();
+      const best = lv.best.slice();
+      best[n - 1] = Math.max(best[n - 1] ?? 0, res.score.total);
+      S.levels.value = { ...lv, unlocked: Math.max(lv.unlocked, res.unlocked), best };
+      saveLocalLevels();
+      go('levelResult');
+      return true;
+    } catch (err) {
+      fail(err);
+      return false;
+    } finally {
+      S.submitting.value = false;
+    }
+  }
   try {
     const res = await api.throw({ commissionId: c.id, strokeLog, idemKey: `${c.id}:${strokeLog.length}:${log.endTick}:${Date.now() % 100000}` });
     S.lastThrow.value = { res, profile, strokeLog, commission: c };
@@ -199,6 +306,7 @@ export function profileOf(p: Parameters<typeof encodeProfile>[0]): number[] {
 
 export function newThrow(): void {
   S.lastThrow.value = null;
+  S.lastLevel.value = null;
   go('throw');
 }
 

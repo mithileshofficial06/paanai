@@ -1,7 +1,7 @@
 // App state for the expanded studio (Preact signals). Screens read these; only the
 // controller (controller.ts) writes them.
 import { computed, signal } from '@preact/signals';
-import type { CommissionDTO, PotSummary, ThrowResponse, TodayResponse } from '../../shared/api/types';
+import type { CommissionDTO, LevelThrowResponse, LevelsResponse, PotSummary, ThrowResponse, TodayResponse } from '../../shared/api/types';
 import type { CodexEntry, CommissionListItem, KilnItem } from '../app/api';
 
 export type Route =
@@ -9,6 +9,8 @@ export type Route =
   | 'error'
   | 'welcome' // first visit: "an old potter left a pot in the kiln for you"
   | 'features'
+  | 'levels'
+  | 'levelResult'
   | 'throw'
   | 'result'
   | 'glaze'
@@ -75,6 +77,20 @@ export const toast = signal<{ id: number; text: string; tone: 'neutral' | 'succe
 export const muted = signal(false);
 /** PNG data URL of the last thrown pot (3D render), for the result card and sharing. */
 export const lastThumb = signal<string | null>(null);
+
+/** Level ladder progress (from the server, or this browser when logged out). */
+export const levels = signal<LevelsResponse | null>(null);
+export type LastLevel = { res: LevelThrowResponse; profile: number[]; commission: CommissionDTO };
+export const lastLevel = signal<LastLevel | null>(null);
+/** Tutorial step 5: the player throws by themselves while the guide watches. */
+export const practice = signal(false);
+/** Set when the player taps Done in the tutorial. */
+export const practiceDone = signal(false);
+/** What the wheel is throwing right now. */
+export const mode = computed<'daily' | 'level' | 'tutorial'>(() => {
+  const k = commission.value?.kind;
+  return k === 'level' ? 'level' : k === 'tutorial' ? 'tutorial' : 'daily';
+});
 
 export const me = computed(() => today.value?.me ?? null);
 export const loggedIn = computed(() => !!today.value?.me);

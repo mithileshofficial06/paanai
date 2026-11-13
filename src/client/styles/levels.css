@@ -1,0 +1,119 @@
+/* ---------- Level map: 100 kiln-sealed boxes ---------- */
+.lv { gap: var(--space-3); }
+.lv__summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; color: var(--color-ink-muted); font-size: var(--text-label); }
+.lv__summary b { color: var(--color-gold-ink); font-size: 1.15rem; }
+.lv__meter { flex: 1 0 100%; height: 6px; border-radius: 3px; background: var(--color-track); overflow: hidden; }
+.lv__meter > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #c8861c, #ffd56a); box-shadow: 0 0 10px rgba(255, 190, 70, 0.7); transition: width 600ms var(--ease-out); }
+.lv__row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.lv__row > * { flex: 1 1 auto; }
+.lv__note { margin: 0; color: var(--color-ink-subtle); font-size: 0.85rem; }
+
+.lv__daily, .lvr__unlock {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 14px; border-radius: var(--radius-lg); text-align: left; cursor: pointer;
+  border: 1px solid rgba(255, 200, 120, 0.22); color: var(--color-ink); font: inherit;
+}
+.lv__daily-art { display: grid; place-items: center; width: 52px; height: 56px; border-radius: 12px; background: rgba(0, 0, 0, 0.25); flex: none; }
+.lv__daily-copy, .lvr__unlock-copy { display: grid; gap: 1px; flex: 1; min-width: 0; font-size: 0.85rem; color: var(--color-ink-muted); }
+.lv__daily-copy b, .lvr__unlock-copy b { color: var(--color-ink); font: 400 1.05rem/1.2 var(--font-display); }
+.lv__daily-label, .lvr__unlock-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-gold-ink); }
+
+.lv__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-top: var(--space-2); }
+.lv__tier { min-width: 0; content-visibility: auto; contain-intrinsic-block-size: auto 560px; --tier: #ffb35c; }
+.lv__tier:nth-child(1) { --tier: #6fc0e6; }
+.lv__tier:nth-child(2) { --tier: #d0916b; }
+.lv__tier:nth-child(3) { --tier: #ff7a3a; }
+.lv__tier:nth-child(4) { --tier: #c4bdb2; }
+.lv__tier:nth-child(5) { --tier: #e0864a; }
+.lv__tier:nth-child(6) { --tier: #f2b134; }
+.lv__tier:nth-child(7) { --tier: #74a9d0; }
+.lv__tier:nth-child(8) { --tier: #5fc79f; }
+.lv__tier:nth-child(9) { --tier: #a196c4; }
+.lv__tier:nth-child(10) { --tier: #ffd76e; }
+.lv__tier-title { display: flex; align-items: baseline; justify-content: space-between; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px solid color-mix(in srgb, var(--tier) 35%, transparent); }
+.lv__tier-title span { font: 400 1.35rem/1 var(--font-display); color: var(--tier); text-shadow: 0 0 18px color-mix(in srgb, var(--tier) 45%, transparent); }
+.lv__tier-title small { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-subtle); }
+.lv__tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 620px) { .lv__tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+
+.lv__tile {
+  position: relative; display: block; width: 100%; aspect-ratio: 0.84; padding: 0; overflow: hidden; isolation: isolate; cursor: pointer; border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--tier) 30%, rgba(255, 255, 255, 0.06)); color: #fff4e6; font: inherit; text-align: center;
+  background:
+    radial-gradient(70% 55% at 50% 100%, color-mix(in srgb, var(--tier) 26%, transparent), transparent 75%),
+    radial-gradient(90% 70% at 50% 30%, rgba(255, 236, 210, 0.08), transparent 70%),
+    linear-gradient(180deg, #2a1a14, #140b08);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 220, 0.08), 0 10px 18px -12px rgba(0, 0, 0, 0.9);
+  transition: transform var(--dur-1) ease;
+}
+.lv__tile:active { transform: scale(0.96); }
+.lv__pot { position: absolute; inset: 14px 6px 24px; z-index: 1; display: grid; place-items: center; }
+.lv__pot .pot3d, .lv__pot svg { max-width: 100%; max-height: 100%; width: auto !important; height: auto !important; filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.7)); }
+.lv__num {
+  position: absolute; top: 7px; left: 7px; z-index: 4; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 12px; display: grid; place-items: center;
+  font: 700 0.8rem/1 var(--font-ui); background: rgba(0, 0, 0, 0.55); border: 1px solid color-mix(in srgb, var(--tier) 55%, transparent); color: #fff;
+}
+.lv__name { position: absolute; left: 4px; right: 4px; bottom: 6px; z-index: 4; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; font-weight: 600; color: var(--color-ink-muted); }
+.lv__boss { position: absolute; top: 9px; right: -24px; z-index: 4; width: 86px; rotate: 38deg; padding: 2px 0; font-size: 9px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #3a2204; background: linear-gradient(90deg, #c8861c, #ffe29a, #c8861c); }
+.lv__stars { position: absolute; top: 9px; right: 8px; z-index: 4; display: flex; gap: 1px; }
+.lv__stars i { width: 12px; height: 12px; background: rgba(255, 255, 255, 0.18); clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+.lv__stars i.is-on { background: linear-gradient(180deg, #fff1b8, #f0b53a); filter: drop-shadow(0 0 3px rgba(255, 190, 70, 0.9)); }
+.lv__tile.is-boss .lv__stars { top: 34px; }
+.lv__play { position: absolute; top: 8px; right: 8px; z-index: 4; padding: 3px 9px; border-radius: 999px; font: 800 0.72rem/1.2 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: #2a1704; background: linear-gradient(180deg, #ffe08a, #f0a92a); box-shadow: 0 0 12px rgba(255, 190, 70, 0.8); animation: lv-bob 1.4s ease-in-out infinite; }
+.lv__tile.is-boss .lv__play { top: 34px; }
+
+/* The box to play next: a shining gold frame. */
+.lv__tile.is-current { border-color: transparent; box-shadow: 0 0 0 2px rgba(255, 200, 90, 0.25), 0 0 26px -4px rgba(255, 180, 60, 0.75); }
+.lv__tile.is-current::before {
+  content: ''; position: absolute; inset: 0; z-index: 5; border-radius: inherit; padding: 2.5px; pointer-events: none;
+  background: conic-gradient(from var(--tour-angle), #8a5a12, #ffe6a0, #ffbf3a, #fff7d6, #c8861c, #ffd56a, #8a5a12);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: tour-spin 2.4s linear infinite;
+}
+.lv__tile.is-cleared { border-color: color-mix(in srgb, var(--tier) 55%, transparent); }
+.lv__tile.is-boss { border-width: 2px; border-color: rgba(255, 210, 110, 0.55); }
+
+/* Sealed boxes: the pot behind smoke, iron straps on all four sides, a padlock in the middle. */
+.lv__tile.is-locked .lv__pot { filter: blur(5px) saturate(0.6) brightness(0.5); transform: scale(1.04); }
+.lv__tile.is-locked { background: radial-gradient(80% 50% at 50% 105%, rgba(255, 110, 30, 0.38), transparent 70%), linear-gradient(180deg, #1f1410, #0e0806); }
+.lv__tile.is-locked .lv__num { background: rgba(20, 12, 8, 0.85); color: var(--color-ink-subtle); }
+.lv__tile.is-locked .lv__name { color: rgba(255, 220, 190, 0.45); letter-spacing: 0.12em; text-transform: uppercase; font-size: 10px; }
+.lv__bands { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.lv__band { position: absolute; display: block; background:
+  radial-gradient(circle, #d8d3cc 0 1.3px, #5c5650 1.6px, transparent 2.2px) 0 0 / 14px 14px,
+  linear-gradient(180deg, #6c655f, #3a3531 45%, #24201d); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+.lv__band--t, .lv__band--b { left: 0; right: 0; height: 9px; background-repeat: repeat-x, no-repeat; background-position: 4px 50%, 0 0; }
+.lv__band--t { top: 18%; }
+.lv__band--b { bottom: 22%; }
+.lv__band--l, .lv__band--r { top: 0; bottom: 0; width: 9px; background-repeat: repeat-y, no-repeat; background-position: 50% 4px, 0 0;
+  background-image: radial-gradient(circle, #d8d3cc 0 1.3px, #5c5650 1.6px, transparent 2.2px), linear-gradient(90deg, #6c655f, #3a3531 45%, #24201d); }
+.lv__band--l { left: 16%; }
+.lv__band--r { right: 16%; }
+/* A brass clasp where each strap meets the edge. */
+.lv__band::after { content: ''; position: absolute; width: 12px; height: 12px; border-radius: 3px; background: linear-gradient(180deg, #ffe29a, #b9781c 60%, #6a3f0a); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); }
+.lv__band--t::after, .lv__band--b::after { left: 50%; top: -1.5px; translate: -50% 0; }
+.lv__band--l::after, .lv__band--r::after { top: 50%; left: -1.5px; translate: 0 -50%; }
+.lv__lock { position: absolute; left: 50%; top: 46%; z-index: 4; translate: -50% -50%; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 10px rgba(255, 170, 60, 0.35)); transform-origin: 50% 10%; animation: lv-lock 3.2s ease-in-out infinite; }
+.lv__tile.is-shake { animation: lv-shake 420ms ease; }
+.lv__tile.is-shake .lv__lock { animation: lv-rattle 420ms ease; }
+
+/* Fire sparkles drifting up through every box (brighter on sealed ones: the kiln is still hot). */
+.lv__embers { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+.lv__embers i { position: absolute; bottom: -6px; left: var(--x); width: 3px; height: 3px; border-radius: 50%; background: #ffcf7a; box-shadow: 0 0 6px 2px rgba(255, 150, 40, 0.75); opacity: 0;
+  animation: lv-ember 3.4s ease-in infinite; animation-delay: calc(var(--k) * -0.68s); }
+.lv__tile.is-locked .lv__embers i { z-index: 5; background: #ffb347; animation-duration: 2.6s; animation-delay: calc(var(--k) * -0.52s); }
+.lv__tile.is-locked .lv__embers { z-index: 5; }
+
+/* Level result: the next box, unsealed. */
+.lvr__unlock { background: linear-gradient(120deg, rgba(255, 196, 80, 0.16), rgba(40, 20, 10, 0.6)); border-color: rgba(255, 200, 100, 0.5); box-shadow: 0 0 24px -8px rgba(255, 180, 60, 0.7); animation: sc-in 500ms var(--ease-out) 2.2s both; }
+.lvr__unlock-pot { position: relative; width: 64px; height: 70px; flex: none; }
+.lvr__unlock-pot .lv__pot { inset: 0; }
+
+@keyframes lv-ember { 0% { opacity: 0; transform: translate(0, 0) scale(1); } 12% { opacity: 1; } 70% { opacity: 0.8; } 100% { opacity: 0; transform: translate(calc((var(--k) - 2) * 6px), -150px) scale(0.4); } }
+@keyframes lv-lock { 0%, 100% { rotate: -3deg; } 50% { rotate: 3deg; } }
+@keyframes lv-rattle { 0%, 100% { rotate: 0deg; } 20% { rotate: -14deg; } 45% { rotate: 12deg; } 70% { rotate: -7deg; } }
+@keyframes lv-shake { 0%, 100% { translate: 0 0; } 20% { translate: -5px 0; } 45% { translate: 5px 0; } 70% { translate: -3px 0; } }
+@keyframes lv-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
+@media (prefers-reduced-motion: reduce) {
+  .lv__embers, .lv__tile.is-current::before { display: none; }
+  .lv__lock, .lv__play, .lv__tile.is-shake, .lvr__unlock { animation: none !important; }
+}
