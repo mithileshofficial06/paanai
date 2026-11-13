@@ -6,6 +6,7 @@ import { encodeProfile } from '../../shared/core/profile';
 import type { StrokeLog } from '../../shared/core/shape';
 import type { LevelsResponse, PotSummary } from '../../shared/api/types';
 import { LEVEL_COUNT, levelDTO, levelData, levelGhost, tutorialData } from '../../shared/content/levels';
+import { type Decor, emptyDecor, isEmptyDecor } from '../../shared/core/decor';
 import { api, ApiFailure } from '../app/api';
 import { journeys } from '../app/journeys';
 import { sfx } from '../app/audio';
@@ -199,6 +200,7 @@ export function playLevel(n: number): void {
   S.ghostLog.value = levelGhost(d);
   S.ghostOn.value = false;
   S.tool.value = 'hands';
+  S.decor.value = emptyDecor();
   S.lastThrow.value = null;
   S.lastLevel.value = null;
   S.route.value = 'throw';
@@ -265,6 +267,7 @@ export async function submitThrow(log: StrokeLog, profile: number[]): Promise<bo
   }
   S.submitting.value = true;
   const strokeLog = encodeLog(log);
+  S.decor.value = emptyDecor();
   if (c.kind === 'level') {
     const n = Number(c.id.slice('level-'.length));
     try {
@@ -305,6 +308,7 @@ export function profileOf(p: Parameters<typeof encodeProfile>[0]): number[] {
 }
 
 export function newThrow(): void {
+  S.decor.value = emptyDecor();
   S.lastThrow.value = null;
   S.lastLevel.value = null;
   go('throw');
@@ -326,6 +330,28 @@ export async function playCommission(id: string): Promise<void> {
 export function toggleGhost(): void {
   S.ghostOn.value = !S.ghostOn.value;
   journeys.interaction('ghost_toggle');
+}
+
+// ---------- Decorate ----------
+
+/**
+ * Keep the paint on the pot just thrown. Daily pots save it with the pot (it shows on the shelf
+ * and in the kiln); level pots keep it for the result card. Then move on.
+ */
+export async function finishDecorating(decor: Decor, snapshot: string | null): Promise<void> {
+  S.decor.value = decor;
+  if (snapshot && !isEmptyDecor(decor)) S.lastThumb.value = snapshot;
+  const potId = S.mode.value === 'daily' ? S.lastThrow.value?.res.potId : null;
+  if (potId && S.loggedIn.value) {
+    try {
+      await api.decorate(potId, decor);
+    } catch (err) {
+      fail(err);
+      return;
+    }
+  }
+  if (S.mode.value === 'daily' && potId) go('glaze');
+  else back();
 }
 
 // ---------- Glaze + kiln ----------

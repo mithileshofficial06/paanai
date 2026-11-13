@@ -153,10 +153,21 @@ await step('Daily tab: fresh lump for the ranked throw', async () => {
 await step('Done scores the throw', async () => {
   await btn('Done').click();
   await expectVisible(p.locator('.pn-score, .score, [class*=score]').first(), 'score', 10000);
-  await expectVisible(btn('Glaze and fire it'), 'glaze button');
+  await expectVisible(btn('Decorate and fire it'), 'decorate button');
+});
+await step('Decorate: paint a band, surprise me, undo', async () => {
+  await btn('Decorate and fire it').click();
+  await expectVisible(p.locator('.deco__canvas'), 'painting table');
+  await p.waitForTimeout(1200);
+  const c = await p.locator('.deco__canvas').boundingBox();
+  await p.getByRole('radio', { name: 'Indigo' }).click();
+  await p.mouse.click(c.x + c.width / 2, c.y + c.height * 0.55);
+  await btn('Surprise me').click();
+  await btn('Undo').click();
+  if (await btn('Undo').isDisabled()) throw new Error('band was not painted (nothing to undo)');
 });
 await step('Glaze two glazes and load the kiln', async () => {
-  await btn('Glaze and fire it').click();
+  await btn('Next: glaze and fire').click();
   await p.getByRole('button', { name: /Copper/ }).first().click();
   await p.getByRole('button', { name: /Iron/ }).first().click();
   await btn('Place in the kiln').click();

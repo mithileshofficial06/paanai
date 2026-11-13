@@ -25,6 +25,7 @@ import * as S from './store';
 import type { Route } from './store';
 import { boot, go, login, playDaily, setMuted, startTour } from './controller';
 import { Levels, LevelResult } from './screens/Levels';
+import { Decorate } from './screens/Decorate';
 import { Tour } from './Tour';
 import { Welcome, Features } from './screens/Onboarding';
 import { Throw } from './screens/Throw';
@@ -62,6 +63,8 @@ function Screen({ r }: { r: Route }) {
       );
     case 'levels':
       return <Levels />;
+    case 'decorate':
+      return <Decorate />;
     case 'levelResult':
       return <LevelResult />;
     case 'welcome':
@@ -104,11 +107,11 @@ export function App() {
   const chrome = !['loading', 'error', 'welcome'].includes(r);
   const levelMode = S.mode.value !== 'daily';
   const navValue =
-    r === 'levelResult' || (r === 'throw' && levelMode)
+    r === 'levelResult' || ((r === 'throw' || r === 'decorate') && levelMode)
       ? 'levels'
       : NAV.some((n) => n.id === r)
         ? r
-        : r === 'result' || r === 'glaze'
+        : r === 'result' || r === 'glaze' || r === 'decorate'
           ? 'throw'
           : '';
   return (

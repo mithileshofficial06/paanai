@@ -1,5 +1,6 @@
 // Request/response types shared by client and server.
 import type { Constraint, ScoreBreakdown } from '../core/score';
+import type { Decor } from '../core/decor';
 import type { Format } from '../content/commissions';
 
 export type Atmosphere = 'oxidation' | 'reduction';
@@ -53,6 +54,8 @@ export type PotSummary = {
   ranked: boolean;
   glaze: GlazeChoice | null;
   fired: FiredResultDTO | null;
+  /** Painted decoration (on top of the glaze), if any. */
+  decor?: Decor | null;
   likes: number;
   createdAt: number;
 };

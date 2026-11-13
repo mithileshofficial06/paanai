@@ -348,6 +348,17 @@ export function IconPaanai(p: IconProps) {
   );
 }
 
+/** A paint brush. */
+export function IconBrush(p: IconProps) {
+  return (
+    <Svg {...p} name="brush">
+      <path d="M20.25 3.75 11.6 12.4" />
+      <path d="M13.6 14.4 9.6 10.4" />
+      <path d="M9.6 10.4c-2.2-.3-4 1.3-4.2 3.5-.15 1.7-.9 3.3-2.65 4.35 3.6 1.55 7.6.95 9.9-1.35a3.7 3.7 0 0 0 .95-2.5" />
+    </Svg>
+  );
+}
+
 /** A drop of glaze. */
 export function IconGlaze(p: IconProps) {
   return (

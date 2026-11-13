@@ -3,6 +3,7 @@
 import { computed, signal } from '@preact/signals';
 import type { CommissionDTO, LevelThrowResponse, LevelsResponse, PotSummary, ThrowResponse, TodayResponse } from '../../shared/api/types';
 import type { CodexEntry, CommissionListItem, KilnItem } from '../app/api';
+import { type Decor, emptyDecor } from '../../shared/core/decor';
 
 export type Route =
   | 'loading'
@@ -14,6 +15,7 @@ export type Route =
   | 'throw'
   | 'result'
   | 'glaze'
+  | 'decorate'
   | 'kiln'
   | 'shelf'
   | 'codex'
@@ -77,6 +79,9 @@ export const toast = signal<{ id: number; text: string; tone: 'neutral' | 'succe
 export const muted = signal(false);
 /** PNG data URL of the last thrown pot (3D render), for the result card and sharing. */
 export const lastThumb = signal<string | null>(null);
+
+/** Paint on the pot just thrown (shown on the result, glaze and kiln, saved with daily pots). */
+export const decor = signal<Decor>(emptyDecor());
 
 /** Level ladder progress (from the server, or this browser when logged out). */
 export const levels = signal<LevelsResponse | null>(null);

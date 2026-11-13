@@ -11,7 +11,7 @@ import { meDTO, touchUser } from '../services/users';
 import { dayNumber, minuteBucket, nextKilnAt, today } from '../services/time';
 import { codex, glazePot, kilnWaitingCount, markOpened, myKiln } from '../services/kiln';
 import { deletePot, report, shelfPage, sharePot, toggleLike } from '../services/community';
-import { loadSummaries } from '../services/pots';
+import { decoratePot, loadSummaries } from '../services/pots';
 import { starterPot } from '../services/starter';
 import { createCommission, listCommissions, removeCommission, type CreateCommissionReq } from '../services/playerCommissions';
 
@@ -95,6 +95,14 @@ api.post('/me/hints', async (c) => {
   }
   if (onboarded) await kv.hSet(K.user(userId), { onboarded: '1' });
   return c.json({ ok: true });
+});
+
+api.post('/decorate', async (c) => {
+  await limit('decorate', 20);
+  const ctx = platform().ctx();
+  const { userId } = requireUser(ctx.userId, ctx.username);
+  const body = await c.req.json<{ potId?: unknown; decor?: unknown }>();
+  return c.json(await decoratePot(userId, body.potId, body.decor));
 });
 
 api.post('/glaze', async (c) => {

@@ -7,7 +7,7 @@ import { BeatBar } from '../../ui/CommissionCard';
 import { GlassPanel } from '../../ui/GlassPanel';
 import { ScoreRing } from '../../ui/ScoreRing';
 import { Stars } from '../../ui/Stars';
-import { IconFlame, IconGlaze, IconRetry, IconShare } from '../../ui/icons';
+import { IconBrush, IconFlame, IconRetry, IconShare } from '../../ui/icons';
 import { EmptyState } from '../../ui/States';
 import { PotView, TargetView } from '../parts';
 
@@ -102,8 +102,8 @@ export function Result() {
       </GlassPanel>
       <div class="sc__actions">
         {res.potId ? (
-          <Button variant="primary" size="lg" block icon={<IconGlaze />} onClick={() => go('glaze')}>
-            Glaze and fire it
+          <Button variant="primary" size="lg" block icon={<IconBrush />} onClick={() => go('decorate')}>
+            Decorate and fire it
           </Button>
         ) : (
           <Button variant="primary" size="lg" block onClick={() => login()}>
@@ -155,7 +155,7 @@ export function Glaze() {
       <h1 id="glaze-title" class="pn-headline">Choose up to two glazes</h1>
       <GlassPanel tone="raised" padding="md" radius="xl" class="glaze__preview">
         <div class="glaze__pot" style={{ '--raw': raw }}>
-          <PotView pot={{ profile: lt.profile, glaze: picked.length ? { glazes: picked, application: app } : null, fired: null }} width={130} height={170} />
+          <PotView pot={{ profile: lt.profile, glaze: picked.length ? { glazes: picked, application: app } : null, fired: null, decor: S.decor.value }} width={130} height={170} />
         </div>
         <div class="glaze__kiln">
           <span class={`pn-chip ${atm === 'reduction' ? 'pn-chip--accent' : 'pn-chip--gold'}`}>
@@ -208,8 +208,8 @@ export function Glaze() {
         >
           Place in the kiln
         </Button>
-        <Button variant="ghost" block onClick={() => go('result')}>
-          Back
+        <Button variant="ghost" block onClick={() => go('decorate')}>
+          Back to painting
         </Button>
       </div>
     </section>

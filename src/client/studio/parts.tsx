@@ -5,16 +5,17 @@ import { PotSilhouette } from '../ui/PotSilhouette';
 import { decodeOutline } from '../app/silhouette';
 import { clayLook, firedLook, rawLook } from '../app/glazeLook';
 import { renderPotImage } from '../three/potRenderer';
+import { type Decor, decorKey } from '../../shared/core/decor';
 
 /** A pot as a real 3D render (glaze, or fired look once fired); a flat silhouette while it renders. */
-export function PotView({ pot, width, height }: { pot: Pick<PotSummary, 'profile' | 'glaze' | 'fired'> & { potId?: string | undefined }; width: number; height: number }) {
+export function PotView({ pot, width, height }: { pot: Pick<PotSummary, 'profile' | 'glaze' | 'fired'> & { potId?: string | undefined; decor?: Decor | null | undefined }; width: number; height: number }) {
   const look = pot.glaze && pot.fired ? firedLook(pot.glaze, pot.fired) : pot.glaze ? rawLook(pot.glaze) : clayLook();
-  const key = `${pot.potId ?? pot.profile.join(',')}|${pot.glaze?.glazes.join('+') ?? '-'}|${pot.glaze?.application ?? ''}|${pot.fired ? pot.fired.seed : 'raw'}`;
+  const key = `${pot.potId ?? pot.profile.join(',')}|${pot.glaze?.glazes.join('+') ?? '-'}|${pot.glaze?.application ?? ''}|${pot.fired ? pot.fired.seed : 'raw'}|${decorKey(pot.decor)}`;
   const [src, setSrc] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
     const size = Math.min(512, Math.ceil(Math.max(width, height) * 2));
-    void renderPotImage(key, pot.profile, look, size, pot.fired?.seed ?? 7).then((u) => live && setSrc(u));
+    void renderPotImage(key, pot.profile, look, size, pot.fired?.seed ?? 7, pot.decor ?? null).then((u) => live && setSrc(u));
     return () => {
       live = false;
     };

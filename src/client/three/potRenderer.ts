@@ -7,7 +7,9 @@ import type { GlazeLook } from '../app/glazeLook';
 import { CameraRig } from './cameraRig';
 import { displayFromProfile } from './displayProfile';
 import { createStudioEnvironment } from './environment';
-import { createGlazeMaterial, setGlazeHeight } from './glazeMaterial';
+import { createGlazeMaterial, setGlazeDecor, setGlazeHeight } from './glazeMaterial';
+import { decorTexture } from './decorTexture';
+import { type Decor, decorKey, isEmptyDecor } from '../../shared/core/decor';
 import { PotGeometry } from './potMesh';
 import { createRenderer } from './renderer';
 
@@ -44,7 +46,7 @@ function init(): Ctx | null {
   return ctx;
 }
 
-function renderNow(profile: readonly number[], look: GlazeLook, size: number, seed: number): string | null {
+function renderNow(profile: readonly number[], look: GlazeLook, size: number, seed: number, decor: Decor | null): string | null {
   const c = init();
   if (!c) return null;
   const p = decodeProfile(profile);
@@ -52,6 +54,8 @@ function renderNow(profile: readonly number[], look: GlazeLook, size: number, se
   c.geo.update(d, { time: 0, reducedMotion: true });
   const mat: MeshPhysicalMaterial = createGlazeMaterial(look, seed);
   setGlazeHeight(mat, d.height);
+  const tex = decor && !isEmptyDecor(decor) ? decorTexture(decor, (2 * Math.PI * d.maxOuter()) / Math.max(1, d.height)) : null;
+  setGlazeDecor(mat, tex);
   const old = c.mesh.material as MeshPhysicalMaterial | MeshPhysicalMaterial[];
   c.mesh.material = mat;
   if (!Array.isArray(old) && old !== mat && 'dispose' in old) old.dispose();
@@ -63,17 +67,18 @@ function renderNow(profile: readonly number[], look: GlazeLook, size: number, se
   c.rig.camera.zoom = 1.85;
   c.rig.camera.updateProjectionMatrix();
   c.renderer.render(c.scene, c.rig.camera);
+  tex?.dispose();
   return c.renderer.domElement.toDataURL('image/png');
 }
 
 /** Render (or fetch from cache) a pot image. Resolves null if WebGL is unavailable. */
-export function renderPotImage(key: string, profile: readonly number[], look: GlazeLook, size = 256, seed = 1): Promise<string | null> {
-  const k = `${key}|${size}`;
+export function renderPotImage(key: string, profile: readonly number[], look: GlazeLook, size = 256, seed = 1, decor: Decor | null = null): Promise<string | null> {
+  const k = `${key}|${size}|${decorKey(decor)}`;
   const hit = cache.get(k);
   if (hit) return Promise.resolve(hit);
   return new Promise((resolve) => {
     queue.push(() => {
-      const url = renderNow(profile, look, size, seed);
+      const url = renderNow(profile, look, size, seed, decor);
       if (url) cache.set(k, url);
       resolve(url);
     });

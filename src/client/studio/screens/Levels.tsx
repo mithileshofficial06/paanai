@@ -8,7 +8,8 @@ import { GlassPanel } from '../../ui/GlassPanel';
 import { ScoreRing } from '../../ui/ScoreRing';
 import { Stars } from '../../ui/Stars';
 import { EmptyState } from '../../ui/States';
-import { IconChevron, IconInfo, IconRetry, IconWheel } from '../../ui/icons';
+import { IconBrush, IconChevron, IconInfo, IconRetry, IconWheel } from '../../ui/icons';
+import { isEmptyDecor } from '../../../shared/core/decor';
 import { PotView, TargetView } from '../parts';
 import * as S from '../store';
 import { go, playDaily, playLevel, say, startTour } from '../controller';
@@ -335,6 +336,9 @@ export function LevelResult() {
               Replay for stars
             </Button>
           ) : null}
+          <Button variant="secondary" icon={<IconBrush />} onClick={() => go('decorate')}>
+            {isEmptyDecor(S.decor.value) ? 'Decorate it' : 'Repaint'}
+          </Button>
           <Button variant="secondary" onClick={() => go('levels')}>
             Level map
           </Button>

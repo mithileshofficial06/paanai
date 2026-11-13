@@ -1,4 +1,6 @@
 import type { FiredResultDTO, GlazeChoice, PotSummary } from '../../shared/api/types';
+import { type Decor, isEmptyDecor, sanitizeDecor } from '../../shared/core/decor';
+import { ApiErr } from './errors';
 import { platform } from '../platform';
 import { K } from '../store/keys';
 
@@ -14,6 +16,7 @@ export function potSummary(h: Record<string, string>): PotSummary | null {
     ranked: h.ranked === '1',
     glaze: h.glaze ? (JSON.parse(h.glaze) as GlazeChoice) : null,
     fired: h.fired ? (JSON.parse(h.fired) as FiredResultDTO) : null,
+    decor: h.decor ? sanitizeDecor(JSON.parse(h.decor)) : null,
     likes: Number(h.likes ?? '0'),
     createdAt: Number(h.createdAt ?? '0'),
   };
@@ -33,4 +36,22 @@ export async function loadSummaries(ids: string[]): Promise<PotSummary[]> {
     if (s) out.push(s);
   }
   return out;
+}
+
+/** Paint (or repaint) your own pot. Allowed until the kiln has fired it. */
+export async function decoratePot(userId: string, potId: unknown, raw: unknown): Promise<{ decor: Decor | null }> {
+  if (typeof potId !== 'string') throw new ApiErr('bad-request', 'Which pot?');
+  const decor = sanitizeDecor(raw);
+  if (!decor) throw new ApiErr('bad-decor', 'That decoration could not be read. Try again.');
+  const pot = await getPot(potId);
+  if (!pot.potId) throw new ApiErr('not-found', 'That pot is gone.', 404);
+  if (pot.ownerId !== userId) throw new ApiErr('forbidden', 'You can only decorate your own pots.', 403);
+  if (pot.fired) throw new ApiErr('already-fired', 'This pot has already been fired.', 409);
+  const kv = platform().kv;
+  if (isEmptyDecor(decor)) {
+    await kv.hDel(K.pot(potId), ['decor']);
+    return { decor: null };
+  }
+  await kv.hSet(K.pot(potId), { decor: JSON.stringify(decor) });
+  return { decor };
 }

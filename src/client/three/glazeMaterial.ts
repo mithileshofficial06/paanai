@@ -5,7 +5,7 @@
 // - crackle network, crawled patches showing the clay body, glossy pools on the inner floor
 // - luster (metallic) and a structural crack line for kiln failures
 
-import { Color, MeshPhysicalMaterial } from 'three';
+import { Color, MeshPhysicalMaterial, type Texture } from 'three';
 import type { GlazeLook } from '../app/glazeLook';
 
 const PARS = /* glsl */ `
@@ -25,6 +25,8 @@ const FRAG_PARS = /* glsl */ `
 uniform vec3 gBase;
 uniform vec3 gSecond;
 uniform vec3 gBody;
+uniform sampler2D gDecor;
+uniform float gHasDecor;
 uniform float gOpacity, gGloss, gDrips, gCrackle, gSpeckle, gOil, gStreaks, gCrawl, gPool, gLuster, gBreak, gPin, gCracked, gHeight, gSeed;
 varying vec2 vShade;
 varying float vKind;
@@ -90,6 +92,13 @@ gc = mix(gc, vec3(0.03, 0.02, 0.02), gCrack);
 // Foot ring: unglazed body at the very base.
 float gFoot = (1.0 - smoothstep(0.015, 0.05, gY)) * (1.0 - gInner);
 gc = mix(gc, gBody, gFoot);
+// Painted decoration (over the glaze, outside only, not on the unglazed foot).
+float gPaint = 0.0;
+if (gHasDecor > 0.5) {
+  vec4 gDc = texture2D(gDecor, vec2(gAng / 6.2831853 + 0.5, clamp(gY, 0.0, 1.0)));
+  gPaint = gDc.a * (1.0 - gInner) * (1.0 - gFloor) * (1.0 - gFoot);
+  gc = mix(gc, gDc.rgb, gPaint);
+}
 diffuseColor.rgb = gc;
 float gMatte = max(max(gCrw, gFoot), gCrack);
 `;
@@ -139,6 +148,8 @@ export function createGlazeMaterial(look: GlazeLook, seed = ++seedCounter): Mesh
     gCracked: { value: look.cracked ? 1 : 0 },
     gHeight: { value: 10 },
     gSeed: { value: (seed % 97) * 1.37 },
+    gDecor: { value: null as Texture | null },
+    gHasDecor: { value: 0 },
   };
   const m = new MeshPhysicalMaterial({
     color: 0xffffff,
@@ -161,9 +172,17 @@ export function createGlazeMaterial(look: GlazeLook, seed = ++seedCounter): Mesh
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\n${FRAG_METAL}`)
       .replace('#include <aomap_fragment>', `#include <aomap_fragment>\n${FRAG_SHADE}`);
   };
-  m.customProgramCacheKey = () => 'paanai-glaze-v1';
+  m.customProgramCacheKey = () => 'paanai-glaze-v2';
   m.userData.uniforms = u;
   return m;
+}
+
+/** Paint (or clear) the decoration texture on a glaze material. */
+export function setGlazeDecor(m: MeshPhysicalMaterial, tex: Texture | null): void {
+  const u = m.userData.uniforms as { gDecor: { value: Texture | null }; gHasDecor: { value: number } } | undefined;
+  if (!u) return;
+  u.gDecor.value = tex;
+  u.gHasDecor.value = tex ? 1 : 0;
 }
 
 /** Update the pot height (cm) so rim/foot masks line up. */

@@ -10,6 +10,7 @@ import type {
   ThrowResponse,
   TodayResponse,
 } from '../../shared/api/types';
+import type { Decor } from '../../shared/core/decor';
 
 export class ApiFailure extends Error {
   constructor(
@@ -73,6 +74,7 @@ export const api = {
   commissions: () => req<{ commissions: CommissionListItem[] }>('GET', 'commissions'),
   myPots: () => req<{ pots: PotSummary[] }>('GET', 'mypots'),
   levels: () => req<LevelsResponse>('GET', 'levels'),
+  decorate: (potId: string, decor: Decor) => req<{ decor: Decor | null }>('POST', 'decorate', { potId, decor }),
   levelThrow: (r: LevelThrowRequest) => req<LevelThrowResponse>('POST', 'level/throw', r),
   tutorialDone: () => req<{ ok: true }>('POST', 'tutorial/done', {}),
   deleteCommission: (id: string) => req<{ ok: true }>('POST', 'commission/delete', { id }),
