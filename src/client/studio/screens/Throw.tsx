@@ -1,14 +1,13 @@
 // The wheel: full-screen 3D throw stage with a glass HUD.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { decodeProfile } from '../../../shared/core/profile';
-import { decodeLog } from '../../../shared/core/strokes';
 import { createThrowStage, type ThrowStage, type ThrowState } from '../../three/throwStage';
 import { Button, IconButton } from '../../ui/Button';
 import { HintBubble } from '../../ui/HintBubble';
-import { IconCheck, IconInfo, IconOpen, IconUndo } from '../../ui/icons';
+import { IconCheck, IconChevron, IconInfo, IconOpen, IconUndo } from '../../ui/icons';
 import { useReducedMotion } from '../../ui/hooks';
 import * as S from '../store';
-import { completeHint, profileOf, startTour, submitThrow, throwStarted, updateHint } from '../controller';
+import { completeHint, go, haptic, profileOf, startTour, submitThrow, throwStarted, updateHint } from '../controller';
 import { tourStage } from '../Tour';
 import { coach, type Coach } from '../coach';
 
@@ -25,6 +24,7 @@ export function Throw() {
   const c = S.commission.value;
   const live = S.live.value;
   const [warn, setWarn] = useState<'thin' | 'slump' | 'limit' | null>(null);
+  const [more, setMore] = useState(false);
   const [frame, setFrame] = useState<{ x: number; top: number; mid: number; baseY: number; rimY: number; ppu: number } | null>(null);
   const [tip, setTip] = useState<Coach | null>(null);
 
@@ -75,14 +75,6 @@ export function Throw() {
     };
   }, [c?.id, reduced, S.tour.value]);
 
-  const ghostLog = S.ghostLog.value;
-  const ghostOn = S.ghostOn.value;
-  useEffect(() => {
-    const st = stageRef.current;
-    if (!st) return;
-    const d = ghostOn && ghostLog ? decodeLog(ghostLog) : null;
-    st.setGhost(d && d.ok ? d.log : null);
-  }, [ghostOn, ghostLog, c?.id]);
 
   useEffect(() => {
     if (live && !live.unsafe && !live.slumped && warn === 'thin') setWarn(null);
@@ -94,6 +86,8 @@ export function Throw() {
   const submitting = S.submitting.value;
   const started = (live?.strokes ?? 0) > 0;
   const match = live?.matchPreview ?? null;
+  const pass = c.bar;
+  const focus = !S.tour.value;
 
   async function done() {
     const st = stageRef.current;
@@ -116,6 +110,9 @@ export function Throw() {
 
       <header class="throw__top">
         <div class="throw__brief pn-glass pn-radius-lg" data-tour="brief">
+          {focus ? (
+            <IconButton class="throw__leave" label={c.kind === 'level' ? 'Back to the level map' : 'Leave the wheel'} variant="ghost" onClick={() => go('levels')} icon={<IconChevron direction="left" />} />
+          ) : null}
           <div class="throw__brief-main">
             <p class="pn-eyebrow">
               {c.kind === 'official'
@@ -144,12 +141,26 @@ export function Throw() {
         ) : null}
       </header>
 
-      <div class="throw__gauges" aria-live="polite" data-tour="gauges">
-        <Gauge label="Match" value={match === null ? '–' : `${match}%`} tone={match !== null && match >= 85 ? 'good' : undefined} />
-        <Gauge label="Height" value={live ? `${live.heightMm} mm` : '–'} />
-        <Gauge label="Wall" value={live?.opened ? `${live.minWallMm} mm` : 'solid'} tone={live?.unsafe ? 'bad' : undefined} />
-        <Gauge label="Holds" value={live ? `${live.capacityMl} ml` : '–'} />
+      <div class={`throw__gauges${more ? ' is-more' : ''}`} aria-live="polite" data-tour="gauges">
+        <div class={`matchbar${match !== null && match >= pass ? ' is-pass' : ''}`} role="meter" aria-label="Shape match" aria-valuemin={0} aria-valuemax={100} aria-valuenow={match ?? 0}>
+          <span class="matchbar__label">Match</span>
+          <span class="matchbar__track">
+            <span class="matchbar__fill" style={{ width: `${match ?? 0}%` }} />
+            <span class="matchbar__pass" style={{ left: `${pass}%` }} title={`Pass ${pass}`} />
+          </span>
+          <span class="matchbar__num">{match === null ? '–' : `${match}%`}</span>
+        </div>
         <Gauge label="Time" value={live ? fmtTime(live.secondsLeft) : '3:00'} tone={live && live.secondsLeft < 20 ? 'bad' : undefined} />
+        <button type="button" class="throw__more" aria-expanded={more} aria-label={more ? 'Hide measurements' : 'Show measurements'} onClick={() => setMore(!more)}>
+          <IconChevron direction={more ? 'up' : 'down'} size={16} />
+        </button>
+        {more || live?.unsafe ? (
+          <div class="throw__measures">
+            <Gauge label="Height" value={live ? `${live.heightMm} mm` : '–'} />
+            <Gauge label="Wall" value={live?.opened ? `${live.minWallMm} mm` : 'solid'} tone={live?.unsafe ? 'bad' : undefined} />
+            <Gauge label="Holds" value={live ? `${live.capacityMl} ml` : '–'} />
+          </div>
+        ) : null}
       </div>
 
       {live && live.phase === 'centering' && !S.tour.value ? (
@@ -230,6 +241,7 @@ export function Throw() {
               title={t.tip}
               class={`throw__tool${S.tool.value === t.id ? ' is-on' : ''}`}
               onClick={() => {
+                haptic(6);
                 S.tool.value = t.id;
                 stage?.setTool(t.id);
               }}
@@ -261,6 +273,7 @@ export function Throw() {
           </Button>
           <IconButton data-tour="info" label="How to play" variant="ghost" onClick={() => startTour()} icon={<IconInfo />} />
         </div>
+        {focus ? <span class="throw__dock-spacer" aria-hidden="true" /> : null}
       </footer>
     </section>
   );

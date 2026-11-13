@@ -21,7 +21,7 @@ import {
 } from '../ui/icons';
 import * as S from './store';
 import type { Route } from './store';
-import { boot, go, goStudio, login, playDaily, setMuted, startTour } from './controller';
+import { boot, go, goStudio, haptic, login, playDaily, setMuted, startTour } from './controller';
 import { Levels, LevelResult } from './screens/Levels';
 import { Decorate } from './screens/Decorate';
 import { Tour } from './Tour';
@@ -138,11 +138,11 @@ export function App() {
       <main class="app__main" id="main">
         <Screen r={r} />
       </main>
-      {chrome ? (
+      {chrome && !(r === 'throw' && !S.tour.value) ? (
         <BottomNav
           fixed
           value={navValue}
-          onChange={(id) => (id === 'throw' ? playDaily() : id === 'studio' ? goStudio() : go(id as Route))}
+          onChange={(id) => (haptic(6), id === 'throw' ? playDaily() : id === 'studio' ? goStudio() : go(id as Route))}
           items={NAV.map((n) => ({ id: n.id, label: n.label, icon: NAV_ICONS[n.id], badge: n.id === 'studio' && S.kilnBadge.value > 0 ? S.kilnBadge.value : undefined }))}
         />
       ) : null}

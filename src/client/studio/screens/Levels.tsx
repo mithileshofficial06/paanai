@@ -104,13 +104,14 @@ function Tile({ n, unlocked, best }: { n: number; unlocked: number; best: number
         {locked ? (
           <>
             <span class="lv__bands" aria-hidden="true">
-              <i class="lv__band lv__band--t" />
-              <i class="lv__band lv__band--b" />
-              <i class="lv__band lv__band--l" />
-              <i class="lv__band lv__band--r" />
+              <i class="lv__frost" />
+              <i class="lv__corner lv__corner--tl" />
+              <i class="lv__corner lv__corner--tr" />
+              <i class="lv__corner lv__corner--bl" />
+              <i class="lv__corner lv__corner--br" />
             </span>
             <span class="lv__lock" aria-hidden="true">
-              <Padlock size={30} />
+              <Padlock size={26} />
             </span>
           </>
         ) : null}

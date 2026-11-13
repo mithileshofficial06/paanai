@@ -27,6 +27,7 @@ async function step(name, fn) {
   try {
     await fn();
     console.log(`PASS ${String(n).padStart(2)} ${name}`);
+    if (process.env.SHOTS) await p.waitForTimeout(700).then(() => p.screenshot({ path: `${out}/step-${String(n).padStart(2, '0')}.png` }));
   } catch (e) {
     failed++;
     console.log(`FAIL ${String(n).padStart(2)} ${name}: ${String(e.message ?? e).split('\n')[0]}`);
@@ -94,6 +95,7 @@ await step('Centre, open, and the coach asks for a pull', async () => {
 });
 await step('Four pulls raise the pot', async () => {
   for (let k = 0; k < 4; k++) await drag(cx + 62, 560, cx + 58, 400, 40, 30);
+  await p.getByRole('button', { name: 'Show measurements' }).click();
   const h = await p.locator('.gauge', { hasText: 'Height' }).locator('.gauge__value').textContent();
   if (parseInt(h) < 90) throw new Error(`height only ${h}`);
 });
@@ -213,6 +215,9 @@ await step('Showcase: another player rates and likes it', async () => {
     await q.getByRole('button', { name: 'Skip to level 1' }).click({ timeout: 8000 });
     await q.waitForTimeout(800);
   }
+  // On the wheel the menu bar is hidden: leave the wheel first.
+  const leave = q.getByRole('button', { name: 'Back to the level map' });
+  if (await leave.count()) await leave.click();
   await q.getByRole('button', { name: 'Showcase' }).first().click();
   await q.locator('.show__card').first().waitFor({ timeout: 8000 });
   await q.locator('.show__card').first().getByRole('radio', { name: '4 stars' }).click();
@@ -226,6 +231,7 @@ await step('Showcase: another player rates and likes it', async () => {
   if (before === (await like.textContent())) throw new Error('like did not change');
   await q.getByRole('tab', { name: 'Top rated' }).click();
   await q.locator('.show__card').first().waitFor({ timeout: 5000 });
+  if (process.env.SHOTS) await q.waitForTimeout(1200).then(() => q.screenshot({ path: `${out}/showcase.png` }));
   await q.close();
 });
 await step('More menu: leaderboard', async () => {

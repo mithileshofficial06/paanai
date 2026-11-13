@@ -148,7 +148,7 @@ const PID = 7301;
 let held: { x: number; y: number } | null = null;
 function fire(type: string, x: number, y: number) {
   const c = tourStage.canvas;
-  if (!c) return;
+  if (!c || !Number.isFinite(x) || !Number.isFinite(y)) return;
   held = type === 'pointerup' ? null : { x, y };
   c.dispatchEvent(
     new PointerEvent(type, { pointerId: PID, pointerType: 'mouse', isPrimary: true, button: 0, buttons: type === 'pointerup' ? 0 : 1, clientX: x, clientY: y, bubbles: true, cancelable: true }),

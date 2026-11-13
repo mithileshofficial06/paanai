@@ -32,9 +32,20 @@ export type ButtonProps = NativeButtonProps & {
 
 export function Spinner({ size = 20, class: className }: { size?: number | undefined; class?: string | undefined }) {
   return (
+    // A tiny pot turning on a wheel: the clay's throwing lines slide across it.
     <svg class={cx('pn-spinner', className)} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-opacity="0.22" stroke-width="2.5" />
-      <path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+      <defs>
+        <clipPath id="pn-spin-pot">
+          <path d="M8.2 4.5h7.6c-.6 1.3-.4 2.4.6 3.6 1.4 1.7 2.2 3.6 1.6 6-.4 1.7-1.3 3-2.3 3.9H8.3c-1-.9-1.9-2.2-2.3-3.9-.6-2.4.2-4.3 1.6-6 1-1.2 1.2-2.3.6-3.6Z" />
+        </clipPath>
+      </defs>
+      <ellipse cx="12" cy="19.6" rx="8.5" ry="2" fill="currentColor" opacity="0.28" />
+      <path d="M8.2 4.5h7.6c-.6 1.3-.4 2.4.6 3.6 1.4 1.7 2.2 3.6 1.6 6-.4 1.7-1.3 3-2.3 3.9H8.3c-1-.9-1.9-2.2-2.3-3.9-.6-2.4.2-4.3 1.6-6 1-1.2 1.2-2.3.6-3.6Z" fill="currentColor" opacity="0.4" />
+      <g clip-path="url(#pn-spin-pot)">
+        <g class="pn-spinner__lines">
+          <path d="M-6 6v14M-2 6v14M2 6v14M6 6v14M10 6v14M14 6v14M18 6v14M22 6v14M26 6v14" stroke="currentColor" stroke-width="1.4" />
+        </g>
+      </g>
     </svg>
   );
 }
