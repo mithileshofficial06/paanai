@@ -8,13 +8,11 @@ import { BottomNav } from '../ui/Tabs';
 import { pushToast, ToastHost } from '../ui/Toast';
 import { ErrorState } from '../ui/States';
 import {
-  IconCodex,
-  IconCommission,
   IconInfo,
   IconKiln,
   IconLevels,
   IconPaanai,
-  IconShelf,
+  IconShowcase,
   IconSoundOff,
   IconSoundOn,
   IconSparkle,
@@ -23,31 +21,29 @@ import {
 } from '../ui/icons';
 import * as S from './store';
 import type { Route } from './store';
-import { boot, go, login, playDaily, setMuted, startTour } from './controller';
+import { boot, go, goStudio, login, playDaily, setMuted, startTour } from './controller';
 import { Levels, LevelResult } from './screens/Levels';
 import { Decorate } from './screens/Decorate';
 import { Tour } from './Tour';
 import { Welcome, Features } from './screens/Onboarding';
 import { Throw } from './screens/Throw';
-import { Result, Glaze } from './screens/Result';
+import { Result } from './screens/Result';
 import { Kiln } from './screens/Kiln';
-import { Shelf, Codex, Commissions, Create, Leaderboard } from './screens/Community';
+import { Showcase, MyPots, Codex, Create, Leaderboard } from './screens/Community';
 
-const NAV: { id: Route; label: string }[] = [
+const NAV: { id: string; label: string }[] = [
   { id: 'levels', label: 'Levels' },
   { id: 'throw', label: 'Daily' },
-  { id: 'kiln', label: 'Kiln' },
-  { id: 'shelf', label: 'Shelf' },
-  { id: 'codex', label: 'Codex' },
+  { id: 'showcase', label: 'Showcase' },
+  { id: 'studio', label: 'Studio' },
 ];
 const NAV_ICONS: Record<string, ComponentChildren> = {
   levels: <IconLevels />,
   throw: <IconWheel />,
-  kiln: <IconKiln />,
-  shelf: <IconShelf />,
-  codex: <IconCodex />,
-  commissions: <IconCommission />,
+  showcase: <IconShowcase />,
+  studio: <IconKiln />,
 };
+const STUDIO: Route[] = ['kiln', 'mypots', 'codex', 'create'];
 
 function Screen({ r }: { r: Route }) {
   switch (r) {
@@ -75,16 +71,14 @@ function Screen({ r }: { r: Route }) {
       return <Throw />;
     case 'result':
       return <Result />;
-    case 'glaze':
-      return <Glaze />;
     case 'kiln':
       return <Kiln />;
-    case 'shelf':
-      return <Shelf />;
+    case 'mypots':
+      return <MyPots />;
+    case 'showcase':
+      return <Showcase />;
     case 'codex':
       return <Codex />;
-    case 'commissions':
-      return <Commissions />;
     case 'create':
       return <Create />;
     case 'leaderboard':
@@ -109,11 +103,13 @@ export function App() {
   const navValue =
     r === 'levelResult' || ((r === 'throw' || r === 'decorate') && levelMode)
       ? 'levels'
-      : NAV.some((n) => n.id === r)
-        ? r
-        : r === 'result' || r === 'glaze' || r === 'decorate'
-          ? 'throw'
-          : '';
+      : STUDIO.includes(r)
+        ? 'studio'
+        : NAV.some((n) => n.id === r)
+          ? r
+          : r === 'result' || r === 'decorate'
+            ? 'throw'
+            : '';
   return (
     <div class={`app app--${r}`}>
       <AppBackground variant={r === 'kiln' ? 'kiln' : 'studio'} />
@@ -146,8 +142,8 @@ export function App() {
         <BottomNav
           fixed
           value={navValue}
-          onChange={(id) => (id === 'throw' ? playDaily() : go(id as Route))}
-          items={NAV.map((n) => ({ id: n.id, label: n.label, icon: NAV_ICONS[n.id], badge: n.id === 'kiln' && S.kilnBadge.value > 0 ? S.kilnBadge.value : undefined }))}
+          onChange={(id) => (id === 'throw' ? playDaily() : id === 'studio' ? goStudio() : go(id as Route))}
+          items={NAV.map((n) => ({ id: n.id, label: n.label, icon: NAV_ICONS[n.id], badge: n.id === 'studio' && S.kilnBadge.value > 0 ? S.kilnBadge.value : undefined }))}
         />
       ) : null}
       {S.tour.value && r === 'throw' ? <Tour /> : null}
@@ -156,9 +152,6 @@ export function App() {
         <div class="more">
           <Button variant="secondary" block icon={<IconTrophy />} onClick={() => (setMore(false), go('leaderboard'))}>
             Today's leaderboard
-          </Button>
-          <Button variant="secondary" block icon={<IconCommission />} onClick={() => (setMore(false), go('commissions'))}>
-            Commissions
           </Button>
           <Button variant="secondary" block icon={<IconInfo />} onClick={() => (setMore(false), startTour())}>
             Tutorial

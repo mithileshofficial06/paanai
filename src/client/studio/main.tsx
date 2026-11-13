@@ -6,6 +6,8 @@ import '../styles/screens.css';
 import '../styles/kiln-hero.css';
 import '../styles/tour.css';
 import '../styles/levels.css';
+import '../styles/community.css';
+import '../styles/polish.css';
 import { App } from './App';
 import { boot } from './controller';
 import { sfx } from '../app/audio';

@@ -1,8 +1,8 @@
 // End-to-end workflow check of the studio, as a player would use it (phone size).
 //   node tools/e2e.mjs [baseUrl]      default http://127.0.0.1:5173
 // Resets the harness world, then walks: loading -> welcome -> starter kiln -> tutorial -> level 1
-// wheel -> coach -> collapse card -> clear level 1 -> level map -> daily throw -> score -> glaze ->
-// kiln -> next day -> reveal -> codex -> shelf -> like -> commissions -> create -> leaderboard.
+// wheel -> coach -> collapse card -> clear level 1 -> level map -> daily throw -> score -> paint ->
+// kiln -> next day -> reveal -> put on show -> my pots -> codex hint -> showcase (rate, like) -> leaderboard.
 // Prints PASS/FAIL per step; screenshots failures.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -153,10 +153,12 @@ await step('Daily tab: fresh lump for the ranked throw', async () => {
 await step('Done scores the throw', async () => {
   await btn('Done').click();
   await expectVisible(p.locator('.pn-score, .score, [class*=score]').first(), 'score', 10000);
-  await expectVisible(btn('Decorate and fire it'), 'decorate button');
+  await expectVisible(btn('Paint it and fire it'), 'paint button');
+  await expectVisible(btn('Put on show'), 'show button');
+  await expectVisible(btn('Share on Reddit'), 'share button');
 });
 await step('Decorate: paint a band, surprise me, undo', async () => {
-  await btn('Decorate and fire it').click();
+  await btn('Paint it and fire it').click();
   await expectVisible(p.locator('.deco__canvas'), 'painting table');
   await p.waitForTimeout(1200);
   const c = await p.locator('.deco__canvas').boundingBox();
@@ -166,11 +168,8 @@ await step('Decorate: paint a band, surprise me, undo', async () => {
   await btn('Undo').click();
   if (await btn('Undo').isDisabled()) throw new Error('band was not painted (nothing to undo)');
 });
-await step('Glaze two glazes and load the kiln', async () => {
-  await btn('Next: glaze and fire').click();
-  await p.getByRole('button', { name: /Copper/ }).first().click();
-  await p.getByRole('button', { name: /Iron/ }).first().click();
-  await btn('Place in the kiln').click();
+await step('Fire it: straight into the kiln (no glaze step)', async () => {
+  await btn('Fire it in the kiln').click();
   await expectVisible(p.getByText('Waiting for the fire'), 'waiting list', 8000);
   await expectVisible(p.locator('.kiln__hero'), 'kiln countdown');
 });
@@ -178,43 +177,56 @@ await step('Next day: kiln is ready and opens', async () => {
   await fetch(`${base}/__harness/advance-day`, { method: 'POST' });
   await p.reload();
   await p.locator('#boot').waitFor({ state: 'detached', timeout: 15000 });
-  if (!(await p.locator('.kiln').count())) await btn('Kiln').click();
+  if (!(await p.locator('.kiln').count())) await btn('Studio').click();
   await btn('Open', true).click();
   await btn('Open the kiln').click();
   await expectVisible(p.locator('.reveal__result'), 'reveal result', 6000);
   console.log(`      reveal: ${(await p.locator('.reveal__result').textContent()).replace(/\s+/g, ' ').slice(0, 120)}`);
 });
-await step('Codex shows discoveries', async () => {
-  await btn('Codex').click();
-  await expectVisible(p.locator('.codex__grid'), 'codex grid');
-  const h = await p.locator('#codex-title').textContent();
-  console.log(`      codex: ${h}`);
+await step('Put the fired pot on show', async () => {
+  const show = btn('Put on show');
+  if (await show.count()) {
+    await show.click();
+    await expectVisible(btn('On show'), 'on show', 5000);
+  } else console.log('      (pot cracked: showing a level pot instead)');
 });
-await step('Shelf shows the fired pot and likes work', async () => {
-  await btn('Shelf').click();
-  await expectVisible(p.locator('.shelf__pot').first(), 'shelf pot');
-  const like = p.locator('.shelf__like').first();
+await step('Studio: My pots and Codex', async () => {
+  await btn('Back to the kiln').click();
+  await p.getByRole('tab', { name: 'My pots' }).click();
+  await expectVisible(p.locator('.mypot').first(), 'my pot');
+  const n = await p.locator('.mypot').count();
+  console.log(`      my pots: ${n}`);
+  if (!(await p.locator('.mypot.is-onshow').count())) await p.locator('.mypot').first().getByRole('button', { name: 'Put on show' }).click();
+  await p.getByRole('tab', { name: 'Codex' }).click();
+  await expectVisible(p.locator('.codex__grid'), 'codex grid');
+  await p.locator('.codex__item:not(.is-found)').first().click();
+  await expectVisible(p.locator('.codex__detail.is-locked'), 'codex hint');
+});
+await step('Showcase: another player rates and likes it', async () => {
+  const q = await b.newPage({ viewport: { width: 390, height: 844 } });
+  q.on('pageerror', (e) => errors.push(`bob pageerror: ${e.message}`));
+  await q.goto(`${base}/studio.html?user=bob`);
+  await q.locator('#boot').waitFor({ state: 'detached', timeout: 20000 });
+  const openKiln = q.getByRole('button', { name: 'Open the kiln' });
+  if (await openKiln.count()) {
+    await openKiln.click();
+    await q.getByRole('button', { name: 'Skip to level 1' }).click({ timeout: 8000 });
+    await q.waitForTimeout(800);
+  }
+  await q.getByRole('button', { name: 'Showcase' }).first().click();
+  await q.locator('.show__card').first().waitFor({ timeout: 8000 });
+  await q.locator('.show__card').first().getByRole('radio', { name: '4 stars' }).click();
+  await q.waitForTimeout(600);
+  const score = (await q.locator('.show__card').first().locator('.show__score').textContent()).trim();
+  if (!/4\.0/.test(score)) throw new Error(`rating not shown (${score})`);
+  const like = q.locator('.show__like').first();
   const before = await like.textContent();
   await like.click();
-  await p.waitForTimeout(600);
-  const after = await like.textContent();
-  if (before === after) throw new Error(`likes did not change (${before})`);
-});
-await step('Commissions page (in More) and create flow', async () => {
-  await p.getByRole('button', { name: 'More' }).click();
-  await btn('Commissions').click();
-  await expectVisible(p.locator('#comm-title'), 'commissions title');
-  const post = btn('Post one of your pots');
-  if (await post.count()) {
-    await post.click();
-    await expectVisible(p.locator('#create-title'), 'create screen');
-    const pot = p.locator('.create__pot').first();
-    if (await pot.count()) {
-      await pot.click();
-      await p.locator('#create-title').locator('xpath=..').getByRole('button').last().click();
-      await p.waitForTimeout(1200);
-    }
-  } else console.log('      (not Journeyman yet: create hidden, as designed)');
+  await q.waitForTimeout(600);
+  if (before === (await like.textContent())) throw new Error('like did not change');
+  await q.getByRole('tab', { name: 'Top rated' }).click();
+  await q.locator('.show__card').first().waitFor({ timeout: 5000 });
+  await q.close();
 });
 await step('More menu: leaderboard', async () => {
   await p.getByRole('button', { name: 'More' }).click();

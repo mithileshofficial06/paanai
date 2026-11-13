@@ -5,10 +5,10 @@ import { decodeLog } from '../../../shared/core/strokes';
 import { createThrowStage, type ThrowStage, type ThrowState } from '../../three/throwStage';
 import { Button, IconButton } from '../../ui/Button';
 import { HintBubble } from '../../ui/HintBubble';
-import { IconCheck, IconGhost, IconInfo, IconOpen, IconUndo } from '../../ui/icons';
+import { IconCheck, IconInfo, IconOpen, IconUndo } from '../../ui/icons';
 import { useReducedMotion } from '../../ui/hooks';
 import * as S from '../store';
-import { completeHint, profileOf, startTour, submitThrow, throwStarted, toggleGhost, updateHint } from '../controller';
+import { completeHint, profileOf, startTour, submitThrow, throwStarted, updateHint } from '../controller';
 import { tourStage } from '../Tour';
 import { coach, type Coach } from '../coach';
 
@@ -259,9 +259,6 @@ export function Throw() {
           <Button data-tour="done" variant="primary" icon={<IconCheck />} disabled={!started || submitting} loading={submitting} onClick={() => void done()}>
             Done
           </Button>
-          {ghostLog ? (
-            <IconButton data-tour="ghost" label={ghostOn ? "Hide the commissioner's ghost" : "Show the commissioner's ghost"} variant={ghostOn ? 'primary' : 'glass'} pressed={ghostOn} onClick={() => toggleGhost()} icon={<IconGhost />} />
-          ) : null}
           <IconButton data-tour="info" label="How to play" variant="ghost" onClick={() => startTour()} icon={<IconInfo />} />
         </div>
       </footer>

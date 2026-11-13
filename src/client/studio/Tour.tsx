@@ -82,7 +82,6 @@ const STEPS: Step[] = [
     title: 'Scoring and the leaderboard',
     beats: [
       { target: '[data-tour=gauges]', say: 'Matching the shape is most of your score. Even walls, the rules, and using few strokes add the rest.' },
-      { target: '[data-tour=ghost]', say: 'Stuck? The ghost replays the Master’s own strokes so you can copy them.' },
       { target: '[data-tour=done]', say: 'Tap Done to score: up to three stars a level. The daily commission also ranks you on today’s leaderboard.' },
     ],
   },

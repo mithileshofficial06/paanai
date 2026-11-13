@@ -163,7 +163,7 @@ export function Decorate() {
     }
   }
   const active = TOOLS.find((t) => t.id === tool)!;
-  const glazeNote = daily && lt?.res.potId ? 'Paint sits on top of the glaze, so the kiln will not change it.' : null;
+  const glazeNote = daily && lt?.res.potId ? 'The kiln master glazes under your paint, so the fire will not change it.' : null;
 
   return (
     <section class="sc deco" aria-labelledby="deco-title">
@@ -256,10 +256,10 @@ export function Decorate() {
             setBusy(false);
           }}
         >
-          {daily && lt?.res.potId ? 'Next: glaze and fire' : 'Done painting'}
+          {daily && lt?.res.potId ? 'Fire it in the kiln' : 'Done painting'}
         </Button>
-        <Button variant="ghost" block onClick={() => (daily && lt?.res.potId ? go('glaze') : back())}>
-          {daily && lt?.res.potId ? 'Skip painting' : 'Back'}
+        <Button variant="ghost" block onClick={() => back()}>
+          Back
         </Button>
       </div>
     </section>

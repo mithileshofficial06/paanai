@@ -455,3 +455,24 @@ export const ICONS: Record<string, FunctionComponent<IconProps>> = {
   comment: IconComment,
   rank: IconRank,
 };
+
+/** A pot on a plinth under a spotlight: the Showcase. */
+export function IconShowcase(p: IconProps) {
+  return (
+    <Svg {...p} name="showcase">
+      <path d="M9.5 6.5c-1.6 1.1-2.4 2.7-2.1 4.5.3 1.6 1.4 2.6 2.4 3h4.4c1-.4 2.1-1.4 2.4-3 .3-1.8-.5-3.4-2.1-4.5" />
+      <path d="M9.5 6.5h5M10.2 4.5h3.6" />
+      <path d="M6 17.5h12M7.5 17.5V20.5M16.5 17.5V20.5M5 20.5h14" />
+    </Svg>
+  );
+}
+
+/** Heart for likes. */
+export function IconHeart(p: IconProps & { filled?: boolean | undefined }) {
+  const { filled = false, ...rest } = p;
+  return (
+    <Svg {...rest} name={filled ? 'heart-filled' : 'heart'}>
+      <path d="M12 20s-7.5-4.4-7.5-10A4.25 4.25 0 0 1 12 7.4 4.25 4.25 0 0 1 19.5 10c0 5.6-7.5 10-7.5 10Z" fill={filled ? 'currentColor' : 'none'} />
+    </Svg>
+  );
+}

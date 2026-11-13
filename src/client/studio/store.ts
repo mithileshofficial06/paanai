@@ -2,7 +2,7 @@
 // controller (controller.ts) writes them.
 import { computed, signal } from '@preact/signals';
 import type { CommissionDTO, LevelThrowResponse, LevelsResponse, PotSummary, ThrowResponse, TodayResponse } from '../../shared/api/types';
-import type { CodexEntry, CommissionListItem, KilnItem } from '../app/api';
+import type { CodexEntry, KilnItem } from '../app/api';
 import { type Decor, emptyDecor } from '../../shared/core/decor';
 
 export type Route =
@@ -14,12 +14,11 @@ export type Route =
   | 'levelResult'
   | 'throw'
   | 'result'
-  | 'glaze'
   | 'decorate'
   | 'kiln'
-  | 'shelf'
+  | 'mypots'
+  | 'showcase'
   | 'codex'
-  | 'commissions'
   | 'create'
   | 'leaderboard';
 
@@ -71,9 +70,15 @@ export const kilnItems = signal<KilnItem[]>([]);
 export const kilnLoading = signal(false);
 /** The pot currently being revealed in the kiln (or the starter pot). */
 export const revealing = signal<PotSummary | null>(null);
-export const shelf = signal<{ pots: PotSummary[]; next: number | null; total: number } | null>(null);
+export const showcase = signal<{ pots: PotSummary[]; next: number | null; total: number } | null>(null);
+export const showcaseSort = signal<'new' | 'top'>('new');
+/** Pots this player put on show or took down in this session (overrides the loaded flag). */
+export const onShow = signal<Map<string, boolean>>(new Map());
+/** The paint on the pot just thrown has been saved to the server. */
+export const decorSaved = signal(false);
+/** Pots this player has shared to Reddit in this session. */
+export const sharedPots = signal<Set<string>>(new Set());
 export const codex = signal<{ effects: CodexEntry[]; discovered: number; total: number } | null>(null);
-export const commissions = signal<CommissionListItem[] | null>(null);
 export const myPots = signal<PotSummary[] | null>(null);
 export const toast = signal<{ id: number; text: string; tone: 'neutral' | 'success' | 'danger' } | null>(null);
 export const muted = signal(false);

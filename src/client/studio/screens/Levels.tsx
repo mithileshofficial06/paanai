@@ -10,7 +10,7 @@ import { Stars } from '../../ui/Stars';
 import { EmptyState } from '../../ui/States';
 import { IconBrush, IconChevron, IconInfo, IconRetry, IconWheel } from '../../ui/icons';
 import { isEmptyDecor } from '../../../shared/core/decor';
-import { PotView, TargetView } from '../parts';
+import { PotActions, PotView, TargetView } from '../parts';
 import * as S from '../store';
 import { go, playDaily, playLevel, say, startTour } from '../controller';
 
@@ -294,7 +294,7 @@ export function LevelResult() {
               ? (VERDICT[res.stars] ?? VERDICT[1])
               : sc.match >= res.pass
                 ? 'The shape is there, but a rule was missed. Check the chips below.'
-                : `A ${res.pass}% match clears this level. Tap the ghost to copy the Master’s moves.`}
+                : `A ${res.pass}% match clears this level. Watch the gold outline on the wheel and match it.`}
           </p>
           <p class="result__rank">
             Best match here: <span class="pn-num">{res.best}%</span>
@@ -330,18 +330,20 @@ export function LevelResult() {
             Try level {n} again
           </Button>
         )}
+        {res.potId ? <PotActions pot={{ potId: res.potId, profile: ll.profile, glaze: null, fired: null, decor: S.decor.value }} thumb={thumb} /> : null}
         <div class="sc__actions--row">
+          <Button variant="ghost" icon={<IconBrush />} onClick={() => go('decorate')}>
+            {isEmptyDecor(S.decor.value) ? 'Paint it' : 'Repaint'}
+          </Button>
           {passed ? (
-            <Button variant="secondary" icon={<IconRetry />} onClick={() => playLevel(n)}>
-              Replay for stars
+            <Button variant="ghost" icon={<IconRetry />} onClick={() => playLevel(n)}>
+              Replay
             </Button>
-          ) : null}
-          <Button variant="secondary" icon={<IconBrush />} onClick={() => go('decorate')}>
-            {isEmptyDecor(S.decor.value) ? 'Decorate it' : 'Repaint'}
-          </Button>
-          <Button variant="secondary" onClick={() => go('levels')}>
-            Level map
-          </Button>
+          ) : (
+            <Button variant="ghost" onClick={() => go('levels')}>
+              Level map
+            </Button>
+          )}
         </div>
       </div>
     </section>

@@ -1,18 +1,17 @@
-// After a throw: the score, then glazing for the kiln.
-import { useEffect, useState } from 'preact/hooks';
+// After a daily throw: the score, then paint it and fire it (or put it on show, or share it).
+import { useEffect } from 'preact/hooks';
 import { sfx } from '../../app/audio';
-import { GLAZES, GLAZE_INFO, APPLICATIONS, type GlazeId } from '../../../shared/core/glazes';
 import { Button } from '../../ui/Button';
 import { BeatBar } from '../../ui/CommissionCard';
 import { GlassPanel } from '../../ui/GlassPanel';
 import { ScoreRing } from '../../ui/ScoreRing';
 import { Stars } from '../../ui/Stars';
-import { IconBrush, IconFlame, IconRetry, IconShare } from '../../ui/icons';
+import { IconBrush, IconRetry } from '../../ui/icons';
 import { EmptyState } from '../../ui/States';
-import { PotView, TargetView } from '../parts';
+import { PotActions, PotView, TargetView } from '../parts';
 
 import * as S from '../store';
-import { go, login, newThrow, placeInKiln, sharePot } from '../controller';
+import { go, login, newThrow } from '../controller';
 
 const VERDICT = ['Rough, but every potter starts here.', 'A fair pot. The order wanted more.', 'A good pot. The buyer will be pleased.', 'A master’s pot. Worthy of the shelf.'];
 
@@ -20,8 +19,6 @@ const VERDICT = ['Rough, but every potter starts here.', 'A fair pot. The order 
 export function Result() {
   const lt = S.lastThrow.value;
   const thumb = S.lastThumb.value;
-  const [sharing, setSharing] = useState(false);
-  const [shared, setShared] = useState(false);
   const win = lt?.res.beatBar ?? false;
   useEffect(() => {
     if (!lt) return;
@@ -103,113 +100,16 @@ export function Result() {
       <div class="sc__actions">
         {res.potId ? (
           <Button variant="primary" size="lg" block icon={<IconBrush />} onClick={() => go('decorate')}>
-            Decorate and fire it
+            Paint it and fire it
           </Button>
         ) : (
           <Button variant="primary" size="lg" block onClick={() => login()}>
             Log in to keep and fire your pots
           </Button>
         )}
-        <div class="sc__actions--row">
-          <Button variant="secondary" icon={<IconRetry />} onClick={() => newThrow()}>
-            Throw again
-          </Button>
-          {res.potId && thumb ? (
-            <Button
-              variant="secondary"
-              icon={<IconShare />}
-              loading={sharing}
-              disabled={shared}
-              onClick={async () => {
-                setSharing(true);
-                setShared(await sharePot(res.potId!, thumb));
-                setSharing(false);
-              }}
-            >
-              {shared ? 'Shared' : 'Share to comments'}
-            </Button>
-          ) : null}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function Glaze() {
-  const lt = S.lastThrow.value;
-  const today = S.today.value;
-  const [picked, setPicked] = useState<GlazeId[]>([]);
-  const [app, setApp] = useState<(typeof APPLICATIONS)[number]>('dip');
-  const [busy, setBusy] = useState(false);
-  if (!lt?.res.potId) return <EmptyState title="Nothing to glaze" description="Throw a pot first." action={<Button onClick={() => go('throw')}>Go to the wheel</Button>} />;
-  const potId = lt.res.potId;
-  function toggle(g: GlazeId) {
-    sfx.tink(picked.includes(g) ? 0.62 : 0.74 + GLAZES.indexOf(g) * 0.03);
-    setPicked((p) => (p.includes(g) ? p.filter((x) => x !== g) : p.length >= 2 ? [p[1]!, g] : [...p, g]));
-  }
-  const raw = picked.length ? GLAZE_INFO[picked[picked.length - 1]!].raw : '#9a6b52';
-  const atm = today?.atmosphere ?? 'oxidation';
-  return (
-    <section class="sc glaze" aria-labelledby="glaze-title">
-      <p class="pn-eyebrow">Glaze</p>
-      <h1 id="glaze-title" class="pn-headline">Choose up to two glazes</h1>
-      <GlassPanel tone="raised" padding="md" radius="xl" class="glaze__preview">
-        <div class="glaze__pot" style={{ '--raw': raw }}>
-          <PotView pot={{ profile: lt.profile, glaze: picked.length ? { glazes: picked, application: app } : null, fired: null, decor: S.decor.value }} width={130} height={170} />
-        </div>
-        <div class="glaze__kiln">
-          <span class={`pn-chip ${atm === 'reduction' ? 'pn-chip--accent' : 'pn-chip--gold'}`}>
-            <IconFlame size={14} /> Next kiln: {atm}
-          </span>
-          <p class="pn-body">
-            {atm === 'reduction'
-              ? 'A smoky, starved fire: copper turns red, iron turns celadon green.'
-              : 'A clean, airy fire: copper turns green, iron turns amber brown.'}
-          </p>
-          <p class="pn-meta">Raw glaze looks nothing like the fired result. The kiln decides.</p>
-        </div>
-      </GlassPanel>
-      <ul class="glaze__grid" aria-label="Glazes">
-        {GLAZES.map((g) => {
-          const info = GLAZE_INFO[g];
-          const on = picked.includes(g);
-          return (
-            <li key={g}>
-              <button type="button" class={`swatch${on ? ' is-on' : ''}`} aria-pressed={on} onClick={() => toggle(g)}>
-                <span class="swatch__chip" style={{ backgroundColor: info.raw }} />
-                <span class="swatch__name">{info.name}</span>
-                <span class="swatch__hint">{info.hint}</span>
-                {on ? <span class="swatch__order">{picked.indexOf(g) + 1}</span> : null}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-      <div class="glaze__apps" role="radiogroup" aria-label="Application">
-        {APPLICATIONS.map((a) => (
-          <button key={a} type="button" role="radio" aria-checked={app === a} class={`pn-chip pn-chip--interactive${app === a ? ' is-selected' : ''}`} onClick={() => setApp(a)}>
-            {a === 'dip' ? 'Dip (even coat)' : a === 'pour' ? 'Pour (streaky)' : 'Double dip (thick, drips)'}
-          </button>
-        ))}
-      </div>
-      <div class="sc__actions">
-        <Button
-          variant="primary"
-          size="lg"
-          block
-          icon={<IconFlame />}
-          loading={busy}
-          disabled={picked.length === 0}
-          onClick={async () => {
-            setBusy(true);
-            await placeInKiln(potId, picked, app);
-            setBusy(false);
-          }}
-        >
-          Place in the kiln
-        </Button>
-        <Button variant="ghost" block onClick={() => go('decorate')}>
-          Back to painting
+        {res.potId ? <PotActions pot={{ potId: res.potId, profile: lt.profile, glaze: null, fired: null, decor: S.decor.value }} thumb={thumb} /> : null}
+        <Button variant="ghost" block icon={<IconRetry />} onClick={() => newThrow()}>
+          Throw again
         </Button>
       </div>
     </section>

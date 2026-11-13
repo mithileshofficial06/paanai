@@ -8,9 +8,10 @@ import { Skeleton } from '../../ui/Skeleton';
 import { EmptyState } from '../../ui/States';
 import { IconCrackedPot, IconFlame, IconKiln, IconSparkle } from '../../ui/icons';
 import { sfx } from '../../app/audio';
-import { fmtCountdown, PotView, titleCase, useNow } from '../parts';
+import { fmtCountdown, PotActions, PotView, titleCase, useNow } from '../parts';
+import { StudioRooms } from './Community';
 import * as S from '../store';
-import { go, login, markOpened } from '../controller';
+import { login, markOpened, playDaily } from '../controller';
 import { KilnHero, type KilnState } from '../KilnHero';
 
 const DEFECT_TEXT: Record<string, string> = {
@@ -32,10 +33,11 @@ export function Kiln() {
   if (!S.loggedIn.value)
     return (
       <section class="sc">
+        <StudioRooms />
         <EmptyState
           icon={<IconKiln />}
           title="Your kiln"
-          description="Log in to glaze your pots and fire them in the shared kiln every night."
+          description="Log in to fire your pots in the shared kiln. It fires once a day at 00:00 UTC."
           action={<Button variant="primary" onClick={() => login()}>Log in</Button>}
         />
       </section>
@@ -46,7 +48,7 @@ export function Kiln() {
   const opened = items.filter((i) => i.fired && i.opened);
   return (
     <section class="sc kiln" aria-labelledby="kiln-title">
-      <p class="pn-eyebrow">The kiln</p>
+      <StudioRooms />
       <h1 id="kiln-title" class="pn-headline">{ready.length ? `${ready.length} pot${ready.length > 1 ? 's' : ''} ready to open` : 'Your kiln'}</h1>
       {S.today.value ? (
         <div class={`kiln__hero${waiting.length ? ' is-loaded' : ''}`}>
@@ -68,7 +70,7 @@ export function Kiln() {
       ) : null}
       {S.kilnLoading.value && !items.length ? <Skeleton shape="rect" height={160} /> : null}
       {!S.kilnLoading.value && !items.length ? (
-        <EmptyState icon={<IconKiln />} title="The kiln is empty" description="Throw today's commission, glaze it, and it fires at 00:00 UTC." action={<Button variant="primary" onClick={() => go('throw')}>Go to the wheel</Button>} />
+        <EmptyState icon={<IconKiln />} title="The kiln is empty" description="Throw today's pot, paint it and put it in. The kiln glazes it and fires at 00:00 UTC." action={<Button variant="primary" onClick={() => playDaily()}>Throw today's pot</Button>} />
       ) : null}
       {ready.map((it) => (
         <GlassPanel key={it.potId} tone="accent" padding="md" radius="xl" glow class="kiln__ready">
@@ -97,7 +99,7 @@ export function Kiln() {
           <PotView pot={it} width={52} height={68} />
           <div class="kiln__info">
             <h3 class="pn-title">{it.title}</h3>
-            <p class="pn-meta">{it.glaze ? it.glaze.glazes.map(titleCase).join(' + ') : 'Unglazed'} · fires in {fmtCountdown((it.firesAt ?? now) - now)}</p>
+            <p class="pn-meta">Glazed by the kiln master · fires in {fmtCountdown((it.firesAt ?? now) - now)}</p>
           </div>
         </GlassPanel>
       ))}
@@ -170,12 +172,13 @@ function Reveal({ item, onDone }: { item: KilnItem; onDone: () => void }) {
             </ul>
           ) : null}
           {f ? <p class="pn-meta">Kiln score {f.kilnScore} · {f.atmosphere} firing</p> : null}
-          <div class="sc__actions sc__actions--row">
-            <Button variant="secondary" onClick={onDone}>
-              Back to the kiln
-            </Button>
-            <Button variant="primary" onClick={() => go('throw')}>
+          {f?.survived ? <PotActions pot={item} /> : null}
+          <div class="sc__actions">
+            <Button variant="primary" size="lg" block onClick={() => playDaily()}>
               Throw today's pot
+            </Button>
+            <Button variant="ghost" block onClick={onDone}>
+              Back to the kiln
             </Button>
           </div>
         </div>
