@@ -1,6 +1,7 @@
 import { decodeProfile } from '../../shared/core/profile';
 import { fire } from '../../shared/core/fire';
-import { EFFECT_BY_ID, type EffectId, type GlazeSpec, validGlazeSpec } from '../../shared/core/glazes';
+import { APPLICATIONS, EFFECT_BY_ID, GLAZES, type EffectId, type GlazeSpec, validGlazeSpec } from '../../shared/core/glazes';
+import { hash32, mulberry32 } from '../../shared/core/rng';
 import type { ScoreBreakdown } from '../../shared/core/score';
 import type { FiredResultDTO, GlazeChoice, PotSummary } from '../../shared/api/types';
 import { platform } from '../platform';
@@ -11,9 +12,25 @@ import { getPot, loadSummaries, potSummary } from './pots';
 import { addDays, dateOf, today } from './time';
 import { syncFlair } from './users';
 
-/** Lock in a glaze and queue the pot for the next kiln (fires at the next 00:00 UTC). */
+/**
+ * The kiln master glazes every pot: one or two glazes and a way of applying them, picked from the
+ * pot id. Players no longer choose; each firing is a surprise and the Codex fills by chance.
+ */
+export function kilnGlaze(potId: string): GlazeSpec {
+  const rnd = mulberry32(hash32(`glaze:${potId}`));
+  const a = GLAZES[rnd() % GLAZES.length]!;
+  const glazes: GlazeSpec['glazes'] = [a];
+  if (rnd() % 100 < 45) {
+    const b = GLAZES[rnd() % GLAZES.length]!;
+    if (b !== a) glazes.push(b);
+  }
+  return { glazes, application: APPLICATIONS[rnd() % APPLICATIONS.length]! };
+}
+
+/** Queue the pot for the next kiln (fires at the next 00:00 UTC). No choice = the kiln glazes it. */
 export async function glazePot(userId: string, potId: string, choice: unknown): Promise<{ kilnDate: string; atmosphere: string }> {
   const kv = platform().kv;
+  if (choice == null) choice = kilnGlaze(potId);
   if (!validGlazeSpec(choice)) throw new ApiErr('bad-glaze', 'Pick one or two different glazes and an application.');
   const pot = await getPot(potId);
   if (!pot.potId) throw new ApiErr('not-found', 'That pot is gone.', 404);
@@ -70,11 +87,6 @@ export async function firePot(potId: string): Promise<FiredResultDTO | null> {
   if (pot.ranked === '1') {
     await kv.zAdd(K.lbKiln(pot.kilnDate), { member: pot.owner ?? 'potter', score: r.kilnScore });
     await kv.expire(K.lbKiln(pot.kilnDate), TTL.lb);
-  }
-  if (r.survived && pot.hidden !== '1') {
-    await kv.zAdd(K.shelf(), { member: potId, score: platform().now() });
-    const n = await kv.zCard(K.shelf());
-    if (n > 5000) await kv.zRemRangeByRank(K.shelf(), 0, n - 5001);
   }
   if (pot.ownerId) {
     if (r.survived) await kv.hIncrBy(K.user(pot.ownerId), 'fired', 1);

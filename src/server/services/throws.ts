@@ -7,6 +7,7 @@ import { platform } from '../platform';
 import { K, TTL } from '../store/keys';
 import { resolveCommission } from './commissions';
 import { ApiErr } from './errors';
+import { createPot } from './pots';
 import { syncFlair } from './users';
 import { today } from './time';
 
@@ -16,11 +17,6 @@ export function lbScore(total: number, strokes: number): number {
 }
 export function lbTotal(key: number): number {
   return Math.floor(key / 1000);
-}
-
-async function nextId(prefix: string): Promise<string> {
-  const n = await platform().kv.incrBy(K.seq(), 1);
-  return `${prefix}${n.toString(36)}${Math.floor(platform().now() / 1000).toString(36).slice(-3)}`;
 }
 
 /**
@@ -66,12 +62,9 @@ export async function submitThrow(req: ThrowRequest): Promise<ThrowResponse> {
 
   const existing = await kv.hGet(K.throwRec(c.dto.id, userId), 'potId');
   const ranked = !existing;
-  const potId = await nextId('pot');
   const now = platform().now();
-  await kv.hSet(K.pot(potId), {
-    potId,
+  const potId = await createPot(userId, {
     owner: username,
-    ownerId: userId,
     commissionId: c.dto.id,
     title: c.dto.title,
     profile: JSON.stringify(encodeProfile(profile)),
@@ -80,12 +73,8 @@ export async function submitThrow(req: ThrowRequest): Promise<ThrowResponse> {
     ranked: ranked ? '1' : '0',
     strokes: String(strokes),
     strokeLog: req.strokeLog,
-    createdAt: String(now),
     date: today(),
   });
-  await kv.expire(K.pot(potId), TTL.pot);
-  await kv.zAdd(K.myPots(userId), { member: potId, score: now });
-  await kv.expire(K.myPots(userId), TTL.pot);
 
   let starsEarned = 0;
   if (ranked) {

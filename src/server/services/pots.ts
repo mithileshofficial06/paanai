@@ -2,7 +2,7 @@ import type { FiredResultDTO, GlazeChoice, PotSummary } from '../../shared/api/t
 import { type Decor, isEmptyDecor, sanitizeDecor } from '../../shared/core/decor';
 import { ApiErr } from './errors';
 import { platform } from '../platform';
-import { K } from '../store/keys';
+import { K, TTL } from '../store/keys';
 
 export function potSummary(h: Record<string, string>): PotSummary | null {
   if (!h.potId || !h.profile) return null;
@@ -19,6 +19,9 @@ export function potSummary(h: Record<string, string>): PotSummary | null {
     decor: h.decor ? sanitizeDecor(JSON.parse(h.decor)) : null,
     likes: Number(h.likes ?? '0'),
     createdAt: Number(h.createdAt ?? '0'),
+    showcased: h.showcased === '1',
+    rating: ratingOf(h),
+    ratings: Number(h.ratingN ?? '0'),
   };
 }
 
@@ -54,4 +57,31 @@ export async function decoratePot(userId: string, potId: unknown, raw: unknown):
   }
   await kv.hSet(K.pot(potId), { decor: JSON.stringify(decor) });
   return { decor };
+}
+
+/** Average stars x10 (35 = 3.5 stars), 0 when nobody has rated yet. */
+export function ratingOf(h: Record<string, string>): number {
+  const n = Number(h.ratingN ?? '0');
+  return n > 0 ? Math.round((Number(h.ratingSum ?? '0') * 10) / n) : 0;
+}
+
+export async function nextId(prefix: string): Promise<string> {
+  const n = await platform().kv.incrBy(K.seq(), 1);
+  return `${prefix}${n.toString(36)}${Math.floor(platform().now() / 1000).toString(36).slice(-3)}`;
+}
+
+const MY_POTS_KEEP = 200;
+
+/** Store a new pot for its owner and add it to their pots (oldest trimmed past 200). */
+export async function createPot(userId: string, fields: Record<string, string>): Promise<string> {
+  const kv = platform().kv;
+  const potId = await nextId('pot');
+  const now = platform().now();
+  await kv.hSet(K.pot(potId), { ...fields, potId, ownerId: userId, createdAt: String(now) });
+  await kv.expire(K.pot(potId), TTL.pot);
+  await kv.zAdd(K.myPots(userId), { member: potId, score: now });
+  await kv.expire(K.myPots(userId), TTL.pot);
+  const n = await kv.zCard(K.myPots(userId));
+  if (n > MY_POTS_KEEP) await kv.zRemRangeByRank(K.myPots(userId), 0, n - MY_POTS_KEEP - 1);
+  return potId;
 }

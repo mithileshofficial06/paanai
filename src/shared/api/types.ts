@@ -58,6 +58,14 @@ export type PotSummary = {
   decor?: Decor | null;
   likes: number;
   createdAt: number;
+  /** On public show in the Showcase. */
+  showcased?: boolean;
+  /** Average star rating x10 (0 = not rated yet) and how many people rated. */
+  rating?: number;
+  ratings?: number;
+  /** The viewer's own rating and like (Showcase only). */
+  myRating?: number;
+  myLike?: boolean;
 };
 
 export type GlazeChoice = {
@@ -130,6 +138,8 @@ export type LevelThrowResponse = {
   unlocked: number;
   best: number;
   saved: boolean;
+  /** The pot is kept (logged in) so it can be painted, showcased and shared. */
+  potId: string | null;
 };
 
 export type LeaderboardResponse = { rows: LeaderRow[]; me: LeaderRow | null; players: number };

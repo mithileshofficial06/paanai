@@ -5,6 +5,7 @@ import { createMemoryPlatform, type MemoryPlatform } from '../../src/server/plat
 import { encodeLog } from '../../src/shared/core/strokes';
 import { recipeToLog } from '../../src/shared/content/recipes';
 import { OFFICIAL } from '../../src/shared/content/commissions';
+import { listCommissions } from '../../src/server/services/playerCommissions';
 import type { ThrowResponse, TodayResponse } from '../../src/shared/api/types';
 
 let p: MemoryPlatform;
@@ -76,7 +77,7 @@ describe('player commissions', () => {
     const made = await call<{ id: string; postId: string }>('POST', '/api/commission', { potId: t.json.potId, adjective: 'Tall', vessel: 'Cylinder', constraints: [] });
     as('mod', made.json.postId);
     await call('POST', '/internal/menu/remove-commission');
-    expect((await call<{ commissions: unknown[] }>('GET', '/api/commissions')).json.commissions.length).toBe(0);
+    expect((await listCommissions(20)).length).toBe(0);
     expect(p.posts.find((x) => x.id === made.json.postId)).toBeUndefined();
   });
 });

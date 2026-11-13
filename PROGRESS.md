@@ -12,7 +12,8 @@
   4. DONE (dd79eea): `three/glazeMaterial.ts` (fired glaze shader from GlazeLook), `three/potRenderer.ts` (offscreen cached 3D pot renders used by PotView everywhere), ghost replay on the wheel (toggle). Kiln reveal is a CSS door-opening scene around the 3D pot render.
   5. DONE (abe1f36): 35 official commissions + `tests/unit/commissions.test.ts` + `tools/check-commissions.ts`. 39 tests pass.
   6. IN PROGRESS: `npm run build` passes (studio.js 193 KB gzip). README rewritten for judges. devvit.json select default fixed (must be a string). **`devvit playtest` BLOCKED: Reddit says the developer account setup is unfinished (Needs Mithilesh).** Next: once unblocked, playtest on Reddit and fix real-platform issues; then M5 polish (REALISM SPEC leftovers: slurry lip, drips, water bowl/sponge props, camera sway; audio/perf pass; seed the subreddit for judging).
-- **Last updated:** 2026-11-12 13:20 IST
+- **2026-11-14 status:** game features done (levels 1-100, tutorial, daily, glaze/kiln, decorating; 61b02d8, 53 tests, e2e 21/21). Waiting on Mithilesh's list of features to cut/simplify. Then: real Reddit playtest, phone test, polish leftovers, seed subreddit, Devpost write-up + video (deadline 8 Dec 6pm PST). Publish only after 9 Dec.
+- **Last updated:** 2026-11-14
 
 ## USAGE RULES (Mithilesh, 2026-11-12, after the 5-hour window hit 79% in about an hour)
 

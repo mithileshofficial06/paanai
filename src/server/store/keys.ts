@@ -14,7 +14,9 @@ export const K = {
   kilnQueue: (date: string) => `p:kilnq:${date}`, // zset potId by glaze time
   lbThrow: (commId: string) => `p:lb:throw:${commId}`, // zset username -> score key
   lbKiln: (date: string) => `p:lb:kiln:${date}`,
-  shelf: () => `p:shelf`, // zset potId by fired time
+  showcase: () => `p:showcase`, // zset potId by time it was put on show
+  showcaseTop: () => `p:showcase:top`, // zset potId by rating rank key
+  ratings: (potId: string) => `p:ratings:${potId}`, // zset userId -> stars (1-5)
   likes: (potId: string) => `p:likes:${potId}`, // zset user -> 0
   codex: () => `p:codex`, // hash effectId -> JSON {user, date}
   user: (userId: string) => `p:user:${userId}`, // hash
@@ -37,6 +39,7 @@ export const TTL = {
   kilnQueue: 3 * DAY_S,
   lb: 30 * DAY_S,
   likes: 30 * DAY_S,
+  ratings: 30 * DAY_S,
   user: 30 * DAY_S,
   idem: DAY_S,
   job: 3 * DAY_S,

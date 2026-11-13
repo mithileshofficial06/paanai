@@ -10,10 +10,10 @@ import { leaderboard, myThrow, submitThrow } from '../services/throws';
 import { meDTO, touchUser } from '../services/users';
 import { dayNumber, minuteBucket, nextKilnAt, today } from '../services/time';
 import { codex, glazePot, kilnWaitingCount, markOpened, myKiln } from '../services/kiln';
-import { deletePot, report, shelfPage, sharePot, toggleLike } from '../services/community';
+import { deletePot, ratePot, report, setShowcase, showcasePage, sharePot, toggleLike } from '../services/community';
 import { decoratePot, loadSummaries } from '../services/pots';
 import { starterPot } from '../services/starter';
-import { createCommission, listCommissions, removeCommission, type CreateCommissionReq } from '../services/playerCommissions';
+import { createCommission, removeCommission, type CreateCommissionReq } from '../services/playerCommissions';
 
 export const api = new Hono();
 
@@ -109,8 +109,8 @@ api.post('/glaze', async (c) => {
   await limit('glaze', 10);
   const ctx = platform().ctx();
   const { userId } = requireUser(ctx.userId, ctx.username);
-  const { potId, glazes, application } = await c.req.json<{ potId: string; glazes: string[]; application: string }>();
-  return c.json(await glazePot(userId, String(potId), { glazes, application }));
+  const { potId, glazes, application } = await c.req.json<{ potId: string; glazes?: string[]; application?: string }>();
+  return c.json(await glazePot(userId, String(potId), glazes ? { glazes, application } : null));
 });
 
 api.get('/kiln', async (c) => {
@@ -134,9 +134,26 @@ api.get('/codex', async (c) => {
   return c.json({ effects, discovered: effects.filter((e) => e.discoverer).length, total: effects.length });
 });
 
-api.get('/shelf', async (c) => {
+api.get('/showcase', async (c) => {
   const cursor = Math.max(0, Math.min(10_000, Number(c.req.query('cursor') ?? '0') || 0));
-  return c.json(await shelfPage(cursor));
+  const sort = c.req.query('sort') === 'top' ? 'top' : 'new';
+  return c.json(await showcasePage(cursor, sort, platform().ctx().userId ?? null));
+});
+
+api.post('/showcase', async (c) => {
+  await limit('showcase', 20);
+  const ctx = platform().ctx();
+  const { userId } = requireUser(ctx.userId, ctx.username);
+  const { potId, on } = await c.req.json<{ potId: string; on: boolean }>();
+  return c.json(await setShowcase(userId, String(potId), on !== false));
+});
+
+api.post('/rate', async (c) => {
+  await limit('rate', 40);
+  const ctx = platform().ctx();
+  const { userId } = requireUser(ctx.userId, ctx.username);
+  const { potId, stars } = await c.req.json<{ potId: string; stars: number }>();
+  return c.json(await ratePot(userId, String(potId), Number(stars)));
 });
 
 api.post('/like', async (c) => {
@@ -178,8 +195,6 @@ api.post('/commission', async (c) => {
   return c.json(await createCommission(userId, username, await c.req.json<CreateCommissionReq>()));
 });
 
-api.get('/commissions', async (c) => c.json({ commissions: await listCommissions(20) }));
-
 api.post('/commission/delete', async (c) => {
   const ctx = platform().ctx();
   const { userId } = requireUser(ctx.userId, ctx.username);
@@ -191,6 +206,6 @@ api.post('/commission/delete', async (c) => {
 api.get('/mypots', async (c) => {
   const ctx = platform().ctx();
   if (!ctx.userId) return c.json({ pots: [] });
-  const ids = await platform().kv.zRange(K.myPots(ctx.userId), 0, 29, { by: 'rank', reverse: true });
+  const ids = await platform().kv.zRange(K.myPots(ctx.userId), 0, 39, { by: 'rank', reverse: true });
   return c.json({ pots: await loadSummaries(ids.map((m) => m.member)) });
 });

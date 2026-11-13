@@ -8,6 +8,9 @@ import type { LevelThrowRequest, LevelThrowResponse, LevelsResponse } from '../.
 import { platform } from '../platform';
 import { K, TTL } from '../store/keys';
 import { ApiErr } from './errors';
+import { createPot } from './pots';
+import { encodeProfile } from '../../shared/core/profile';
+import { today } from './time';
 
 function bestList(rec: Record<string, string>): number[] {
   return Array.from({ length: LEVEL_COUNT }, (_, i) => Number(rec[`b${i + 1}`] ?? '0') || 0);
@@ -46,7 +49,7 @@ export async function submitLevelThrow(req: LevelThrowRequest): Promise<LevelThr
 
   const { userId } = platform().ctx();
   if (!userId) {
-    return { level, score, pass: d.spec.pass, passed, stars, firstClear: passed, unlocked: passed ? Math.min(LEVEL_COUNT, level + 1) : level, best: score.match, saved: false };
+    return { level, score, pass: d.spec.pass, passed, stars, firstClear: passed, unlocked: passed ? Math.min(LEVEL_COUNT, level + 1) : level, best: score.match, saved: false, potId: null };
   }
   const kv = platform().kv;
   const key = K.levels(userId);
@@ -61,5 +64,17 @@ export async function submitLevelThrow(req: LevelThrowRequest): Promise<LevelThr
   const unlocked = passed && level === unlockedBefore ? Math.min(LEVEL_COUNT, level + 1) : unlockedBefore;
   await kv.hSet(key, { [`b${level}`]: String(best), unlocked: String(unlocked) });
   await kv.expire(key, TTL.levels);
-  return { level, score, pass: d.spec.pass, passed, stars, firstClear, unlocked, best, saved: true };
+  // Keep the pot so it can be painted, put in the Showcase and shared.
+  const potId = await createPot(userId, {
+    owner: platform().ctx().username ?? 'potter',
+    commissionId: `level-${level}`,
+    title: `Level ${level}: ${d.spec.title}`,
+    profile: JSON.stringify(encodeProfile(profile)),
+    score: String(score.match),
+    breakdown: JSON.stringify(score),
+    ranked: '0',
+    strokes: String(strokeCount(decoded.log)),
+    date: today(),
+  });
+  return { level, score, pass: d.spec.pass, passed, stars, firstClear, unlocked, best, saved: true, potId };
 }

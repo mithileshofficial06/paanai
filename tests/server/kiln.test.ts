@@ -65,13 +65,16 @@ describe('kiln', () => {
     expect(p.comments.filter((c) => c.text?.startsWith('**Kiln Report')).length).toBe(1);
   });
 
-  it('shelf, likes, reports auto-hide at threshold, delete', async () => {
+  it('showcase, likes, reports auto-hide at threshold, delete', async () => {
     const a = await throwMaster('alice', 'a1');
     as('alice');
     await call('POST', '/api/glaze', { potId: a, glazes: ['cobalt'], application: 'dip' });
     p.shiftDays(1);
     await call('POST', '/internal/cron/kiln-batch');
-    const shelf = await call<{ pots: PotSummary[] }>('GET', '/api/shelf');
+    // Fired pots stay private until their maker puts them on show.
+    expect((await call<{ pots: PotSummary[] }>('GET', '/api/showcase')).json.pots).toHaveLength(0);
+    await call('POST', '/api/showcase', { potId: a, on: true });
+    const shelf = await call<{ pots: PotSummary[] }>('GET', '/api/showcase');
     expect(shelf.json.pots.map((x) => x.potId)).toContain(a);
     as('bob');
     expect((await call<{ liked: boolean; likes: number }>('POST', '/api/like', { potId: a })).json.likes).toBe(1);
@@ -79,7 +82,7 @@ describe('kiln', () => {
       as(u);
       await call('POST', '/api/report', { targetId: a });
     }
-    const after = await call<{ pots: PotSummary[] }>('GET', '/api/shelf');
+    const after = await call<{ pots: PotSummary[] }>('GET', '/api/showcase');
     expect(after.json.pots.map((x) => x.potId)).not.toContain(a);
     as('alice');
     await call('POST', '/api/pot/delete', { potId: a });
