@@ -49,6 +49,9 @@ export class CameraRig {
   private initialised = false;
   /** Small cosmetic shake (slump flop), decays by itself. */
   private shake = 0;
+  /** Gentle hand-held drift while nobody is touching the clay (off for reduced motion). */
+  swayOn = false;
+  private sway = 0;
 
   setViewport(w: number, h: number): void {
     this.width = Math.max(1, w);
@@ -92,8 +95,9 @@ export class CameraRig {
     }
 
     this.shake *= Math.exp(-dt * 6);
-    const sx = this.shake * Math.sin(time * 37.0) * 0.25;
-    const sy = this.shake * Math.sin(time * 29.0 + 1.3) * 0.2;
+    this.sway += ((this.swayOn && !hold ? 1 : 0) - this.sway) * Math.min(1, dt * 1.2);
+    const sx = this.shake * Math.sin(time * 37.0) * 0.25 + this.sway * (Math.sin(time * 0.42) * 0.55 + Math.sin(time * 0.17 + 2) * 0.3);
+    const sy = this.shake * Math.sin(time * 29.0 + 1.3) * 0.2 + this.sway * Math.sin(time * 0.31 + 0.7) * 0.22;
     const c = this.camera;
     c.position.set(sx, this.lookY + Math.sin(el) * this.dist + sy, Math.cos(el) * this.dist);
     c.lookAt(sx * 0.5, this.lookY + sy * 0.5, 0);

@@ -59,6 +59,11 @@ export function Kiln() {
               label={waiting.length ? 'The kiln, loaded and waiting for tonight’s firing.' : 'The kiln, cooling.'}
             />
           </div>
+          <span class="kiln__sparks" aria-hidden="true">
+            {Array.from({ length: waiting.length ? 14 : 6 }, (_, i) => (
+              <i key={i} style={{ '--i': i, '--x': `${(i * 37) % 100}%` }} />
+            ))}
+          </span>
           <div class="kiln__heroInfo">
             <span class="kiln__heroLabel">{waiting.length ? 'Fires in' : 'Next firing in'}</span>
             <strong class="kiln__countdown">{fmtCountdown(S.today.value.nextKilnAt - now)}</strong>

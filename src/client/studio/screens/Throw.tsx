@@ -89,6 +89,18 @@ export function Throw() {
   const pass = c.bar;
   const focus = !S.tour.value;
 
+  /** After a collapse, rewind to the last pot that could stand (one stroke may not be enough). */
+  function undoToSafe(w: 'thin' | 'slump' | 'limit') {
+    const st = stageRef.current;
+    if (!st) return;
+    if (!st.undo() || w !== 'slump') return;
+    for (let k = 0; k < 30; k++) {
+      const pr = st.getProfile();
+      if (!pr.slumped && !pr.unsafe) break;
+      if (!st.undo()) break;
+    }
+  }
+
   async function done() {
     const st = stageRef.current;
     if (!st) return;
@@ -179,7 +191,7 @@ export function Throw() {
           <span class="throw__alert-body">{WARN[warn].body}</span>
           <div class="throw__alert-actions">
             {warn !== 'limit' ? (
-              <button type="button" class="throw__alert-btn" onClick={() => (stage?.undo(), setWarn(null))}>
+              <button type="button" class="throw__alert-btn" onClick={() => (undoToSafe(warn), setWarn(null))}>
                 <IconUndo size={16} /> Undo last stroke
               </button>
             ) : null}

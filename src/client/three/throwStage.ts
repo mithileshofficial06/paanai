@@ -41,6 +41,7 @@ import { PotGeometry } from './potMesh';
 import { createRenderer, QualityScaler } from './renderer';
 import { makeRadialTexture } from './textures';
 import { createWheel, type Wheel } from './wheel';
+import { createStudioProps, type StudioProps } from './studioProps';
 
 export type ThrowState = {
   heightMm: number;
@@ -134,6 +135,7 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
   addLights(scene);
 
   const rig = new CameraRig();
+  rig.swayOn = !reduced;
   const glow: Texture = makeRadialTexture(128, [
     [0, 1],
     [0.35, 0.5],
@@ -150,6 +152,8 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
 
   const wheel: Wheel = createWheel();
   scene.add(wheel.root, wheel.spinner);
+  const props: StudioProps = createStudioProps();
+  scene.add(props.root);
 
   // The pot. It sits in the wheel's spinner so every object-space pattern turns with the wheel.
   const potGeo = new PotGeometry();
@@ -758,6 +762,7 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
       contact.dispose();
       openRing.dispose();
       wheel.dispose();
+      props.dispose();
       fingerGeo.dispose();
       skin.dispose();
       pGeo.dispose();
