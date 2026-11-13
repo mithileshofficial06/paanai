@@ -3,45 +3,15 @@
  * Fonts are served from /fonts (repo-root public/). No external requests.
  */
 
-@font-face {
-  font-family: 'Shrikhand';
-  src: url('/fonts/shrikhand-latin.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Bricolage Grotesque';
-  src: url('/fonts/bricolage-grotesque-latin-var.woff2') format('woff2');
-  font-weight: 200 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Fraunces';
-  src: url('/fonts/fraunces-latin-var.woff2') format('woff2');
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Fraunces';
-  src: url('/fonts/fraunces-italic-latin.woff2') format('woff2');
-  font-weight: 400 700;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Atkinson Hyperlegible Next';
-  src: url('/fonts/atkinson-hyperlegible-next-latin-var.woff2') format('woff2');
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
+/* Fonts (all SIL OFL, self-hosted). Splash: Bagel Fat One + Fredoka. Home: Fraunces Black + Outfit. Wheel: Bungee + Chakra Petch. */
+@font-face { font-family: 'Bagel Fat One'; src: url('/fonts/bagel-fat-one-latin.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Fredoka'; src: url('/fonts/fredoka-latin-var.woff2') format('woff2'); font-weight: 300 700; font-display: swap; }
+@font-face { font-family: 'Fraunces Black'; src: url('/fonts/fraunces-black-latin.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Fraunces Black'; src: url('/fonts/fraunces-black-italic-latin.woff2') format('woff2'); font-weight: 100 900; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Outfit'; src: url('/fonts/outfit-latin-var.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Bungee'; src: url('/fonts/bungee-latin.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Chakra Petch'; src: url('/fonts/chakra-petch-latin-500.woff2') format('woff2'); font-weight: 100 599; font-display: swap; }
+@font-face { font-family: 'Chakra Petch'; src: url('/fonts/chakra-petch-latin-700.woff2') format('woff2'); font-weight: 600 900; font-display: swap; }
 
 /* ---------- Reset ---------- */
 *,

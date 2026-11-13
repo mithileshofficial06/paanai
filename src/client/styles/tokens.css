@@ -17,9 +17,12 @@
   font-synthesis: none;
 
   /* ---------- Typography ---------- */
-  --font-display: 'Shrikhand', 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
-  --font-ui: 'Bricolage Grotesque', 'Atkinson Hyperlegible Next', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
+  --font-display: 'Fraunces Black', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-ui: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-splash: 'Bagel Fat One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --font-splash-ui: 'Fredoka', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --font-game: 'Bungee', Impact, 'Arial Black', system-ui, sans-serif;
+  --font-hud: 'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
 
   --text-label: 0.875rem; /* 14px: eyebrows and badges only, never body copy */
   --text-body: 1rem; /* 16px: minimum for reading text */

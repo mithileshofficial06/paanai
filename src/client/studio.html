@@ -4,23 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Paanai</title>
-    <link rel="preload" href="/fonts/shrikhand-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/bricolage-grotesque-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/bagel-fat-one-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/fredoka-latin-var.woff2" as="font" type="font/woff2" crossorigin />
     <style>
-      @font-face { font-family: 'Shrikhand'; src: url('/fonts/shrikhand-latin.woff2') format('woff2'); font-display: block; }
+      @font-face { font-family: 'Bagel Fat One'; src: url('/fonts/bagel-fat-one-latin.woff2') format('woff2'); font-display: block; }
+      @font-face { font-family: 'Fredoka'; src: url('/fonts/fredoka-latin-var.woff2') format('woff2'); font-weight: 300 700; font-display: swap; }
       html, body { margin: 0; background: #0b0606; }
       #boot { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; align-content: center; gap: 6px; color: #f3e3d6;
         background: radial-gradient(80% 60% at 50% 105%, rgba(150, 20, 16, 0.55), transparent 70%), radial-gradient(60% 50% at 80% 0%, rgba(90, 14, 12, 0.35), transparent 70%), #0b0606;
-        font-family: 'Bricolage Grotesque', system-ui, sans-serif; transition: opacity 0.6s ease, visibility 0.6s; }
+        font-family: 'Fredoka', system-ui, sans-serif; transition: opacity 0.6s ease, visibility 0.6s; }
       #boot.is-done { opacity: 0; visibility: hidden; }
-      .bl__brand { margin: 0; font: 400 clamp(2.6rem, 9vw, 3.6rem)/1 'Shrikhand', Georgia, serif; letter-spacing: 0.01em;
+      .bl__brand { margin: 0; font: 400 clamp(2.8rem, 10vw, 3.8rem)/1 'Bagel Fat One', system-ui, sans-serif; letter-spacing: 0.02em;
         background: linear-gradient(100deg, #ffd27a, #ff7a2c 50%, #ff3a3a); -webkit-background-clip: text; background-clip: text; color: transparent;
         filter: drop-shadow(0 0 22px rgba(255, 90, 40, 0.45)); }
       .bl__tag { margin: 0 0 6px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #ff9a7a; }
       .bl__art { width: min(78vw, 340px); height: auto; overflow: visible; }
       .bl__meter { width: min(70vw, 280px); height: 6px; margin-top: 10px; border-radius: 99px; background: rgba(255, 255, 255, 0.07); overflow: hidden; }
       .bl__fill { height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #c8861c, #ffd56a); box-shadow: 0 0 12px rgba(255, 190, 70, 0.7); }
-      .bl__step { margin: 4px 0 0; min-height: 1.4em; font-size: 0.95rem; color: #d9c3b4; }
+      .bl__step { margin: 4px 0 0; min-height: 1.4em; font-size: 1rem; font-weight: 500; color: #d9c3b4; }
       .bl__pct { font-variant-numeric: tabular-nums; color: #ffd27a; font-weight: 700; margin-left: 6px; }
       @media (prefers-reduced-motion: reduce) { #boot { transition: none; } }
     </style>

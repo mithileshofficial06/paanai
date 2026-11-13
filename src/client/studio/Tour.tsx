@@ -19,101 +19,79 @@ type Ctx = {
   push: (dx: number, at: number) => Promise<void>;
 };
 type Target = string | 'pot' | null;
-type Step = { target: Target; title: string; text: string; act?: (c: Ctx) => Promise<void> };
+/** One spotlight moment inside a step: what to light up, what to say, and what to do on the wheel. */
+type Beat = { target: Target; say: string; act?: (c: Ctx) => Promise<void> };
+type Step = { title: string; beats: Beat[] };
 
+const opened = () => tourStage.st?.getProfile().opened ?? false;
+
+// Four short steps: the idea, the three tools, how scoring works, and what happens after Done.
 const STEPS: Step[] = [
-  { target: null, title: 'Welcome to the studio', text: 'I will throw one pot for you and show you every control on the way. Sit back and watch, or tap Next whenever you like.' },
-  { target: '[data-tour=brief]', title: 'Today’s commission', text: 'This is today’s commission: a real vessel from a real tradition. Everyone in the community throws the same one today.' },
-  { target: '[data-tour=beat]', title: 'The score to beat', text: 'This is the score to beat, set by the Master’s own throw. Your first throw each day is the ranked one.' },
-  { target: '[data-tour=rules]', title: 'Constraints', text: 'These are the rules for this pot. Meet them for extra points, for example a rim wider than the base.' },
-  { target: '[data-tour=gauges]', title: 'Live readings', text: 'Live readings: how closely your shape matches, its height, the thinnest wall, how much it holds, and the time left.' },
-  { target: 'pot', title: 'The target shape', text: 'The glowing outline is the shape you are aiming for. The clay sits in the middle of the spinning wheel.' },
   {
-    target: 'pot',
-    title: 'Centre the clay',
-    text: 'First, centring. Press and hold the clay to steady it on the wheel. Watch the wobble settle.',
-    act: async (c) => {
-      tourStage.st?.recenter();
-      await c.wait(900);
-      await c.hold(2600);
-    },
+    title: 'How it works',
+    beats: [
+      { target: '[data-tour=brief]', say: 'Every day there is one commission, and everyone throws the same pot.' },
+      {
+        target: 'pot',
+        say: 'Shape the spinning clay to match the glowing outline. Hold to centre it, then tap Open.',
+        act: async (c) => {
+          tourStage.st?.recenter();
+          await c.wait(500);
+          await c.hold(1600);
+          if (!opened()) await c.click('[data-tour=open]');
+        },
+      },
+      { target: '[data-tour=beat]', say: 'Beat this score, set by the Master. Your first throw each day is the ranked one.' },
+    ],
   },
   {
-    target: '[data-tour=open]',
-    title: 'Open it',
-    text: 'Now tap Open. It presses a hollow into the middle, so the pot can have walls.',
-    act: async (c) => {
-      await c.wait(1200);
-      await c.click('[data-tour=open]');
-    },
-  },
-  { target: '[data-tour=tools]', title: 'Your hands', text: 'These are your hands. Hands does everything: drag up to pull, drag sideways to push. Push only moves clay in or out. Thin only thins the wall.' },
-  {
-    target: 'pot',
-    title: 'Pull the walls up',
-    text: 'Watch. Dragging up along the wall pulls the clay taller and thinner. Each pull adds height.',
-    act: async (c) => {
-      await c.wait(600);
-      await c.pull(3);
-    },
-  },
-  {
-    target: '[data-tour=water]',
-    title: 'Keep it wet',
-    text: 'Clay dries as you work, and dry clay drags on your fingers. The blue meter shows how wet it is. Tap Water to wet it again.',
-    act: async (c) => {
-      await c.wait(1600);
-      await c.click('[data-tour=water]');
-    },
-  },
-  {
-    target: '[data-tour=tool-push]',
-    title: 'Push',
-    text: 'Switch to Push. Drag sideways on the wall to swell the belly out, or squeeze a neck in.',
-    act: async (c) => {
-      await c.wait(900);
-      await c.click('[data-tour=tool-push]');
-      await c.push(30, 0.45);
-    },
+    title: 'Hands, Push and Thin',
+    beats: [
+      {
+        target: '[data-tour=tool-hands]',
+        say: 'Hands: drag up along the wall to pull the pot taller.',
+        act: async (c) => {
+          if (!opened()) await c.click('[data-tour=open]');
+          await c.wait(400);
+          await c.pull(2);
+        },
+      },
+      {
+        target: '[data-tour=tool-push]',
+        say: 'Push: drag sideways to swell the belly out or squeeze a neck in.',
+        act: async (c) => {
+          await c.click('[data-tour=tool-push]');
+          await c.push(30, 0.45);
+        },
+      },
+      {
+        target: '[data-tour=tool-thin]',
+        say: 'Thin: thins the wall. Too thin and the pot wobbles, then collapses.',
+        act: async (c) => {
+          await c.click('[data-tour=tool-thin]');
+          await c.wait(900);
+          await c.click('[data-tour=tool-hands]');
+        },
+      },
+      { target: '[data-tour=water]', say: 'Tap Water when the clay dries out. Undo takes back your last stroke.' },
+    ],
   },
   {
-    target: '[data-tour=tool-thin]',
-    title: 'Thin',
-    text: 'Thin makes the walls thinner without moving them. Careful: too thin and the pot wobbles, then collapses.',
-    act: async (c) => {
-      await c.wait(900);
-      await c.click('[data-tour=tool-thin]');
-      await c.wait(1500);
-      await c.click('[data-tour=tool-hands]');
-    },
+    title: 'Scoring and the leaderboard',
+    beats: [
+      { target: '[data-tour=gauges]', say: 'Matching the shape is most of your score. Even walls, the rules, and using few strokes add the rest.' },
+      { target: '[data-tour=ghost]', say: 'Stuck? The ghost replays the Master’s own strokes so you can copy them.' },
+      { target: '[data-tour=done]', say: 'Tap Done to score. Your ranked throw goes on today’s leaderboard, and stars raise your potter rank.' },
+    ],
   },
   {
-    target: '[data-tour=undo]',
-    title: 'Undo',
-    text: 'Made a mistake? Undo takes back your last stroke. You can undo as many times as you need.',
-    act: async (c) => {
-      await c.wait(1800);
-      await c.click('[data-tour=undo]');
-    },
+    title: 'After you tap Done',
+    beats: [
+      { target: '.pn-bottomnav__cell:nth-child(2)', say: 'Glaze your pot and load the kiln. It fires at midnight UTC, so come back tomorrow to open it.' },
+      { target: '.pn-bottomnav__cell:nth-child(4)', say: 'New glaze effects go in the Codex, and the Shelf shows every fired pot for likes.' },
+      { target: '[data-tour=info]', say: 'Tap here to watch this again. The wheel is yours, potter.' },
+    ],
   },
-  {
-    target: '[data-tour=ghost]',
-    title: 'The ghost',
-    text: 'The ghost replays the commissioner’s own throw beside yours, stroke by stroke, so you can copy their moves.',
-    act: async (c) => {
-      await c.wait(900);
-      await c.click('[data-tour=ghost]');
-      await c.wait(4200);
-      await c.click('[data-tour=ghost]');
-    },
-  },
-  { target: '[data-tour=done]', title: 'Done', text: 'When you are happy, tap Done. The server replays your strokes and scores the shape, the evenness of the walls, the rules, and how few strokes you used. Then you glaze it and load it in the kiln.' },
-  { target: '.pn-bottomnav__cell:nth-child(2)', title: 'The kiln', text: 'Every pot fires together at midnight, UTC. Come back the next day to open the kiln and see what the fire did to your glaze.' },
-  { target: '.pn-bottomnav__cell:nth-child(3)', title: 'The shelf', text: 'The shelf holds every pot fired in this community. Like your favourites; the most liked becomes Pot of the Week.' },
-  { target: '.pn-bottomnav__cell:nth-child(4)', title: 'The codex', text: 'The codex has twenty four glaze effects to discover. Fire a new one first, and your name goes on it.' },
-  { target: '.pn-bottomnav__cell:nth-child(5)', title: 'Commissions', text: 'Once you are a Journeyman, you can post your own pot as a commission, and others try to beat you.' },
-  { target: '[data-tour=info]', title: 'Replay this tour', text: 'Tap this any time to watch the tour again.' },
-  { target: null, title: 'Your turn', text: 'That’s everything. The clay is fresh and the wheel is yours. Good luck, potter.' },
 ];
 
 // ---------- narration ----------
@@ -175,20 +153,27 @@ function frameClient() {
 }
 
 export function Tour() {
-  const [i, setI] = useState(0);
+  const [i, setStep] = useState(0);
+  const [bi, setBeat] = useState(0);
+  const setI = (n: number) => {
+    setStep(n);
+    setBeat(0);
+  };
   const [playing, setPlaying] = useState(true);
   const [voiceOn, setVoiceOn] = useState(!S.muted.value);
   const [rect, setRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const [finger, setFinger] = useState<{ x: number; y: number; down: boolean } | null>(null);
   const run = useRef(0);
   const step = STEPS[i]!;
+  const beat = step.beats[bi] ?? step.beats[0]!;
   const last = i === STEPS.length - 1;
+  const lastBeat = bi >= step.beats.length - 1;
 
   // Track the target's position (it can move: the pot grows, the HUD reflows).
   useEffect(() => {
     let raf = 0;
     const measure = () => {
-      const t = step.target;
+      const t = beat.target;
       if (t === null) setRect(null);
       else if (t === 'pot') {
         const f = frameClient();
@@ -208,7 +193,7 @@ export function Tour() {
     };
     measure();
     return () => clearTimeout(raf);
-  }, [i]);
+  }, [i, bi]);
 
   // Run the step: narrate and act together, then advance when both are done.
   useEffect(() => {
@@ -295,20 +280,22 @@ export function Tour() {
     };
     void (async () => {
       setFinger(null);
-      const said = speak(`${step.title}. ${step.text}`, voiceOn);
-      const did = step.act ? step.act(ctx) : Promise.resolve();
+      const said = speak(bi === 0 ? `${step.title}. ${beat.say}` : beat.say, voiceOn);
+      const did = beat.act ? beat.act(ctx) : Promise.resolve();
       await Promise.all([said, did]);
       if (!alive()) return;
       setFinger(null);
-      await wait(500);
-      if (alive() && playing && !last) setI((v) => Math.min(STEPS.length - 1, v + 1));
+      await wait(350);
+      if (!alive() || !playing) return;
+      if (!lastBeat) setBeat(bi + 1);
+      else if (!last) setI(i + 1);
     })();
     return () => {
       run.current++;
       window.speechSynthesis?.cancel();
       if (held) fire('pointerup', held.x, held.y);
     };
-  }, [i, playing, voiceOn]);
+  }, [i, bi, playing, voiceOn]);
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
@@ -337,10 +324,10 @@ export function Tour() {
       )}
       {finger ? <div class={`tour__finger${finger.down ? ' is-down' : ''}`} style={{ left: `${finger.x}px`, top: `${finger.y}px` }} /> : null}
       <div class="tour__card" style={cardStyle} key={i}>
-        <div class="tour__progress" style={{ '--p': `${((i + 1) / STEPS.length) * 100}%` }} />
+        <div class="tour__progress" style={{ '--p': `${((i + (bi + 1) / step.beats.length) / STEPS.length) * 100}%` }} />
         <div class="tour__head">
           <span class="tour__count">
-            {i + 1} / {STEPS.length}
+            Step {i + 1} of {STEPS.length}
           </span>
           <button type="button" class={`tour__voice${voiceOn ? ' is-on' : ''}`} aria-pressed={voiceOn} aria-label={voiceOn ? 'Turn narration off' : 'Turn narration on'} onClick={() => setVoiceOn(!voiceOn)}>
             {voiceOn ? (
@@ -354,7 +341,14 @@ export function Tour() {
           </button>
         </div>
         <h2 id="tour-title" class="tour__title">{step.title}</h2>
-        <p class="tour__text">{step.text}</p>
+        <p class="tour__text" key={bi}>
+          {beat.say}
+        </p>
+        <div class="tour__beats" aria-hidden="true">
+          {step.beats.map((_, k) => (
+            <i key={k} class={k < bi ? 'is-done' : k === bi ? 'is-on' : ''} />
+          ))}
+        </div>
         <div class="tour__nav">
           <button type="button" class="tour__btn" disabled={i === 0} onClick={() => setI(i - 1)}>
             Back

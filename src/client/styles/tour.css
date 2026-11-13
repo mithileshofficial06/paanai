@@ -50,7 +50,7 @@
 .tour__skip { min-height: 36px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: #c8b49a; font: 600 0.875rem var(--font-ui); cursor: pointer; }
 .tour__skip:hover { color: #fff; }
 .tour__title {
-  margin: 8px 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 1.6rem; line-height: 1.1; letter-spacing: 0.01em;
+  margin: 8px 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 1.35rem; line-height: 1.15; letter-spacing: 0.01em;
   background: linear-gradient(180deg, #fff3cf, #ffc456); -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .tour__text { margin: 0 0 12px; color: #f1e3d6; font-size: 1rem; line-height: 1.5; }
@@ -76,3 +76,12 @@
   .tour__spot, .tour__spot::before, .tour__spot::after, .tour__finger.is-down::after, .tour__card { animation: none !important; }
   .tour__spot { transition-duration: 1ms; }
 }
+
+/* Beats inside a step: the caption cross-fades, dots show how far through the step you are. */
+.tour__text { animation: tour-say 320ms var(--ease-out) both; }
+.tour__beats { display: flex; gap: 6px; margin: -2px 0 2px; }
+.tour__beats i { width: 18px; height: 4px; border-radius: 2px; background: rgba(255, 220, 160, 0.18); transition: background 300ms, width 300ms; }
+.tour__beats i.is-done { background: rgba(255, 200, 100, 0.55); }
+.tour__beats i.is-on { width: 30px; background: linear-gradient(90deg, #ffb340, #ffe08a); box-shadow: 0 0 8px rgba(255, 190, 70, 0.7); }
+@keyframes tour-say { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tour__text { animation: none; } }

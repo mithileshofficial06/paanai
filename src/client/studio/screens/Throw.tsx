@@ -244,7 +244,7 @@ export function Throw() {
               onClick={() => stage?.addWater()}
               aria-label={`Add water (clay is ${Math.round((live?.wetness ?? 1) * 100)}% wet)`}
             >
-              <span class="water-meter" style={{ '--wet': `${Math.round((live?.wetness ?? 1) * 100)}%` }} aria-hidden="true" />
+              <WaterDrop wet={live?.wetness ?? 1} />
               Water
             </Button>
           )}
@@ -294,6 +294,21 @@ function CoachArrows({ tip, frame }: { tip: Coach; frame: { x: number; baseY: nu
         <i />
       </div>
     </>
+  );
+}
+
+/** A droplet that drains as the clay dries. */
+function WaterDrop({ wet }: { wet: number }) {
+  const h = 19 * Math.max(0, Math.min(1, wet));
+  const d = 'M8 1.2C8 1.2 2 8.6 2 12.6a6 6 0 0 0 12 0C14 8.6 8 1.2 8 1.2z';
+  return (
+    <svg class="water-drop" viewBox="0 0 16 20" width="15" height="19" aria-hidden="true">
+      <clipPath id="water-drop-clip">
+        <path d={d} />
+      </clipPath>
+      <rect clip-path="url(#water-drop-clip)" x="0" y={19.5 - h} width="16" height={h} fill="#7cc4ff" />
+      <path d={d} fill="none" stroke="currentColor" stroke-width="1.6" />
+    </svg>
   );
 }
 

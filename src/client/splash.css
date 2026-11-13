@@ -1,31 +1,5 @@
-@font-face {
-  font-family: 'Shrikhand';
-  src: url('/fonts/shrikhand-latin.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Bricolage Grotesque';
-  src: url('/fonts/bricolage-grotesque-latin-var.woff2') format('woff2');
-  font-weight: 200 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Fraunces';
-  src: url('/fonts/fraunces-latin-var.woff2') format('woff2');
-  font-weight: 400 700;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Atkinson Hyperlegible Next';
-  src: url('/fonts/atkinson-hyperlegible-next-latin-var.woff2') format('woff2');
-  font-weight: 400 700;
-  font-display: swap;
-}
+@font-face { font-family: 'Bagel Fat One'; src: url('/fonts/bagel-fat-one-latin.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Fredoka'; src: url('/fonts/fredoka-latin-var.woff2') format('woff2'); font-weight: 300 700; font-display: swap; }
 
 *,
 *::before,
@@ -251,3 +225,6 @@ body:not(.ready) .info {
     animation: none;
   }
 }
+
+/* The feed post uses the splash fonts (Bagel Fat One + Fredoka), not the studio ones. */
+body { --font-display: 'Bagel Fat One', 'Arial Rounded MT Bold', system-ui, sans-serif; --font-ui: 'Fredoka', 'Arial Rounded MT Bold', system-ui, sans-serif; }

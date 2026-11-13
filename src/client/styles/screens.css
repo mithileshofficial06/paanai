@@ -77,8 +77,8 @@
 .throw__tool.is-on { background: var(--color-accent-soft); color: var(--color-ink); box-shadow: inset 0 0 0 1px rgba(255, 80, 80, 0.5); }
 .throw__actions { display: flex; align-items: center; gap: var(--space-2); max-width: calc(100vw - 16px); }
 @media (max-width: 420px) { .throw__actions { gap: 6px; } .throw__actions .pn-btn { padding-inline: 14px; } .throw__actions .pn-iconbtn { width: 44px; min-width: 44px; } .throw__actions [data-tour=info] { width: 34px; min-width: 34px; } }
-.water-meter { position: relative; width: 10px; height: 18px; border-radius: 5px; border: 1.5px solid currentColor; overflow: hidden; }
-.water-meter::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: var(--wet, 100%); background: #7cc4ff; transition: height var(--dur-3); }
+.water-drop { flex: none; overflow: visible; filter: drop-shadow(0 0 4px rgba(124, 196, 255, 0.45)); }
+.water-drop rect { transition: y var(--dur-3), height var(--dur-3); }
 .is-dry { border-color: rgba(124, 196, 255, 0.7) !important; box-shadow: 0 0 14px rgba(124, 196, 255, 0.45) !important; }
 .app--throw .pn-bottomnav { background: rgba(6, 3, 4, 0.92); }
 
@@ -333,3 +333,9 @@
 .coach-arrow--up i { transform: rotate(-45deg); }
 @keyframes chev { 0%, 100% { opacity: 0.15; } 40% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .coach-arrow i, .throw__coach-dot, .throw__alert, .throw__coach { animation: none !important; } .coach-arrow i { opacity: 0.9; } }
+
+/* ---------- Fonts by area: home pages use the defaults; the wheel, result and glaze screens play like a game ---------- */
+.app { font-family: var(--font-ui); }
+.app--throw, .app--result, .app--glaze { --font-display: var(--font-game); --font-ui: var(--font-hud); }
+.app--throw .pn-headline, .app--result .pn-headline, .app--glaze .pn-headline { font-size: clamp(1.45rem, 6.4vw, 2rem); line-height: 1.12; letter-spacing: 0.01em; }
+.welcome h1, .welcome .pn-headline { font-style: italic; letter-spacing: -0.01em; }

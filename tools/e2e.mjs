@@ -70,7 +70,7 @@ await step('How to play starts the guided tour', async () => {
   await expectVisible(p.locator('.tour__card'), 'tour card');
   await p.waitForTimeout(1500);
   await btn('Next').click();
-  await expectVisible(p.getByText('Today’s commission', { exact: true }), 'tour step 2');
+  await expectVisible(p.locator('.tour__title', { hasText: 'Hands, Push and Thin' }), 'tour step 2');
 });
 await step('Skip tour lands on a fresh wheel', async () => {
   await btn('Skip tour').click();
