@@ -74,12 +74,15 @@ export const devvitPlatform: Platform = {
     },
     async submitComment(o) {
       const send = (runAs: 'USER' | 'APP') => {
+        // From the app account, "My pot..." would read as the app's pot: use the named caption.
+        const caption = runAs === 'APP' && o.appCaption ? o.appCaption : o.caption;
+        const text = runAs === 'APP' && o.appCaption ? o.appCaption : o.text;
         if (o.imageUrl) {
-          const rt = new RichTextBuilder().image({ mediaUrl: o.imageUrl, ...(o.caption ? { caption: o.caption } : {}) });
-          if (o.text && o.text !== o.caption) rt.paragraph((p) => p.text({ text: o.text ?? '' }));
+          const rt = new RichTextBuilder().image({ mediaUrl: o.imageUrl, ...(caption ? { caption } : {}) });
+          if (text && text !== caption) rt.paragraph((p) => p.text({ text }));
           return reddit.submitComment({ id: asT3(o.postId), richtext: rt, runAs });
         }
-        return reddit.submitComment({ id: asT3(o.postId), text: o.text ?? '', runAs });
+        return reddit.submitComment({ id: asT3(o.postId), text: text ?? '', runAs });
       };
       // Posting as the player can be refused (permission not granted yet); fall back to the app account.
       const c = o.runAsUser

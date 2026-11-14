@@ -164,11 +164,17 @@ export async function sharePot(userId: string, username: string, potId: string, 
     : pot.commissionId?.startsWith('level-')
       ? `My ${pot.title}, thrown on the wheel in Paanai. Shape match ${pot.score}%.`
       : `My ${pot.title} on the wheel. Throw score ${pot.score}.`;
-  const img = await platform().media.uploadImage(pngDataUrl);
-  const c = await platform().reddit.submitComment({ postId: targetPost, imageUrl: img.mediaUrl, caption, text: caption, runAsUser: true });
+  const appCaption = `u/${username} shared their pot. ${caption.replace(/^My /, 'Their ')}`;
+  let c: { id: string };
+  try {
+    const img = await platform().media.uploadImage(pngDataUrl);
+    c = await platform().reddit.submitComment({ postId: targetPost, imageUrl: img.mediaUrl, caption, appCaption, text: caption, runAsUser: true });
+  } catch (err) {
+    console.error('share failed', String(err).slice(0, 200));
+    throw new ApiErr('share-failed', 'Reddit did not take the comment just now. Try again in a minute.', 500);
+  }
   await kv.hSet(K.pot(potId), { sharedComment: c.id });
   await kv.hIncrBy(K.stats(today()), 'shares', 1);
-  void username;
   return { commentId: c.id };
 }
 

@@ -55,7 +55,8 @@ export type SubmitPostOpts = {
 
 export type RedditOps = {
   submitPost(opts: SubmitPostOpts): Promise<{ id: string; url: string }>;
-  submitComment(opts: { postId: string; text?: string; imageUrl?: string; caption?: string; runAsUser?: boolean }): Promise<{ id: string }>;
+  /** appCaption: used instead of caption/text if posting as the player fails and the app account posts. */
+  submitComment(opts: { postId: string; text?: string; imageUrl?: string; caption?: string; appCaption?: string; runAsUser?: boolean }): Promise<{ id: string }>;
   setUserFlair(username: string, text: string): Promise<void>;
   getSnoovatarUrl(username: string): Promise<string | undefined>;
   removePost(postId: string): Promise<void>;

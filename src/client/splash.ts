@@ -69,7 +69,7 @@ function render(t: TodayResponse): void {
     status = t.myThrow.beatBar
       ? `You scored ${t.myThrow.score.total} and beat the bar.`
       : `You scored ${t.myThrow.score.total}. Practice and try to beat ${c.bar}.`;
-    label = t.myThrow.glazed ? 'Open the studio' : 'Glaze your pot';
+    label = t.myThrow.glazed ? 'Open the studio' : 'Paint and fire it';
   } else if (t.throwsToday > 0) {
     status = `${t.throwsToday} potter${t.throwsToday === 1 ? '' : 's'} at the wheel today.`;
   }
