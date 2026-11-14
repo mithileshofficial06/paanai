@@ -27,7 +27,8 @@
     },
     "reddit": {
       "enable": true,
-      "scope": "user"
+      "scope": "user",
+      "asUser": ["SUBMIT_POST", "SUBMIT_COMMENT"]
     }
   },
   "scheduler": {
@@ -120,5 +121,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch"
+  },
+  "dev": {
+    "subreddit": "paanai_game_dev"
   }
 }

@@ -56,25 +56,38 @@ export const devvitPlatform: Platform = {
   }),
   reddit: {
     async submitPost(o) {
-      const post = await reddit.submitCustomPost({
+      const base = {
         subredditName: context.subredditName ?? '',
         title: o.title,
         entry: o.entry ?? 'default',
         ...(o.postData ? { postData: o.postData } : {}),
         ...(o.textFallback ? { textFallback: { text: o.textFallback } } : {}),
-        ...(o.runAsUser ? { runAs: 'USER' as const, userGeneratedContent: { text: o.title } } : {}),
-      });
+      };
+      // Posting as the player can be refused (permission not granted yet); fall back to the app account.
+      const post = o.runAsUser
+        ? await reddit.submitCustomPost({ ...base, runAs: 'USER', userGeneratedContent: { text: o.title } }).catch((e) => {
+            console.warn('submitPost as user failed, posting as app:', String(e).slice(0, 160));
+            return reddit.submitCustomPost(base);
+          })
+        : await reddit.submitCustomPost(base);
       return { id: post.id, url: post.url };
     },
     async submitComment(o) {
-      const runAs = o.runAsUser ? ('USER' as const) : ('APP' as const);
-      if (o.imageUrl) {
-        const rt = new RichTextBuilder().image({ mediaUrl: o.imageUrl, ...(o.caption ? { caption: o.caption } : {}) });
-        if (o.text) rt.paragraph((p) => p.text({ text: o.text ?? '' }));
-        const c = await reddit.submitComment({ id: asT3(o.postId), richtext: rt, runAs });
-        return { id: c.id };
-      }
-      const c = await reddit.submitComment({ id: asT3(o.postId), text: o.text ?? '', runAs });
+      const send = (runAs: 'USER' | 'APP') => {
+        if (o.imageUrl) {
+          const rt = new RichTextBuilder().image({ mediaUrl: o.imageUrl, ...(o.caption ? { caption: o.caption } : {}) });
+          if (o.text && o.text !== o.caption) rt.paragraph((p) => p.text({ text: o.text ?? '' }));
+          return reddit.submitComment({ id: asT3(o.postId), richtext: rt, runAs });
+        }
+        return reddit.submitComment({ id: asT3(o.postId), text: o.text ?? '', runAs });
+      };
+      // Posting as the player can be refused (permission not granted yet); fall back to the app account.
+      const c = o.runAsUser
+        ? await send('USER').catch((e) => {
+            console.warn('submitComment as user failed, posting as app:', String(e).slice(0, 160));
+            return send('APP');
+          })
+        : await send('APP');
       return { id: c.id };
     },
     async setUserFlair(username, text) {
