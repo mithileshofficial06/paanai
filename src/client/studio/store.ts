@@ -10,6 +10,7 @@ export type Route =
   | 'error'
   | 'welcome' // first visit: "an old potter left a pot in the kiln for you"
   | 'features'
+  | 'home'
   | 'levels'
   | 'levelResult'
   | 'throw'

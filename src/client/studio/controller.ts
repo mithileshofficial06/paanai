@@ -30,7 +30,7 @@ function fail(err: unknown): void {
 
 // ---------- Routing ----------
 
-const TABS: Route[] = ['levels', 'throw', 'showcase', 'kiln', 'mypots', 'codex'];
+const TABS: Route[] = ['home', 'levels', 'throw', 'showcase', 'kiln', 'mypots', 'codex'];
 /** The Studio tab remembers which of its three rooms you were in. */
 let studioRoom: Route = 'kiln';
 
@@ -45,6 +45,7 @@ export function go(r: Route): void {
   if (r === 'kiln') void loadKiln();
   if (r === 'mypots') void loadMyPots();
   if (r === 'levels') void loadLevels();
+  if (r === 'home') void refreshToday();
   if (r === 'showcase') void loadShowcase(true);
   if (r === 'codex') {
     journeys.interaction('codex_open');
@@ -88,13 +89,13 @@ export async function boot(): Promise<void> {
     // New players: the welcome kiln, then the tutorial, then level 1. Returning players: the level map.
     if (t.me && !t.me.onboarded && !lv?.tutorialDone) S.route.value = 'welcome';
     else if (!t.me && !lv?.tutorialDone && !S.hintsDone.value.has('drag')) S.route.value = 'welcome';
-    else if (t.kilnWaiting > 0) go('kiln');
     // Still on the first run: back to the daily loop (the kiln once today's pot is thrown).
     else if (t.me?.firstRun) {
-      if (t.myThrow) go('kiln');
+      if (t.myThrow || t.kilnWaiting > 0) go('kiln');
       else playDaily();
     }
-    else S.route.value = 'levels';
+    // Everyone else starts at home: today's commission, the kiln, and the rest of the studio.
+    else S.route.value = 'home';
   } catch (err) {
     S.loadError.value = err instanceof ApiFailure ? err.message : 'Could not reach the studio.';
     S.route.value = 'error';

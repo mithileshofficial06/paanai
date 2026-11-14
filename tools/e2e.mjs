@@ -188,10 +188,18 @@ await step('Undo from the card restores the pot', async () => {
   if (await p.locator('.throw__alert--slump').count()) throw new Error('still collapsed after undo');
   await p.locator('[data-tour=tool-hands]').click();
 });
-await step('Clear level 1: result, next box unsealed', async () => {
+await step('Home after reload, then clear level 1: result, next box unsealed', async () => {
   await p.reload();
   await p.locator('#boot').waitFor({ state: 'detached', timeout: 15000 });
-  await expectVisible(p.locator('.lv__grid'), 'level map after reload');
+  // Returning players start at home; the Paanai name and the Home tab also lead there.
+  await expectVisible(p.locator('.home__today'), 'home after reload');
+  await expectVisible(p.locator('.home__kiln'), 'kiln card on home');
+  if ((await p.locator('.home__tile').count()) !== 6) throw new Error('home tiles missing');
+  await p.locator('.home__tile', { hasText: 'Levels' }).click();
+  await expectVisible(p.locator('.lv__grid'), 'level map from home');
+  await p.getByRole('button', { name: 'Paanai home' }).click();
+  await expectVisible(p.locator('.home__today'), 'home from the Paanai name');
+  await p.getByRole('button', { name: 'Levels' }).last().click();
   await btn('Play level 1').click();
   await p.waitForTimeout(800);
   await btn('Open', true).click();

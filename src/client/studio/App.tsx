@@ -8,6 +8,7 @@ import { BottomNav } from '../ui/Tabs';
 import { pushToast, ToastHost } from '../ui/Toast';
 import { ErrorState } from '../ui/States';
 import {
+  IconHome,
   IconInfo,
   IconKiln,
   IconLevels,
@@ -26,18 +27,21 @@ import { Levels, LevelResult } from './screens/Levels';
 import { Decorate } from './screens/Decorate';
 import { Tour } from './Tour';
 import { Welcome, Features } from './screens/Onboarding';
+import { Home } from './screens/Home';
 import { Throw } from './screens/Throw';
 import { Result } from './screens/Result';
 import { Kiln } from './screens/Kiln';
 import { Showcase, MyPots, Codex, Create, Leaderboard } from './screens/Community';
 
 const NAV: { id: string; label: string }[] = [
+  { id: 'home', label: 'Home' },
   { id: 'levels', label: 'Levels' },
   { id: 'throw', label: 'Daily' },
   { id: 'showcase', label: 'Showcase' },
   { id: 'studio', label: 'Studio' },
 ];
 const NAV_ICONS: Record<string, ComponentChildren> = {
+  home: <IconHome />,
   levels: <IconLevels />,
   throw: <IconWheel />,
   showcase: <IconShowcase />,
@@ -57,6 +61,8 @@ function Screen({ r }: { r: Route }) {
           <ErrorState title="The studio is closed" description={S.loadError.value ?? 'Please try again.'} onRetry={() => void boot()} />
         </section>
       );
+    case 'home':
+      return <Home />;
     case 'levels':
       return <Levels />;
     case 'decorate':
@@ -116,11 +122,11 @@ export function App() {
       <AppBackground variant={r === 'kiln' ? 'kiln' : 'studio'} />
       {chrome ? (
         <header class="topbar">
-          <div class="topbar__brand">
+          <button type="button" class="topbar__brand" aria-label="Paanai home" disabled={first} onClick={() => (haptic(6), go('home'))}>
             <IconPaanai size={26} />
             <span class="topbar__name">Paanai</span>
             {S.today.value ? <span class="topbar__day">Day {S.today.value.dayNumber}</span> : null}
-          </div>
+          </button>
           <div class="topbar__right">
             {me && first ? null : me ? (
               <span class="pn-chip pn-chip--sm topbar__rank" title={`${me.rankPoints} rank points`}>

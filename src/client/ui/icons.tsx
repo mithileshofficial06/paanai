@@ -65,6 +65,16 @@ export function IconLevels(p: IconProps) {
   );
 }
 
+export function IconHome(p: IconProps) {
+  return (
+    <Svg {...p} name="home">
+      <path d="M3.75 10.5 12 3.75l8.25 6.75" />
+      <path d="M5.75 9v11.25h12.5V9" />
+      <path d="M10 20.25v-5.5h4v5.5" />
+    </Svg>
+  );
+}
+
 export function IconKiln(p: IconProps) {
   return (
     <Svg {...p} name="kiln">
