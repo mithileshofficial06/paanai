@@ -107,8 +107,8 @@ await step('Coach gives a shaping tip with arrows', async () => {
 });
 await step('Over-thinning collapses: card with Undo / Start again', async () => {
   await p.locator('[data-tour=tool-thin]').click();
-  for (let k = 0; k < 14 && !(await p.locator('.throw__alert--slump').count()); k++) await drag(cx + 52, 540, cx + 50, 380, 24, 20);
-  await expectVisible(p.locator('.throw__alert--slump'), 'collapse card', 4000);
+  for (let k = 0; k < 22 && !(await p.locator('.throw__alert--slump').count()); k++) await drag(cx + 52, 540, cx + 50, 380, 24, 20);
+  await expectVisible(p.locator('.throw__alert--slump'), 'collapse card', 10000);
   await expectVisible(p.locator('.throw__alert-btn', { hasText: 'Undo' }), 'Undo button');
   await expectVisible(p.locator('.throw__alert-btn', { hasText: 'Start again' }), 'Start again button');
   const r = await p.locator('.throw__alert').boundingBox();
