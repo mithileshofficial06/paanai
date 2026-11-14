@@ -27,8 +27,11 @@ export function kilnGlaze(potId: string): GlazeSpec {
   return { glazes, application: APPLICATIONS[rnd() % APPLICATIONS.length]! };
 }
 
+/** A player's very first kiln pot gets a quick test firing, so a first visit sees the whole loop. */
+export const QUICK_FIRE_MS = 90_000;
+
 /** Queue the pot for the next kiln (fires at the next 00:00 UTC). No choice = the kiln glazes it. */
-export async function glazePot(userId: string, potId: string, choice: unknown): Promise<{ kilnDate: string; atmosphere: string }> {
+export async function glazePot(userId: string, potId: string, choice: unknown): Promise<{ kilnDate: string; atmosphere: string; quickAt: number | null }> {
   const kv = platform().kv;
   if (choice == null) choice = kilnGlaze(potId);
   if (!validGlazeSpec(choice)) throw new ApiErr('bad-glaze', 'Pick one or two different glazes and an application.');
@@ -38,11 +41,22 @@ export async function glazePot(userId: string, potId: string, choice: unknown): 
   if (pot.glaze) throw new ApiErr('already-glazed', 'This pot is already in the kiln.', 409);
   const kilnDate = today();
   const g: GlazeChoice = { glazes: choice.glazes, application: choice.application };
-  await kv.hSet(K.pot(potId), { glaze: JSON.stringify(g), kilnDate });
+  const firstPot = (await kv.hGet(K.user(userId), 'quickFire')) == null;
+  const quickAt = firstPot ? platform().now() + QUICK_FIRE_MS : null;
+  await kv.hSet(K.pot(potId), { glaze: JSON.stringify(g), kilnDate, ...(quickAt ? { quickAt: String(quickAt) } : {}) });
+  if (firstPot) await kv.hSet(K.user(userId), { quickFire: '1' });
   await kv.zAdd(K.kilnQueue(kilnDate), { member: potId, score: platform().now() });
   await kv.expire(K.kilnQueue(kilnDate), TTL.kilnQueue);
   await kv.hIncrBy(K.stats(kilnDate), 'glazes', 1);
-  return { kilnDate, atmosphere: atmosphereFor(kilnDate) };
+  return { kilnDate, atmosphere: atmosphereFor(kilnDate), quickAt };
+}
+
+/** Is this pot due to fire: its kiln night has passed, or its quick test firing is done. */
+function fireDue(pot: Record<string, string>): boolean {
+  if (!pot.kilnDate) return false;
+  if (kilnHasFired(pot.kilnDate)) return true;
+  const q = Number(pot.quickAt ?? '0');
+  return q > 0 && platform().now() >= q;
 }
 
 /** Has the kiln for this date fired yet? (It fires at 00:00 UTC the next day.) */
@@ -59,7 +73,7 @@ export async function firePot(potId: string): Promise<FiredResultDTO | null> {
   const pot = await getPot(potId);
   if (!pot.potId || !pot.glaze || !pot.kilnDate) return null;
   if (pot.fired) return JSON.parse(pot.fired) as FiredResultDTO;
-  if (!kilnHasFired(pot.kilnDate)) return null;
+  if (!fireDue(pot)) return null;
   const profile = decodeProfile(JSON.parse(pot.profile ?? '[]') as number[]);
   const spec = JSON.parse(pot.glaze) as GlazeSpec;
   const score = JSON.parse(pot.breakdown ?? '{}') as Partial<ScoreBreakdown>;
@@ -144,13 +158,13 @@ export async function myKiln(userId: string): Promise<KilnItem[]> {
   for (const m of recent) {
     const h = await getPot(m.member);
     if (!h.glaze || !h.kilnDate) continue;
-    if (!h.fired && kilnHasFired(h.kilnDate)) {
+    if (!h.fired && fireDue(h)) {
       await firePot(m.member);
       Object.assign(h, await getPot(m.member));
     }
     const s = potSummary(h);
     if (!s) continue;
-    const firesAt = h.fired ? null : Date.parse(`${addDays(h.kilnDate, 1)}T00:00:00Z`);
+    const firesAt = h.fired ? null : Number(h.quickAt ?? '0') || Date.parse(`${addDays(h.kilnDate, 1)}T00:00:00Z`);
     out.push({ ...s, opened: h.opened === '1', kilnDate: h.kilnDate, firesAt });
   }
   return out;

@@ -152,7 +152,9 @@ export async function finishTutorial(): Promise<void> {
   const lv = S.levels.value ?? emptyLevels();
   S.levels.value = { ...lv, tutorialDone: true };
   saveLocalLevels();
-  playLevel(firstTime ? 1 : lv.unlocked);
+  // First time through: straight to today's commission (the daily loop: throw, paint, kiln).
+  if (firstTime && S.today.value && !S.today.value.myThrow) playDaily();
+  else playLevel(firstTime ? 1 : lv.unlocked);
   if (S.loggedIn.value) {
     await Promise.all([api.tutorialDone().catch(() => undefined), S.me.value?.onboarded ? null : api.onboarded().catch(() => undefined)]);
   }
@@ -354,13 +356,13 @@ export function currentPotId(): string | null {
 /** Into the next kiln. The kiln master glazes it: every firing is a surprise. */
 export async function placeInKiln(potId: string): Promise<boolean> {
   try {
-    await api.fire(potId);
+    const res = await api.fire(potId);
     journeys.progress(0.66, 'glazed');
     journeys.progress(1, 'in-kiln');
     const lt = S.lastThrow.value;
     if (lt) journeys.end(true, lt.res.beatBar, lt.res.score.total);
     sfx.whoosh();
-    say('In the kiln. It fires at 00:00 UTC. Come back to open it.', 'success');
+    say(res.quickAt ? 'Your first pot gets a quick test firing. It will be ready to open in about 90 seconds.' : 'In the kiln. It fires at 00:00 UTC. Come back to open it.', 'success');
     go('kiln');
     return true;
   } catch (err) {

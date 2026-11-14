@@ -1,5 +1,5 @@
 // The kiln: pots waiting for the next firing, and fired pots to open (the reveal).
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { EFFECTS } from '../../../shared/core/glazes';
 import type { KilnItem } from '../../app/api';
 import { Button } from '../../ui/Button';
@@ -11,7 +11,7 @@ import { sfx } from '../../app/audio';
 import { fmtCountdown, PotActions, PotView, titleCase, useNow } from '../parts';
 import { StudioRooms } from './Community';
 import * as S from '../store';
-import { login, markOpened, playDaily } from '../controller';
+import { loadKiln, login, markOpened, playDaily } from '../controller';
 import { KilnHero, type KilnState } from '../KilnHero';
 
 const DEFECT_TEXT: Record<string, string> = {
@@ -30,6 +30,11 @@ export function Kiln() {
   const now = useNow();
   const items = S.kilnItems.value;
   const [revealing, setRevealing] = useState<KilnItem | null>(null);
+  // A quick test firing finishes while the player watches: reload once it is due.
+  const due = items.some((i) => !i.fired && i.firesAt != null && i.firesAt <= now);
+  useEffect(() => {
+    if (due && !S.kilnLoading.value) void loadKiln();
+  }, [due ? Math.floor(now / 5000) : -1]);
   if (!S.loggedIn.value)
     return (
       <section class="sc">
@@ -66,9 +71,9 @@ export function Kiln() {
           </span>
           <div class="kiln__heroInfo">
             <span class="kiln__heroLabel">{waiting.length ? 'Fires in' : 'Next firing in'}</span>
-            <strong class="kiln__countdown">{fmtCountdown(S.today.value.nextKilnAt - now)}</strong>
+            <strong class="kiln__countdown">{fmtCountdown(Math.min(S.today.value.nextKilnAt, ...waiting.map((w) => w.firesAt ?? Infinity)) - now)}</strong>
             <span class="pn-meta">
-              {waiting.length ? `${waiting.length} pot${waiting.length > 1 ? 's' : ''} loaded` : 'Nothing loaded yet'} · {S.today.value.atmosphere} · 00:00 UTC
+              {waiting.length ? `${waiting.length} pot${waiting.length > 1 ? 's' : ''} loaded` : 'Nothing loaded yet'} · {S.today.value.atmosphere} · {waiting.some((w) => w.firesAt != null && w.firesAt < S.today.value!.nextKilnAt) ? 'test firing' : '00:00 UTC'}
             </span>
           </div>
         </div>
@@ -104,7 +109,7 @@ export function Kiln() {
           <PotView pot={it} width={52} height={68} />
           <div class="kiln__info">
             <h3 class="pn-title">{it.title}</h3>
-            <p class="pn-meta">Glazed by the kiln master · fires in {fmtCountdown((it.firesAt ?? now) - now)}</p>
+            <p class="pn-meta">Glazed by the kiln master · {it.firesAt != null && it.firesAt <= now ? 'firing now…' : `fires in ${fmtCountdown((it.firesAt ?? now) - now)}`}</p>
           </div>
         </GlassPanel>
       ))}

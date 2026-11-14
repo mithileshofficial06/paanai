@@ -109,3 +109,8 @@
 /* Content scrolling under the top bar must not show through it (seen in Reddit's 360px webview).
    No backdrop-filter: blurring over the live WebGL wheel every frame slowed throws badly. */
 .topbar { background: linear-gradient(180deg, rgba(8, 4, 5, 0.97), rgba(8, 4, 5, 0.9)); }
+
+/* Done pulses once the shape clears the bar, so new players know they can stop. */
+.throw .pn-btn--primary.is-ready { animation: done-ready 1.6s var(--ease-in-out) infinite; }
+@keyframes done-ready { 50% { box-shadow: 0 0 0 8px rgba(255, 196, 120, 0.22), var(--glow-red); } }
+@media (prefers-reduced-motion: reduce) { .throw .pn-btn--primary.is-ready { animation: none; } }

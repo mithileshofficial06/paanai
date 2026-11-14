@@ -66,8 +66,9 @@ export async function meDTO(userId: string, u: Record<string, string>): Promise<
   const points = rankPoints(u);
   const rank = await rankFor(points);
   const minSetting = await platform().settings.get('minRankToCommission');
-  const minRank: RankId =
-    Array.isArray(minSetting) && minSetting[0] === 'artisan' ? 'artisan' : minSetting === 'artisan' ? 'artisan' : 'journeyman';
+  // Default "apprentice": anyone can post a commission (one a day, own sound pot, reports auto-hide).
+  const picked = Array.isArray(minSetting) ? minSetting[0] : minSetting;
+  const minRank: RankId = picked === 'artisan' || picked === 'journeyman' ? picked : 'apprentice';
   void userId;
   return {
     username: u.username ?? 'potter',

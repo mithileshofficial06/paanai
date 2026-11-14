@@ -47,7 +47,7 @@ export function Welcome() {
         </h1>
         <p class="welcome__text">
           {pot
-            ? 'An old potter fired this for you. Now make your own: throw today’s vessel on the wheel, paint it, and open the kiln tomorrow to see what the fire made of it.'
+            ? 'An old potter fired this for you. Now make your own: throw today’s vessel on the wheel, paint it, and put it in the kiln. Your first pot gets a quick test firing, so you can open it in about a minute and a half.'
             : 'Every day the studio gets one commission: a real vessel from a real tradition. Throw it with your finger on a spinning wheel, paint it, and fire it with everyone else overnight.'}
         </p>
         {c && today ? (
@@ -66,10 +66,13 @@ export function Welcome() {
         ) : null}
         <ul class="welcome__facts">
           <li>
-            <b>100</b> levels
+            <b>1</b> new vessel a day
           </li>
           <li>
             <b>24</b> glazes
+          </li>
+          <li>
+            <b>100</b> levels
           </li>
           <li>
             Fires in <b>{today ? fmtCountdown(today.nextKilnAt - now) : '…'}</b>
@@ -82,7 +85,7 @@ export function Welcome() {
                 Start the tutorial
               </Button>
               <Button variant="ghost" block onClick={() => void finishTutorial()}>
-                Skip to level 1
+                Skip, throw today’s pot
               </Button>
             </>
           ) : (
@@ -112,7 +115,7 @@ const FEATURES = [
   { icon: <IconWheel />, title: 'Daily Commission', body: 'One new vessel a day, from a real tradition: Korean moon jars, Tamil paanai, Song meiping. Everyone throws the same one.' },
   { icon: <IconFlame />, title: 'Beat the bar', body: "Each commission has a score to beat. Your first throw each day is ranked; after that you can practise freely." },
   { icon: <IconLevels />, title: '100 Levels', body: 'A hundred sealed boxes, each a vessel to match. Clear one to unseal the next and earn up to three stars.' },
-  { icon: <IconKiln />, title: 'The Kiln', body: 'Painted pots fire together at 00:00 UTC. The kiln master picks the glaze; come back to open the kiln and see what the fire made. Thin walls can crack.' },
+  { icon: <IconKiln />, title: 'The Kiln', body: 'Painted pots fire together at 00:00 UTC; your very first pot gets a quick test firing. The kiln master picks the glaze, then you open the kiln to see what the fire made. Thin walls can crack.' },
   { icon: <IconCodex />, title: 'Glaze Codex', body: '24 effects to discover, from celadon to oil spots. The first potter to fire a new effect has their name on it.' },
   { icon: <IconShowcase />, title: 'The Showcase', body: 'Put any pot you make on show. Everyone can rate it out of five and like it; the most liked becomes Pot of the Week.' },
   { icon: <IconShare />, title: 'Share on Reddit', body: 'Post any pot as a comment on today’s thread, picture and score included, straight from the game.' },

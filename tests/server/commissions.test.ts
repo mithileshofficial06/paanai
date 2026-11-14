@@ -67,6 +67,7 @@ describe('player commissions', () => {
     expect((await call('POST', '/api/commission', { potId: t.json.potId, adjective: 'Rude', vessel: 'Jar', constraints: [] })).status).toBe(400);
     expect((await call('POST', '/api/commission', { potId: t.json.potId, adjective: 'Tall', vessel: 'Jar', constraints: ['survive', 'rim', 'height'] })).status).toBe(400);
     p.settingsValues.journeymanPoints = 50;
+    p.settingsValues.minRankToCommission = ['journeyman'];
     expect((await call('POST', '/api/commission', { potId: t.json.potId, adjective: 'Tall', vessel: 'Jar', constraints: [] })).status).toBe(403);
   });
 

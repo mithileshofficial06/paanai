@@ -1,6 +1,6 @@
 // End-to-end workflow check of the studio, as a player would use it (phone size).
 //   node tools/e2e.mjs [baseUrl]      default http://127.0.0.1:5173
-// Resets the harness world, then walks: loading -> welcome -> starter kiln -> tutorial -> level 1
+// Resets the harness world, then walks: loading -> welcome -> starter kiln -> tutorial -> today's pot
 // wheel -> coach -> collapse card -> clear level 1 -> level map -> daily throw -> score -> paint ->
 // kiln -> next day -> reveal -> put on show -> my pots -> codex hint -> showcase (rate, like) -> leaderboard.
 // Prints PASS/FAIL per step; screenshots failures.
@@ -74,10 +74,14 @@ await step('Start the tutorial: narrated steps', async () => {
   await btn('Next', true).click();
   await expectVisible(p.locator('.tour__title', { hasText: 'Hands, Push and Thin' }), 'tour step 2');
 });
-await step('Skip tutorial lands on level 1', async () => {
+await step('Skip tutorial lands on today’s commission', async () => {
   await btn('Skip tutorial').click();
   await p.locator('.tour').waitFor({ state: 'detached' });
   await expectVisible(p.locator('.throw__canvas'), 'wheel canvas');
+  await expectVisible(p.locator('.throw__beat-label', { hasText: 'Beat' }), 'daily score to beat');
+  // The shaping checks below run on level 1 (a small cup collapses predictably).
+  await p.getByRole('button', { name: 'Leave the wheel' }).click();
+  await btn('Play level 1').click();
   await expectVisible(p.getByText('Level 1 of 100'), 'level 1 header');
 });
 
@@ -106,6 +110,7 @@ await step('Coach gives a shaping tip with arrows', async () => {
   console.log(`      coach: "${t.trim()}"`);
 });
 await step('Over-thinning collapses: card with Undo / Start again', async () => {
+  await p.locator('[data-tour=water]').click(); // wet clay thins (and collapses) faster
   await p.locator('[data-tour=tool-thin]').click();
   for (let k = 0; k < 22 && !(await p.locator('.throw__alert--slump').count()); k++) await drag(cx + 52, 540, cx + 50, 380, 24, 20);
   await expectVisible(p.locator('.throw__alert--slump'), 'collapse card', 10000);
@@ -174,6 +179,7 @@ await step('Fire it: straight into the kiln (no glaze step)', async () => {
   await btn('Fire it in the kiln').click();
   await expectVisible(p.getByText('Waiting for the fire'), 'waiting list', 8000);
   await expectVisible(p.locator('.kiln__hero'), 'kiln countdown');
+  await expectVisible(p.locator('.kiln__heroInfo', { hasText: 'test firing' }), 'first pot gets a quick test firing');
 });
 await step('Next day: kiln is ready and opens', async () => {
   await fetch(`${base}/__harness/advance-day`, { method: 'POST' });
@@ -212,11 +218,11 @@ await step('Showcase: another player rates and likes it', async () => {
   const openKiln = q.getByRole('button', { name: 'Open the kiln' });
   if (await openKiln.count()) {
     await openKiln.click();
-    await q.getByRole('button', { name: 'Skip to level 1' }).click({ timeout: 8000 });
+    await q.getByRole('button', { name: 'Skip, throw today’s pot' }).click({ timeout: 8000 });
     await q.waitForTimeout(800);
   }
   // On the wheel the menu bar is hidden: leave the wheel first.
-  const leave = q.getByRole('button', { name: 'Back to the level map' });
+  const leave = q.getByRole('button', { name: /Back to the level map|Leave the wheel/ });
   if (await leave.count()) await leave.click();
   await q.getByRole('button', { name: 'Showcase' }).first().click();
   await q.locator('.show__card').first().waitFor({ timeout: 8000 });

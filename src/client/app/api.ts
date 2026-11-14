@@ -59,7 +59,7 @@ export const api = {
   hint: (hint: string) => req<{ ok: true }>('POST', 'me/hints', { hint }),
   onboarded: () => req<{ ok: true }>('POST', 'me/hints', { onboarded: true }),
   /** Queue a pot for the next kiln; the kiln picks the glaze. */
-  fire: (potId: string) => req<{ kilnDate: string; atmosphere: string }>('POST', 'glaze', { potId }),
+  fire: (potId: string) => req<{ kilnDate: string; atmosphere: string; quickAt?: number | null }>('POST', 'glaze', { potId }),
   kiln: () => req<{ items: KilnItem[]; today?: string }>('GET', 'kiln'),
   openKiln: (potId: string) => req<{ ok: true }>('POST', 'kiln/open', { potId }),
   starter: () => req<PotSummary>('GET', 'starter'),

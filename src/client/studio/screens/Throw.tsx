@@ -280,8 +280,8 @@ export function Throw() {
               Water
             </Button>
           )}
-          <Button data-tour="done" variant="primary" icon={<IconCheck />} disabled={!started || submitting} loading={submitting} onClick={() => void done()}>
-            Done
+          <Button data-tour="done" variant="primary" class={match !== null && match >= pass && !submitting ? 'is-ready' : undefined} icon={<IconCheck />} disabled={!started || submitting} loading={submitting} onClick={() => void done()}>
+            {match !== null && match >= pass ? 'Done, it passes' : 'Done'}
           </Button>
           <IconButton data-tour="info" label="How to play" variant="ghost" onClick={() => startTour()} icon={<IconInfo />} />
         </div>

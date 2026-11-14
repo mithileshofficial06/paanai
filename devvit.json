@@ -95,6 +95,10 @@
         "label": "Rank needed to create commissions",
         "options": [
           {
+            "label": "Anyone",
+            "value": "apprentice"
+          },
+          {
             "label": "Journeyman",
             "value": "journeyman"
           },
@@ -103,7 +107,7 @@
             "value": "artisan"
           }
         ],
-        "defaultValue": "journeyman"
+        "defaultValue": "apprentice"
       },
       "journeymanPoints": {
         "type": "number",

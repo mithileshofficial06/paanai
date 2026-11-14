@@ -65,6 +65,22 @@ describe('kiln', () => {
     expect(p.comments.filter((c) => c.text?.startsWith('**Kiln Report')).length).toBe(1);
   });
 
+  it("a player's first pot gets a quick test firing; later pots wait for 00:00 UTC", async () => {
+    const a = await throwMaster('alice', 'q1');
+    as('alice');
+    const g = await call<{ quickAt: number | null }>('POST', '/api/glaze', { potId: a });
+    expect(g.json.quickAt).toBeGreaterThan(p.now());
+    expect(await firePot(a)).toBeNull();
+    p.shiftDays(0.0011); // about 95 seconds, same day
+    const k = await call<{ items: (PotSummary & { firesAt: number | null })[] }>('GET', '/api/kiln');
+    expect(k.json.items.find((i) => i.potId === a)?.fired).not.toBeNull();
+    const b = await throwMaster('alice', 'q2');
+    as('alice');
+    expect((await call<{ quickAt: number | null }>('POST', '/api/glaze', { potId: b })).json.quickAt).toBeNull();
+    p.shiftDays(0.0011);
+    expect(await firePot(b)).toBeNull();
+  });
+
   it('showcase, likes, reports auto-hide at threshold, delete', async () => {
     const a = await throwMaster('alice', 'a1');
     as('alice');

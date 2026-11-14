@@ -37,7 +37,7 @@ export type CreateCommissionReq = { potId: string; adjective: string; vessel: st
 export async function createCommission(userId: string, username: string, req: CreateCommissionReq): Promise<{ id: string; postId: string; bar: number; url: string }> {
   const kv = platform().kv;
   const me = await meDTO(userId, await getUser(userId));
-  if (!me.canCommission) throw new ApiErr('rank', 'Reach Journeyman to create commissions: keep throwing and firing pots.', 403);
+  if (!me.canCommission) throw new ApiErr('rank', 'This community needs a higher rank to create commissions: keep throwing and firing pots.', 403);
   if (!isValidTitle(req.adjective, req.vessel)) throw new ApiErr('bad-title', 'Pick a title from the word list.');
   const kinds = [...new Set(req.constraints ?? [])];
   if (kinds.length > 2 || !kinds.every((k) => (CONSTRAINT_KINDS as readonly string[]).includes(k))) throw new ApiErr('bad-constraints', 'Choose up to two constraints.');
