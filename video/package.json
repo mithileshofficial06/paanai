@@ -1,0 +1,21 @@
+{
+  "name": "paanai-demo-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "plan": "tsx src/export-plan.ts",
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Paanai out/paanai-demo.mp4 --codec=h264 --crf=16 --gl=angle --concurrency=4"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.538",
+    "@remotion/cli": "^4.0.538",
+    "@remotion/google-fonts": "^4.0.538",
+    "@remotion/renderer": "^4.0.538",
+    "@types/react": "^18.3.12",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.538",
+    "typescript": "^5.6.3"
+  }
+}

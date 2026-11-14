@@ -27,7 +27,7 @@ import {
 } from 'three';
 import { MAX_TICKS, RINGS, TICK_HZ } from '../../shared/core/fixed';
 import { capacityMl, createLump, maxOuter, minWall, type Profile } from '../../shared/core/profile';
-import { idle, replay, step, type StrokeLog } from '../../shared/core/shape';
+import { idle, replay, step, type Input, type StrokeLog } from '../../shared/core/shape';
 import { StrokeRecorder } from '../../shared/core/strokes';
 import { silhouetteMatch } from '../../shared/core/score';
 import { PointerMapper, type PotScreenFrame, type ThrowToolId } from '../input/pointerMapper';
@@ -88,6 +88,8 @@ export type ThrowStage = {
   setTarget(p: Profile | null): void;
   /** Show the commissioner's throw forming alongside yours (null hides it). Replays from your first touch. */
   setGhost(log: StrokeLog | null): void;
+  /** Dev and video capture only: drive the wheel from a recorded log, tick for tick, as if a hand did it. */
+  autoplay(log: StrokeLog): void;
   renderThumbnail(p: Profile, size: number): Promise<string>;
   /** Where the pot is on screen (CSS px), for hint placement and tests. */
   getScreenFrame(): PotScreenFrame;
@@ -260,6 +262,8 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
   let fingerSide = 1;
   let fingerThin = false;
   let lastContact: { ring: number; side: number; strength: number; thin: boolean } | null = null;
+  // Recorded inputs to play back (autoplay); null when the player's own hands are in charge.
+  let auto: (Input | null)[] | null = null;
   let lastSquelch = 0;
   let lastBuzz = 0;
   let time = 0;
@@ -366,8 +370,10 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
       canRecord,
       resistance: 0.45 + 0.55 * wet,
     });
-    if (s.needsOpen) openRing.nudge();
-    const input = canRecord ? s.input : null;
+    if (s.needsOpen && !auto) openRing.nudge();
+    const autoIn = auto ? (auto.shift() ?? null) : undefined;
+    if (auto && !auto.length) auto = null;
+    const input = canRecord ? (autoIn !== undefined ? autoIn : s.input) : null;
     if (input && !started) started = true;
     if (!started) {
       lastContact = null;
@@ -395,7 +401,9 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
     ghostTick();
     // Wetness (cosmetic + resistance for future input only).
     wet = Math.max(0, wet - TICK / (s.contact ? DRY_SHAPING_S : DRY_IDLE_S));
-    if (s.contact) {
+    if (autoIn !== undefined) {
+      lastContact = autoIn && autoIn.mode !== 2 ? { ring: autoIn.ring, side: 1, strength: Math.min(1, Math.abs(autoIn.dr) / 22), thin: autoIn.mode === 1 } : null;
+    } else if (s.contact) {
       lastContact = { ring: s.contact.ring, side: s.contact.side, strength: s.contact.strength, thin: s.contact.mode === 1 };
     } else lastContact = null;
     afterProfileChange();
@@ -454,7 +462,7 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
     // Finger: lags the contact point (spring-damper feel).
     const H = Math.max(0.5, display.height);
     const c = lastContact;
-    const fingerTarget = c && mapper.shaping ? 1 : 0;
+    const fingerTarget = c && (mapper.shaping || auto) ? 1 : 0;
     fingerA += (fingerTarget - fingerA) * (1 - Math.exp(-dt / (fingerTarget ? 0.06 : 0.16)));
     if (c) {
       const y = ((c.ring + 0.5) / RINGS) * H;
@@ -682,6 +690,14 @@ export function createThrowStage(opts: ThrowStageOptions): ThrowStage {
       centerWobble = 1;
       centerAge = 0;
       emit(true);
+    },
+    autoplay(log) {
+      const q: (Input | null)[] = [];
+      for (const e of log.entries) {
+        for (let i = 1; i < e.dt; i++) q.push(null);
+        q.push({ ring: e.ring, mode: e.mode, dr: e.dr });
+      }
+      auto = q;
     },
     skipCentering() {
       finishCentering(false);

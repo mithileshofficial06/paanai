@@ -1,6 +1,7 @@
 // The wheel: full-screen 3D throw stage with a glass HUD.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { decodeProfile } from '../../../shared/core/profile';
+import { decodeLog } from '../../../shared/core/strokes';
 import { createThrowStage, type ThrowStage, type ThrowState } from '../../three/throwStage';
 import { Button, IconButton } from '../../ui/Button';
 import { HintBubble } from '../../ui/HintBubble';
@@ -59,6 +60,17 @@ export function Throw() {
     });
     stage.setTool(S.tool.value);
     stageRef.current = stage;
+    // Local dev only (stripped from builds): lets the video capture play the Master's recorded throw.
+    if (import.meta.env.DEV) {
+      (window as unknown as { __paanaiVideo?: unknown }).__paanaiVideo = {
+        playMaster: () => {
+          const g = S.ghostLog.value;
+          const d = g ? decodeLog(g) : null;
+          if (d && d.ok) stage.autoplay(d.log);
+          return !!(d && d.ok);
+        },
+      };
+    }
     tourStage.st = stage;
     tourStage.canvas = el;
     const onVis = () => stage.setPaused(document.hidden);
