@@ -105,3 +105,6 @@
   .kiln__sparks, .kiln__hero::after { display: none; }
   .sc > *, .throw__measures { animation: none !important; }
 }
+
+/* Content scrolling under the top bar must not show through it (seen in Reddit's 360px webview). */
+.topbar { background: linear-gradient(180deg, rgba(8, 4, 5, 0.94), rgba(8, 4, 5, 0.78)); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
