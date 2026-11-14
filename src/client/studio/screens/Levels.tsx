@@ -96,11 +96,6 @@ function Tile({ n, unlocked, best }: { n: number; unlocked: number; best: number
         }}
       >
         <LevelPot n={n} size={88} />
-        <span class="lv__embers" aria-hidden="true">
-          {[0, 1, 2, 3, 4].map((k) => (
-            <i key={k} style={{ '--k': k, '--x': `${((n * 37 + k * 23) % 80) + 10}%` }} />
-          ))}
-        </span>
         {locked ? (
           <>
             <span class="lv__bands" aria-hidden="true">

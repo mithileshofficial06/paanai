@@ -150,3 +150,11 @@
 .deco__edit > * { flex: 1 1 auto; }
 .deco__note { margin: 0; color: var(--color-ink-subtle); font-size: 0.85rem; }
 @media (prefers-reduced-motion: reduce) { .deco__hint { animation: none; } }
+
+
+/* Performance: on a long 100-tile page every looping effect forces a full repaint each frame
+   (measured ~13 fps on a 4x-throttled CPU inside Reddit). Keep the map still; motion lives on
+   the wheel. The tap rattle on sealed boxes and the play-icon bob stay. */
+.lv__lock { animation: none; }
+.lv__tile.is-current::before { animation: none; --tour-angle: 35deg; }
+.lv__play { will-change: transform; }
