@@ -13,7 +13,7 @@ import { PotActions, PotView, TargetView } from '../parts';
 import * as S from '../store';
 import { go, login, newThrow } from '../controller';
 
-const VERDICT = ['Rough, but every potter starts here.', 'A fair pot. The order wanted more.', 'A good pot. The buyer will be pleased.', 'A master’s pot. Worthy of the shelf.'];
+const VERDICT = ['Rough, but every potter starts here.', 'A fair pot. The order wanted more.', 'A good pot. The buyer will be pleased.', 'A master’s pot. Put it on show.'];
 
 
 export function Result() {

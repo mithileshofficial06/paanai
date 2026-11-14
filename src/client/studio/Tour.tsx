@@ -89,7 +89,7 @@ const STEPS: Step[] = [
     title: 'After you tap Done',
     beats: [
       { target: '.pn-bottomnav__cell:nth-child(1)', say: 'Clear a level and the next one unlocks on the Levels map. Replay any level for more stars.' },
-      { target: '.pn-bottomnav__cell:nth-child(2)', say: 'Every day there is also a daily commission. Glaze it and fire it in the kiln overnight.' },
+      { target: '.pn-bottomnav__cell:nth-child(2)', say: 'Every day there is also a daily commission. Paint it and fire it in the kiln overnight.' },
       { target: '[data-tour=info]', say: 'Tap here to watch this again. Now it is your turn.' },
     ],
   },

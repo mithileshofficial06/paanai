@@ -2,7 +2,7 @@
 import { useState } from 'preact/hooks';
 import { Button } from '../../ui/Button';
 import { GlassPanel } from '../../ui/GlassPanel';
-import { IconCodex, IconCommission, IconFlame, IconKiln, IconRank, IconShelf, IconWheel } from '../../ui/icons';
+import { IconCodex, IconCommission, IconFlame, IconKiln, IconLevels, IconRank, IconShare, IconShowcase, IconWheel } from '../../ui/icons';
 import { fmtCountdown, PotView, TargetView, useNow } from '../parts';
 import { KilnHero, type KilnState } from '../KilnHero';
 import { sfx } from '../../app/audio';
@@ -47,8 +47,8 @@ export function Welcome() {
         </h1>
         <p class="welcome__text">
           {pot
-            ? 'An old potter fired this for you. Now make your own: throw today’s vessel on the wheel, glaze it, and open the kiln tomorrow to see what the fire made of it.'
-            : 'Every day the studio gets one commission: a real vessel from a real tradition. Throw it with your finger on a spinning wheel, glaze it, and fire it with everyone else overnight.'}
+            ? 'An old potter fired this for you. Now make your own: throw today’s vessel on the wheel, paint it, and open the kiln tomorrow to see what the fire made of it.'
+            : 'Every day the studio gets one commission: a real vessel from a real tradition. Throw it with your finger on a spinning wheel, paint it, and fire it with everyone else overnight.'}
         </p>
         {c && today ? (
           <div class="welcome__today">
@@ -111,9 +111,11 @@ export function Welcome() {
 const FEATURES = [
   { icon: <IconWheel />, title: 'Daily Commission', body: 'One new vessel a day, from a real tradition: Korean moon jars, Tamil paanai, Song meiping. Everyone throws the same one.' },
   { icon: <IconFlame />, title: 'Beat the bar', body: "Each commission has a score to beat. Your first throw each day is ranked; after that you can practise freely." },
-  { icon: <IconKiln />, title: 'The Kiln', body: 'Glazed pots fire together at 00:00 UTC. Come back to open the kiln: thin walls can crack, and the fire changes every glaze.' },
+  { icon: <IconLevels />, title: '100 Levels', body: 'A hundred sealed boxes, each a vessel to match. Clear one to unseal the next and earn up to three stars.' },
+  { icon: <IconKiln />, title: 'The Kiln', body: 'Painted pots fire together at 00:00 UTC. The kiln master picks the glaze; come back to open the kiln and see what the fire made. Thin walls can crack.' },
   { icon: <IconCodex />, title: 'Glaze Codex', body: '24 effects to discover, from celadon to oil spots. The first potter to fire a new effect has their name on it.' },
-  { icon: <IconShelf />, title: 'The Shelf', body: "Every fired pot in this community. Like the best ones; the most liked becomes Pot of the Week." },
+  { icon: <IconShowcase />, title: 'The Showcase', body: 'Put any pot you make on show. Everyone can rate it out of five and like it; the most liked becomes Pot of the Week.' },
+  { icon: <IconShare />, title: 'Share on Reddit', body: 'Post any pot as a comment on today’s thread, picture and score included, straight from the game.' },
   { icon: <IconCommission />, title: 'Beat the Commissioner', body: 'Journeymen can post their own pot as a commission. Others try to beat it, and you earn patron points.' },
   { icon: <IconRank />, title: 'Ranks', body: 'Apprentice, Journeyman, Artisan, Master Potter: earned by throwing, stars, fired pots and discoveries. Shown as your flair.' },
 ];
