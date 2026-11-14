@@ -19,7 +19,7 @@ This report updates the 15 Nov odds report, `Paanai_Win_Odds_2026-11-15.md`, whi
 | New project, or significantly updated during the hackathon | Pass. Built from 12 Nov |
 | App listing link (developers.reddit.com/apps/paanai-game) | Pass. Created by upload or playtest |
 | **Demo post in a PUBLIC subreddit with fewer than 200 members** | **Fail.** r/paanai_game_dev is private. Make a public demo subreddit, or install the dr-admin-approve app. |
-| **Detailed README.md at the repo root, describing the game and how to play** | **Out of date.** It still says "glaze it", "choose up to two of eight glazes" and "The Shelf". It doesn't mention painting, Levels, Showcase ratings, or the kiln master choosing the glaze. |
+| Detailed README.md at the repo root, describing the game and how to play | **Fixed 14 Nov** (commit f4e4e77). It now covers painting, the kiln master's glaze, Levels, Showcase ratings and likes, Share on Reddit, and the correct fonts. |
 | Video under 1 minute, public on YouTube or Vimeo | Not made (optional, but judges may score from the write-up and video alone) |
 | Do not publish the app | Pass. Upload and playtest only |
 | Assets owned or licensed | Pass. OFL fonts with licence files, synthesised audio, CREDITS-UI.md |
@@ -38,6 +38,19 @@ This report updates the 15 Nov odds report, `Paanai_Win_Odds_2026-11-15.md`, whi
 - **krawlings (won Best Use of User Contributions):** hand-modelled 3D, daily care, comments posted as GIFs. Paanai's comment sharing with a pot image is the same move.
 - **SerpenTiles (won Best Mobile Game Play):** a meditative puzzle with sharable "pretty result" images. Paanai's painted pot plays the same role.
 
+**Against all 1,225 past entries** (Daily Games Jan 2026, Games with a Hook Jun 2026 and earlier; 28 winners, 2.3%), scored on the 13 traits recorded for each:
+- Paanai has all 13 traits once the video exists (12 without it). No past entry had more than 11.
+- Traits that went with a higher win rate: tutorial (4.7% vs 1.9%), share (4.5% vs 1.3%), flair (4.3% vs 2.0%), 3D (4.0% vs 2.1%), async (3.7%), Journeys (3.6%), hand-made art (3.1%).
+- **But stacking traits stops helping.** Entries with 6 traits won 4.3% (7 of 161), with 8 traits 8.5% (4 of 47), and with 9–11 traits only 2 of 34. RailDit!, made by BridgeDit's developer with 10 traits, didn't win. Past a point, judges reward a clear core and a quick payoff, not a feature count.
+- Only 5 past winners were 3D: BridgeDit!, Hearthvale, Iso Chess, krawlings and XO Math Puzzles. 20 entries combined 3D, player-made content and sharing, and 2 of them won (10%).
+
+**This hackathon's visible field** (posts on r/Devvit and r/GamesOnReddit in Oct–Nov 2026; Devpost shows no entries until judging, so this is only a sample):
+- Mostly 2D daily puzzles, sorting and number games, and trivia or guessing games: Goods Sort, Snuggit, Sortello, Blind Number, Tilt, Orbitals, STARSEEK, Arrow Grove, Daily Trivia, Mystery Hooper, Upvote or Not, CrowdClash, Split Hairs, Rally Sleuth, TYPEBURST, Name That Part, Barn Find Daily.
+- Strongest visible rivals on the "Reddit-y" criterion are community-shared worlds: **Uncharted** (the subreddit maps one treasure island together), **Jungle Knots** (a shared community boss), and a daily climber where everyone's falls rebuild the tower.
+- The only other 3D entry seen is **Daily Cube**, a three.js Rubik's Cube race. The rules mark "clones of popular games" as a common idea, which hurts it.
+- No other crafting or sculpting game appears. Paanai is the only entry seen where the player makes a physical object.
+- r/Devvit has threads saying judging feels inconsistent ("Everything wrong with the reddit games hackathons", "Ghost Winners"). Expect high variance between good entries.
+
 **Where Paanai stands:** I estimate it's in the top 5–10% of a typical field. Most entries are 2D Phaser or React boards, word or trivia games, or clones. Paanai has 7 of the 8 traits linked to winning in past contests, a 3D look, a concept new to Reddit, and server-checked scores. It trails the best past winners only on how quickly a judge reaches the payoff and on visible player-made content.
 
 ## Odds (estimates, not measurements)
@@ -54,7 +67,7 @@ Expected cash with the fixes is about $1,100–$1,600. The most likely single re
 
 1. **Critical: a public demo subreddit with fewer than 200 members.** Without it, judges can't open the game and the entry can't place. Seed it with 15–30 rated pots on show, a few fired pots, a Kiln Report comment and 2–3 player challenge posts.
 2. **High: make player challenges visible to judges.** Seed challenge posts, or let anyone create one on the demo subreddit. This is what made BridgeDit win.
-3. **High: rewrite README.md** to match the game as it is now: paint, the kiln master's glaze, Levels, Showcase ratings and likes, Share on Reddit.
+3. Done: README.md rewritten 14 Nov.
 4. **High: a video under 60 seconds** showing throw, score, paint, kiln reveal, Showcase and comment share, filmed on a phone in the Reddit app (which also covers the real-phone test).
 5. Medium: a 90-second path for judges from opening the post to seeing a fired pot. Lead the write-up with the daily commission and the shared kiln, with levels as practice.
 6. Low: fill in the developer survey ($200 Feedback Award).
