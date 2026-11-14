@@ -19,7 +19,7 @@ function setText(id: string, text: string): void {
 const CX = 100;
 const BASE = 131;
 const ROWS = 48;
-const LOOP = 10_000;
+const LOOP = 11_000;
 
 /** A Moon jar until today's commission arrives. */
 const FALLBACK = Array.from({ length: ROWS }, (_, i) => {
@@ -96,46 +96,78 @@ function spawnEmbers(): void {
   box.innerHTML = html;
 }
 
+// Timeline (ms): shape 0-4600 (two pulls), paint 4600-6400, fire 6400-7800, reveal 7800-10200, back to clay.
+const T = { shape0: 600, shape1: 4600, paint1: 6400, fire1: 7800, back0: 10200, back1: 10900 };
+
 function frame(ms: number, reduce: boolean): void {
-  const t = reduce ? 7000 : ms % LOOP;
+  const t = reduce ? 9000 : ms % LOOP;
   const loopN = Math.floor(ms / LOOP);
-  // Shape: centre (0-0.8 s), two pulls up to the target (0.8-5.2 s), fire and reveal, then back to clay.
-  const e = t < 9200 ? seg(t, 800, 5000) : 1 - seg(t, 9200, 9900);
+  const e = t < T.back0 ? seg(t, T.shape0, T.shape1 - 200) : 1 - seg(t, T.back0, T.back1);
   const h = lerp(LUMP_H, target.height, e);
   const rows = lump.map((r, i) => lerp(r, target.rows[i] ?? r, e));
   const d = potPath(rows, h);
   $('clay')?.setAttribute('d', d);
   $('glaze')?.setAttribute('d', d);
   $('clipPath')?.setAttribute('d', d);
-  const glaze = t < 9200 ? seg(t, 5600, 6500) : 1 - seg(t, 9200, 9600);
-  ($('glaze') as SVGElement | null)?.style.setProperty('opacity', glaze.toFixed(3));
+  const glaze = t < T.back0 ? seg(t, T.paint1 + 500, T.fire1) : 1 - seg(t, T.back0, T.back0 + 400);
+  ($('glaze') as SVGElement | null)?.style.setProperty('opacity', (glaze * 0.92).toFixed(3));
+  // The painted bands: brushed on while the wheel turns, they stay under the glaze.
+  const paint = t < T.back0 ? seg(t, T.shape1, T.paint1 - 300) : 1 - seg(t, T.back0, T.back0 + 300);
+  const bandY = BASE - h * 0.5;
+  for (const [id, dy] of [['band', 0], ['band2', 9]] as const) {
+    const el = $(id) as SVGElement | null;
+    if (!el) continue;
+    el.setAttribute('y', (bandY + dy).toFixed(1));
+    el.style.setProperty('opacity', paint > 0 ? '1' : '0');
+    el.setAttribute('width', (160 * paint).toFixed(1));
+  }
   // The mouth of the pot opens as the walls rise.
   const mouth = $('mouth');
+  const rt = rows[ROWS - 1]!;
   if (mouth) {
-    const rt = rows[ROWS - 1]!;
     const open = target.opened ? e : 0;
     mouth.setAttribute('cy', (BASE - h).toFixed(1));
     mouth.setAttribute('rx', (rt * 0.9 * open).toFixed(1));
     mouth.setAttribute('ry', (Math.max(1.2, rt * 0.2) * open).toFixed(1));
   }
-  // The fingertip rides up the right-hand wall, twice.
-  const tip = $('tip');
-  if (tip) {
-    const pulling = t > 800 && t < 5200;
-    const local = pulling ? ((t - 800) % 2200) / 2200 : 0;
-    const yf = ease(local);
-    const i = Math.min(ROWS - 1, Math.floor(yf * ROWS));
-    tip.setAttribute('cx', (CX + (rows[i] ?? 0) + 4).toFixed(1));
-    tip.setAttribute('cy', (BASE - 3 - yf * (h - 4)).toFixed(1));
-    tip.style.setProperty('opacity', pulling ? String(Math.min(1, local * 6, (1 - local) * 6)) : '0');
+  // The finger: rides up the right-hand wall twice, then holds the brush on the band.
+  const touch = $('touch') as SVGElement | null;
+  if (touch) {
+    let x = CX + (rows[0] ?? 30) + 5;
+    let y = BASE - 4;
+    let show = 0;
+    let label = 'Drag up';
+    if (t < T.shape1) {
+      const local = t < T.shape0 ? 0 : ((t - T.shape0) % 2000) / 2000;
+      const yf = ease(local);
+      const i = Math.min(ROWS - 1, Math.floor(yf * ROWS));
+      x = CX + (rows[i] ?? 0) + 5;
+      y = BASE - 4 - yf * (h - 6);
+      show = t < T.shape0 ? t / T.shape0 : Math.min(1, local * 8, (1 - local) * 8 + 0.35);
+    } else if (t < T.paint1) {
+      const i = Math.floor(ROWS * 0.5);
+      x = CX + (rows[i] ?? 0) + 5;
+      y = bandY + 4;
+      show = Math.min(1, (t - T.shape1) / 300, (T.paint1 - t) / 300);
+      label = 'Paint';
+    }
+    touch.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+    touch.style.setProperty('opacity', show.toFixed(2));
+    setText('touchLabel', label);
   }
-  // Match climbs while the pot takes shape.
+  // The target label floats just above the dashed outline.
+  const gl = $('ghostLabel');
+  if (gl) {
+    gl.setAttribute('x', (CX + (target.rows[ROWS - 1] ?? 10) + 6).toFixed(1));
+    gl.setAttribute('y', (BASE - target.height + 2).toFixed(1));
+  }
+  // The score climbs while the pot takes shape.
   const best = 86 + (loopN % 4) * 3;
   setText('matchNum', String(Math.round(lerp(14, best, e))));
-  const phase = t < 5200 ? 'throw' : t < 6600 ? 'fire' : 'reveal';
+  const phase = t < T.shape1 ? 'shape' : t < T.paint1 ? 'paint' : t < T.fire1 ? 'fire' : 'reveal';
   if (document.body.dataset.phase !== phase) {
     document.body.dataset.phase = phase;
-    if (phase === 'throw') setGlaze(loopN);
+    if (phase === 'shape') setGlaze(loopN);
   }
 }
 
@@ -192,11 +224,11 @@ function countUp(id: string, to: number): void {
 function render(t: TodayResponse): void {
   const c = t.commission;
   const master = c.commissioner === 'the Master';
-  setText('eyebrow', `Day ${t.dayNumber} · ${c.formatLabel}`);
+  setText('day', ` · Day ${t.dayNumber}`);
   setText('title', c.title);
-  setText('meta', `${c.origin} · by ${master ? 'the Master' : `u/${c.commissioner}`}`);
+  setText('meta', master ? c.origin : `${c.origin} · a challenge from u/${c.commissioner}`);
   countUp('beat', c.bar);
-  setText('beatBy', master ? "the Master's score" : `u/${c.commissioner}'s score`);
+  setText('beatBy', master ? 'set by the Master' : `set by u/${c.commissioner}`);
   $('target')?.setAttribute('d', silhouettePath(c.target));
   setTarget(c.target);
   setText('live', t.throwsToday > 0 ? `${t.throwsToday} potter${t.throwsToday === 1 ? '' : 's'} at the wheel today` : 'Be the first potter today');
@@ -204,15 +236,16 @@ function render(t: TodayResponse): void {
   tick();
   setInterval(tick, 30_000);
   const leader = t.top[0];
+  if (leader) setText('beatTop', `Top today: ${leader.score}`);
   let status = '';
-  let label = "Throw today's pot";
+  let label = "Shape today's pot";
   if (t.kilnWaiting > 0) {
     status = t.kilnWaiting === 1 ? 'Your pot is out of the kiln. Come and see what the fire made.' : `${t.kilnWaiting} of your pots are out of the kiln.`;
     label = 'Open the kiln';
     document.body.classList.add('is-ready');
   } else if (t.myThrow) {
-    status = t.myThrow.beatBar ? `You scored ${t.myThrow.score.total} and beat the bar.` : `You scored ${t.myThrow.score.total}. Practise and try to beat ${c.bar}.`;
-    label = t.myThrow.glazed ? 'Open the studio' : 'Paint and fire it';
+    status = t.myThrow.beatBar ? `You scored ${t.myThrow.score.total} and beat ${c.bar}.` : `You scored ${t.myThrow.score.total}. Practise and try to beat ${c.bar}.`;
+    label = t.myThrow.glazed ? 'Throw it again' : 'Paint and fire it';
   } else if (leader) {
     status = `u/${leader.username} leads with ${leader.score}. Can you beat it?`;
   }
@@ -226,15 +259,15 @@ function init(): void {
   spawnEmbers();
   $('ghost')?.setAttribute('d', potPath(target.rows, target.height));
   animate();
-  $('throw')?.addEventListener('click', (e) => {
-    // Must be synchronous from the trusted click.
-    requestExpandedMode(e, 'studio', { title: 'Paanai' });
-  });
+  // The button and the wheel itself both open the game. Must be synchronous from the trusted click.
+  const play = (e: MouseEvent) => requestExpandedMode(e, 'studio', { title: 'Paanai' });
+  $('throw')?.addEventListener('click', play);
+  $('stage')?.addEventListener('click', play);
   fetch('/api/today')
     .then((r) => (r.ok ? (r.json() as Promise<TodayResponse>) : Promise.reject(new Error(String(r.status)))))
     .then(render)
     .catch(() => {
-      setText('status', 'The studio is warming up. Tap to start.');
+      setText('status', 'The wheel is warming up. Tap to start.');
       document.body.classList.add('ready');
     });
 }

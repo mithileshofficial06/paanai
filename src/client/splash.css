@@ -39,6 +39,7 @@ body.splash {
   display: grid;
   place-items: center;
   isolation: isolate;
+  cursor: pointer;
 }
 
 .glow {
@@ -128,16 +129,26 @@ body[data-phase='fire'] .embers i {
 }
 
 .ghost {
-  fill: none;
-  stroke: #ff6a4d;
-  stroke-width: 1.1;
-  stroke-dasharray: 3 3;
+  fill: rgba(255, 214, 140, 0.06);
+  stroke: #ffd98a;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 3px rgba(255, 90, 60, 0.9));
+  filter: drop-shadow(0 0 4px rgba(255, 200, 110, 0.95));
   animation: march 1s linear infinite;
   transition: opacity 400ms ease;
 }
-body:not([data-phase='throw']) .ghost { opacity: 0; }
+.ghost-label {
+  font: 700 7px/1 var(--font-ui);
+  letter-spacing: 0.04em;
+  fill: #ffe2a8;
+  paint-order: stroke;
+  stroke: rgba(10, 3, 5, 0.85);
+  stroke-width: 2.2px;
+  transition: opacity 400ms ease;
+}
+body:not([data-phase='shape']) .ghost,
+body:not([data-phase='shape']) .ghost-label { opacity: 0; }
 @keyframes march {
   to { stroke-dashoffset: -12; }
 }
@@ -167,8 +178,38 @@ body[data-phase='reveal'] .rings { opacity: 0.2; }
   to { transform: translateX(280px); }
 }
 
-.tip {
-  mix-blend-mode: screen;
+/* The painted bands, brushed on while the wheel turns. */
+.band { fill: #2f55c8; opacity: 0; }
+.band--thin { fill: #c9a24a; }
+body[data-phase='reveal'] .band { fill-opacity: 0.85; }
+
+/* The finger on the clay. */
+.touch { pointer-events: none; }
+.touch__glow { mix-blend-mode: screen; }
+.touch__core { fill: #fff; filter: drop-shadow(0 0 3px rgba(255, 240, 220, 0.95)); }
+.touch__ring {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ripple 1s ease-out infinite;
+}
+.touch__arrow { fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; animation: nudge 0.8s ease-in-out infinite; }
+body[data-phase='paint'] .touch__arrow { display: none; }
+.touch__label {
+  font: 700 7.5px/1 var(--font-ui);
+  fill: #fff;
+  paint-order: stroke;
+  stroke: rgba(10, 3, 5, 0.9);
+  stroke-width: 2.4px;
+}
+@keyframes ripple {
+  from { transform: scale(0.7); opacity: 1; }
+  to { transform: scale(2.1); opacity: 0; }
+}
+@keyframes nudge {
+  50% { transform: translateY(-2.5px); }
 }
 
 /* Overlays on the stage */
@@ -200,7 +241,7 @@ body[data-phase='reveal'] .rings { opacity: 0.2; }
   font-variant-numeric: tabular-nums;
   font-size: 15px;
 }
-body:not([data-phase='throw']) .match { opacity: 0; }
+body:not([data-phase='shape']):not([data-phase='paint']) .match { opacity: 0; }
 
 .found {
   top: 4px;
@@ -235,38 +276,63 @@ body[data-phase='reveal'] .found {
   bottom: 0;
   left: 50%;
   display: flex;
-  gap: 4px;
+  align-items: center;
   margin: 0;
-  padding: 3px;
+  padding: 0;
   list-style: none;
   transform: translateX(-50%);
-  border-radius: 999px;
-  background: rgba(10, 3, 5, 0.62);
-  border: 1px solid rgba(255, 226, 218, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  white-space: nowrap;
 }
 .steps li {
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--color-ink-subtle, #a08e88);
-  transition: background 300ms ease, color 300ms ease;
+  transition: color 300ms ease;
 }
-body[data-phase='throw'] .steps li[data-s='throw'],
+.steps li + li::before {
+  content: '';
+  width: 14px;
+  height: 1px;
+  margin: 0 7px;
+  background: linear-gradient(90deg, rgba(255, 226, 218, 0.1), rgba(255, 226, 218, 0.45));
+}
+.steps b {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  font-size: 11px;
+  color: var(--color-ink-muted, #c9b5af);
+  border: 1px solid rgba(255, 226, 218, 0.25);
+  transition: background 300ms ease, color 300ms ease, box-shadow 300ms ease;
+}
+body[data-phase='shape'] .steps li[data-s='shape'],
+body[data-phase='paint'] .steps li[data-s='paint'],
 body[data-phase='fire'] .steps li[data-s='fire'],
-body[data-phase='reveal'] .steps li[data-s='reveal'] {
+body[data-phase='reveal'] .steps li[data-s='fire'] {
   color: #fff;
-  background: linear-gradient(180deg, #ff4a3d, #b8121b);
-  box-shadow: 0 0 14px rgba(255, 60, 40, 0.55);
 }
-body[data-phase='reveal'] .steps li[data-s='reveal'] {
+body[data-phase='shape'] .steps li[data-s='shape'] b,
+body[data-phase='paint'] .steps li[data-s='paint'] b,
+body[data-phase='fire'] .steps li[data-s='fire'] b {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(180deg, #ff4a3d, #b8121b);
+  box-shadow: 0 0 12px rgba(255, 60, 40, 0.7);
+}
+body[data-phase='reveal'] .steps li[data-s='fire'] b {
   color: #2a1a05;
+  border-color: transparent;
   background: linear-gradient(180deg, #ffe0a0, #e8b25a);
-  box-shadow: 0 0 14px rgba(239, 190, 104, 0.6);
+  box-shadow: 0 0 12px rgba(239, 190, 104, 0.7);
+}
+/* The long step labels only where the stage is wide enough for them. */
+@media (max-width: 399px), (min-width: 640px) and (max-width: 919px) {
+  .steps .l { display: none; }
 }
 
 /* ---------- The info panel ---------- */
@@ -326,8 +392,15 @@ body[data-phase='reveal'] .steps li[data-s='reveal'] {
   font-weight: 700;
 }
 
+.kicker {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink-muted, #c9b5af);
+}
+
 .title {
-  margin: 2px 0 0;
+  margin: 0;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: clamp(28px, 7.5vw, 40px);
@@ -387,7 +460,8 @@ body[data-phase='reveal'] .steps li[data-s='reveal'] {
   line-height: 1;
 }
 .beat-label {
-  grid-column: 1;
+  grid-column: 1 / -1;
+  white-space: nowrap;
   grid-row: 1;
   font-size: 13px;
   color: var(--color-ink-muted, #c9b5af);
@@ -408,9 +482,19 @@ body[data-phase='reveal'] .steps li[data-s='reveal'] {
   grid-column: 2;
   grid-row: 2;
   padding-bottom: 6px;
+  white-space: nowrap;
   font-size: 14px;
   color: var(--color-ink-subtle, #a08e88);
 }
+.beat-top {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #7fe0a0;
+}
+.beat-top:empty { display: none; }
 
 .status {
   min-height: 1.3em;
@@ -457,12 +541,9 @@ body[data-phase='reveal'] .steps li[data-s='reveal'] {
   50% { box-shadow: 0 12px 38px -6px rgba(255, 48, 40, 0.85), 0 0 0 1px rgba(255, 140, 120, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
 }
 .throw__icon {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: #fff;
-  stroke-width: 2;
-  stroke-linecap: round;
+  width: 20px;
+  height: 20px;
+  fill: #fff;
 }
 .throw:hover { filter: brightness(1.08); }
 .throw:active { transform: scale(0.97); }
@@ -475,7 +556,7 @@ body.is-ready .throw {
   background: linear-gradient(180deg, #ffe7b0 0%, #f0b856 55%, #b97d22 100%);
   box-shadow: 0 10px 30px -8px rgba(239, 190, 104, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
-body.is-ready .throw__icon { stroke: #2a1a05; }
+body.is-ready .throw__icon { fill: #2a1a05; }
 
 .sub {
   margin: 8px 0 0;
@@ -490,12 +571,16 @@ body:not(.ready) .info .status { opacity: 0; }
 .status:empty { display: none; }
 @media (max-width: 639px) {
   .stage { padding-bottom: 30px; }
-  .target-wrap, .sub, .beat-by { display: none; }
+  .target-wrap, .beat-by { display: none; }
+  .status:not(:empty) ~ .sub { display: none; }
+  .sub { margin-top: 6px; font-size: 12.5px; }
   /* The score to beat sits beside the title, top right of the panel. */
   .row { position: absolute; top: 10px; right: 14px; margin: 0; }
   .beat { grid-template-columns: auto; justify-items: end; }
   .beat-num { font-size: 36px; }
-  .eyebrow, .title, .meta { padding-right: 70px; }
+  .beat-label { font-size: 11px; }
+  .day { display: none; }
+  .eyebrow, .kicker, .title, .meta { padding-right: 84px; }
   .pills { padding-right: 70px; }
 }
 @media (max-height: 560px) and (max-width: 639px) {
@@ -520,7 +605,7 @@ body:not(.ready) .info .status { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .glow, .flare, .embers i, .spin, .ghost, .rings path, .sheen-bar, .found i, .title, .throw, .throw::after, .pill--live i, .info {
+  .glow, .flare, .embers i, .spin, .ghost, .rings path, .sheen-bar, .found i, .title, .throw, .throw::after, .pill--live i, .info, .touch__ring, .touch__arrow {
     animation: none !important;
   }
   .embers { display: none; }

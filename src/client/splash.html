@@ -6,9 +6,9 @@
     <title>Paanai</title>
     <link rel="preload" href="/fonts/bagel-fat-one-latin.woff2" as="font" type="font/woff2" crossorigin />
   </head>
-  <body class="splash" data-phase="throw">
+  <body class="splash" data-phase="shape">
     <main class="card" aria-live="polite">
-      <div class="stage" aria-hidden="true">
+      <div class="stage" id="stage" aria-hidden="true">
         <div class="glow"></div>
         <div class="flare"></div>
         <div class="embers" id="embers"></div>
@@ -51,21 +51,30 @@
           <ellipse class="spin spin--a" cx="100" cy="132" rx="58" ry="6.8" />
           <ellipse class="spin spin--b" cx="100" cy="132" rx="44" ry="5.2" />
           <path id="ghost" class="ghost" d="" />
+          <text id="ghostLabel" class="ghost-label" x="0" y="0">Target shape</text>
           <path id="clay" d="" fill="url(#clayG)" />
           <path id="glaze" class="glaze" d="" fill="url(#glazeG)" />
           <g clip-path="url(#potClip)">
             <g id="rings" class="rings"></g>
+            <rect id="band" class="band" x="20" y="0" width="160" height="7" />
+            <rect id="band2" class="band band--thin" x="20" y="0" width="160" height="2.4" />
             <rect class="sheen-bar" x="-60" y="0" width="30" height="160" fill="url(#sheen)" />
           </g>
           <ellipse id="mouth" cx="100" cy="60" rx="0" ry="0" fill="url(#mouthG)" />
-          <circle id="tip" class="tip" cx="0" cy="0" r="9" fill="url(#tipG)" />
+          <g id="touch" class="touch">
+            <circle class="touch__glow" r="10" fill="url(#tipG)" />
+            <circle class="touch__ring" r="7" />
+            <circle class="touch__core" r="4.2" />
+            <path class="touch__arrow" d="M-3.5,-11 L0,-15 L3.5,-11 M-3.5,-16 L0,-20 L3.5,-16" />
+            <text class="touch__label" x="9" y="3" id="touchLabel">Drag up</text>
+          </g>
         </svg>
-        <span class="match" id="match">Match <b id="matchNum">0</b>%</span>
+        <span class="match" id="match">Score <b id="matchNum">0</b></span>
         <span class="found" id="found"><i></i><span id="foundName">Celadon</span> · new in the Codex</span>
         <ol class="steps">
-          <li data-s="throw">Throw</li>
-          <li data-s="fire">Fire</li>
-          <li data-s="reveal">Reveal</li>
+          <li data-s="shape"><b>1</b>Shape<span class="l"> with your finger</span></li>
+          <li data-s="paint"><b>2</b>Paint</li>
+          <li data-s="fire"><b>3</b>Fire<span class="l"> with the sub</span></li>
         </ol>
       </div>
 
@@ -74,7 +83,8 @@
           <span class="pill pill--live"><i></i><span id="live">Open today</span></span>
           <span class="pill" id="kiln">Kiln fires at 00:00 UTC</span>
         </div>
-        <p class="eyebrow" id="eyebrow">Today's commission</p>
+        <p class="eyebrow">Daily 3D pottery game<span class="day" id="day"></span></p>
+        <p class="kicker">Throw today's vessel</p>
         <h1 class="title" id="title">Paanai</h1>
         <p class="meta" id="meta">A daily pottery game</p>
         <div class="row">
@@ -82,17 +92,18 @@
             <svg class="target" viewBox="0 0 100 100" aria-hidden="true"><path id="target" d="" /></svg>
           </div>
           <div class="beat">
-            <span class="beat-label" id="beatLabel">Beat</span>
+            <span class="beat-label" id="beatLabel">Score to beat</span>
             <span class="beat-num" id="beat">--</span>
             <span class="beat-by" id="beatBy"></span>
+            <span class="beat-top" id="beatTop"></span>
           </div>
         </div>
         <p class="status" id="status"></p>
         <button class="throw" id="throw" type="button">
-          <svg class="throw__icon" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="9" ry="3" /><path d="M8 15.5V9.5c0-2 1.6-3.5 4-3.5s4 1.5 4 3.5v6" /></svg>
-          <span id="throwLabel">Throw today's pot</span>
+          <svg class="throw__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+          <span id="throwLabel">Shape today's pot</span>
         </button>
-        <p class="sub" id="sub">Shape it today. Every pot fires together overnight.</p>
+        <p class="sub" id="sub">About a minute at the wheel. Every pot in the sub fires together at midnight UTC.</p>
       </section>
     </main>
     <script type="module" src="splash.ts"></script>
