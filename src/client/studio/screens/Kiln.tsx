@@ -6,12 +6,12 @@ import { Button } from '../../ui/Button';
 import { GlassPanel } from '../../ui/GlassPanel';
 import { Skeleton } from '../../ui/Skeleton';
 import { EmptyState } from '../../ui/States';
-import { IconCrackedPot, IconFlame, IconKiln, IconSparkle } from '../../ui/icons';
+import { IconChevron, IconCrackedPot, IconFlame, IconKiln, IconLevels, IconShowcase, IconSparkle } from '../../ui/icons';
 import { sfx } from '../../app/audio';
 import { fmtCountdown, PotActions, PotView, titleCase, useNow } from '../parts';
 import { StudioRooms } from './Community';
 import * as S from '../store';
-import { loadKiln, login, markOpened, playDaily } from '../controller';
+import { go, loadKiln, login, markOpened, playDaily } from '../controller';
 import { KilnHero, type KilnState } from '../KilnHero';
 
 const DEFECT_TEXT: Record<string, string> = {
@@ -132,6 +132,8 @@ export function Kiln() {
 /** Opening the kiln: door glow, heat shimmer, then the pot and what the fire did. */
 function Reveal({ item, onDone }: { item: KilnItem; onDone: () => void }) {
   const [phase, setPhase] = useState<KilnState>(item.opened ? 'open' : 'closed');
+  // Opening the first pot ends the first run: show what has just opened up.
+  const [firstOpen] = useState(() => S.firstRun.value && !item.opened);
   const f = item.fired;
   function open() {
     sfx.thump();
@@ -183,10 +185,13 @@ function Reveal({ item, onDone }: { item: KilnItem; onDone: () => void }) {
           ) : null}
           {f ? <p class="pn-meta">Kiln score {f.kilnScore} · {f.atmosphere} firing</p> : null}
           {f?.survived ? <PotActions pot={item} /> : null}
+          {firstOpen ? <Unlocked /> : null}
           <div class="sc__actions">
-            <Button variant="primary" size="lg" block onClick={() => playDaily()}>
-              Throw today's pot
-            </Button>
+            {firstOpen ? null : (
+              <Button variant="primary" size="lg" block onClick={() => playDaily()}>
+                Throw today's pot
+              </Button>
+            )}
             <Button variant="ghost" block onClick={onDone}>
               Back to the kiln
             </Button>
@@ -194,5 +199,36 @@ function Reveal({ item, onDone }: { item: KilnItem; onDone: () => void }) {
         </div>
       )}
     </section>
+  );
+}
+
+const UNLOCKS = [
+  { id: 'showcase', icon: <IconShowcase />, title: 'The Showcase', text: 'Rate and like pots from other potters.' },
+  { id: 'levels', icon: <IconLevels />, title: '100 levels', text: 'Practise on a new vessel whenever you like.' },
+  { id: 'codex', icon: <IconSparkle />, title: 'The Glaze Codex', text: '24 glazes the fire can make. Find them first.' },
+] as const;
+
+/** Shown once, after the first pot is opened: the rest of the studio is now open. */
+function Unlocked() {
+  return (
+    <GlassPanel padding="md" radius="xl" class="unlock" aria-labelledby="unlock-title">
+      <p class="pn-eyebrow">Your first firing is done</p>
+      <h2 id="unlock-title" class="pn-title unlock__title">The whole studio is open</h2>
+      <p class="pn-meta unlock__lead">A new vessel arrives every day, and every pot fires together at 00:00 UTC.</p>
+      <ul class="unlock__list">
+        {UNLOCKS.map((u) => (
+          <li key={u.id}>
+            <button type="button" class="unlock__item" onClick={() => go(u.id)}>
+              <span class="unlock__icon" aria-hidden="true">{u.icon}</span>
+              <span class="unlock__text">
+                <b>{u.title}</b>
+                <span>{u.text}</span>
+              </span>
+              <IconChevron direction="right" />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </GlassPanel>
   );
 }

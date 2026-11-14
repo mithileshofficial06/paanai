@@ -81,6 +81,23 @@ describe('kiln', () => {
     expect(await firePot(b)).toBeNull();
   });
 
+  it('the first run lasts until the first fired pot is opened (or the player asks to see everything)', async () => {
+    const firstRun = async () => (await call<TodayResponse>('GET', '/api/today')).json.me?.firstRun;
+    const a = await throwMaster('alice', 'f1');
+    as('alice');
+    expect(await firstRun()).toBe(true);
+    await call('POST', '/api/glaze', { potId: a });
+    p.shiftDays(0.0011);
+    await call('GET', '/api/kiln');
+    expect(await firstRun()).toBe(true); // fired but not opened yet
+    expect((await call('POST', '/api/kiln/open', { potId: a })).status).toBe(200);
+    expect(await firstRun()).toBe(false);
+    as('bob');
+    expect(await firstRun()).toBe(true);
+    await call('POST', '/api/me/hints', { graduated: true });
+    expect(await firstRun()).toBe(false);
+  });
+
   it('showcase, likes, reports auto-hide at threshold, delete', async () => {
     const a = await throwMaster('alice', 'a1');
     as('alice');

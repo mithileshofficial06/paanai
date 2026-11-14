@@ -86,7 +86,7 @@ api.get('/commission/:id', async (c) => {
 api.post('/me/hints', async (c) => {
   const ctx = platform().ctx();
   const { userId } = requireUser(ctx.userId, ctx.username);
-  const { hint, onboarded } = await c.req.json<{ hint?: string; onboarded?: boolean }>();
+  const { hint, onboarded, graduated } = await c.req.json<{ hint?: string; onboarded?: boolean; graduated?: boolean }>();
   const kv = platform().kv;
   if (hint && /^[a-z-]{1,24}$/.test(hint)) {
     const cur = ((await kv.hGet(K.user(userId), 'hints')) ?? '').split(',').filter(Boolean);
@@ -94,6 +94,7 @@ api.post('/me/hints', async (c) => {
     await kv.hSet(K.user(userId), { hints: cur.slice(0, 20).join(',') });
   }
   if (onboarded) await kv.hSet(K.user(userId), { onboarded: '1' });
+  if (graduated) await kv.hSet(K.user(userId), { graduated: '1' });
   return c.json({ ok: true });
 });
 

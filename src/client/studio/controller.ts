@@ -37,6 +37,8 @@ let studioRoom: Route = 'kiln';
 export function go(r: Route): void {
   if (S.route.value === r) return;
   if (TABS.includes(r)) S.routeStack.value = [];
+  const tab = r === 'kiln' || r === 'mypots' || r === 'codex' ? 'studio' : r;
+  if (S.newTabs.value.has(tab)) S.newTabs.value = new Set([...S.newTabs.value].filter((x) => x !== tab));
   else S.routeStack.value = [...S.routeStack.value, S.route.value];
   S.route.value = r;
   if (r === 'kiln' || r === 'mypots' || r === 'codex') studioRoom = r;
@@ -87,6 +89,11 @@ export async function boot(): Promise<void> {
     if (t.me && !t.me.onboarded && !lv?.tutorialDone) S.route.value = 'welcome';
     else if (!t.me && !lv?.tutorialDone && !S.hintsDone.value.has('drag')) S.route.value = 'welcome';
     else if (t.kilnWaiting > 0) go('kiln');
+    // Still on the first run: back to the daily loop (the kiln once today's pot is thrown).
+    else if (t.me?.firstRun) {
+      if (t.myThrow) go('kiln');
+      else playDaily();
+    }
     else S.route.value = 'levels';
   } catch (err) {
     S.loadError.value = err instanceof ApiFailure ? err.message : 'Could not reach the studio.';
@@ -386,9 +393,29 @@ export async function loadKiln(): Promise<void> {
   }
 }
 
+/** The tabs that open up after the first run, minus the one the player is on. */
+function unlockedTabs(): Set<string> {
+  const r = S.route.value;
+  const here = r === 'kiln' || r === 'mypots' || r === 'codex' ? 'studio' : r;
+  return new Set(['levels', 'showcase', 'studio'].filter((x) => x !== here));
+}
+
+/** End the first run: show the bottom tabs, with a "New" badge on each until it is visited. */
+export function graduate(): void {
+  if (!S.firstRun.value) return;
+  S.graduated.value = true;
+  S.newTabs.value = unlockedTabs();
+  if (S.loggedIn.value) void api.graduate().catch(() => undefined);
+}
+
 /** Mark a fired pot as opened after its reveal animation. */
 export async function markOpened(potId: string): Promise<void> {
   S.kilnItems.value = S.kilnItems.value.map((i) => (i.potId === potId ? { ...i, opened: true } : i));
+  // The server records the end of the first run when the pot is opened.
+  if (S.firstRun.value) {
+    S.graduated.value = true;
+    S.newTabs.value = unlockedTabs();
+  }
   try {
     await api.openKiln(potId);
     void refreshToday();

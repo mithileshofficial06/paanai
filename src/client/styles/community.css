@@ -87,9 +87,29 @@
 .codex__detail.is-locked .codex__blurb { color: var(--color-gold-ink); font-style: italic; }
 .codex__grid > li { animation: pn-rise var(--dur-3) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 30ms); }
 
+/* ---------- First run: the studio opens up after the first pot ---------- */
+.unlock { display: grid; gap: var(--space-1-5); width: 100%; text-align: left; border-color: rgba(239, 190, 104, 0.4); box-shadow: var(--shadow-panel), var(--glow-gold); animation: pn-rise var(--dur-3) var(--ease-out) both; animation-delay: 1.6s; }
+.unlock .pn-eyebrow { margin: 0; color: var(--color-gold-ink); }
+.unlock__title { margin: 0; }
+.unlock__lead { margin: 0 0 var(--space-1); }
+.unlock__list { display: grid; gap: var(--space-1-5); margin: 0; padding: 0; list-style: none; }
+.unlock__item {
+  display: grid; grid-template-columns: 36px minmax(0, 1fr) 18px; align-items: center; gap: var(--space-2);
+  width: 100%; min-height: var(--touch-min); padding: var(--space-2); border: 1px solid var(--color-line); border-radius: var(--radius-md);
+  background: var(--glass-fill-inset); color: var(--color-ink); font: inherit; text-align: left; cursor: pointer;
+  transition: transform var(--dur-1) var(--ease-standard), border-color var(--dur-2);
+}
+.unlock__item:active { transform: scale(0.98); }
+.unlock__icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(239, 190, 104, 0.14); color: var(--color-gold); }
+.unlock__icon .pn-icon { width: 20px; height: 20px; }
+.unlock__text { display: grid; gap: 2px; min-width: 0; }
+.unlock__text b { font-size: 1rem; }
+.unlock__text span { color: var(--color-ink-muted); font-size: 0.875rem; line-height: 1.35; }
+.unlock__item > .pn-icon { color: var(--color-ink-subtle); }
+
 @keyframes pn-rise { from { opacity: 0; transform: translateY(10px); } }
 @keyframes pn-pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .show__grid > li, .mypots__list > li, .codex__grid > li, .show__ghost { animation: none; }
+  .show__grid > li, .mypots__list > li, .codex__grid > li, .show__ghost, .unlock { animation: none; }
 }

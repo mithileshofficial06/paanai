@@ -58,6 +58,7 @@ export const api = {
   commission: (id: string) => req<{ commission: CommissionDTO; ghostLog: string }>('GET', `commission/${encodeURIComponent(id)}`),
   hint: (hint: string) => req<{ ok: true }>('POST', 'me/hints', { hint }),
   onboarded: () => req<{ ok: true }>('POST', 'me/hints', { onboarded: true }),
+  graduate: () => req<{ ok: true }>('POST', 'me/hints', { graduated: true }),
   /** Queue a pot for the next kiln; the kiln picks the glaze. */
   fire: (potId: string) => req<{ kilnDate: string; atmosphere: string; quickAt?: number | null }>('POST', 'glaze', { potId }),
   kiln: () => req<{ items: KilnItem[]; today?: string }>('GET', 'kiln'),

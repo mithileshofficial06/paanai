@@ -1,8 +1,9 @@
 // End-to-end workflow check of the studio, as a player would use it (phone size).
 //   node tools/e2e.mjs [baseUrl]      default http://127.0.0.1:5173
 // Resets the harness world, then walks: loading -> welcome -> starter kiln -> tutorial -> today's pot
-// wheel -> coach -> collapse card -> clear level 1 -> level map -> daily throw -> score -> paint ->
-// kiln -> next day -> reveal -> put on show -> my pots -> codex hint -> showcase (rate, like) -> leaderboard.
+// (first run: no menu bar) -> score -> paint -> kiln -> reveal, the studio opens up -> put on show ->
+// my pots -> codex hint -> level 1: coach, collapse card, undo, clear -> level map ->
+// showcase (another player rates, likes) -> leaderboard.
 // Prints PASS/FAIL per step; screenshots failures.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -74,28 +75,90 @@ await step('Start the tutorial: narrated steps', async () => {
   await btn('Next', true).click();
   await expectVisible(p.locator('.tour__title', { hasText: 'Hands, Push and Thin' }), 'tour step 2');
 });
-await step('Skip tutorial lands on today’s commission', async () => {
+await step('Skip tutorial lands on today’s commission, with no menu bar yet', async () => {
   await btn('Skip tutorial').click();
   await p.locator('.tour').waitFor({ state: 'detached' });
   await expectVisible(p.locator('.throw__canvas'), 'wheel canvas');
   await expectVisible(p.locator('.throw__beat-label', { hasText: 'Beat' }), 'daily score to beat');
-  // The shaping checks below run on level 1 (a small cup collapses predictably).
-  await p.getByRole('button', { name: 'Leave the wheel' }).click();
-  await btn('Play level 1').click();
-  await expectVisible(p.getByText('Level 1 of 100'), 'level 1 header');
 });
 
 const box = await p.locator('.throw__canvas').boundingBox();
 const cx = box.x + box.width / 2;
-await step('Centre, open, and the coach asks for a pull', async () => {
+await step('Daily: open, the first-throw hint, four pulls', async () => {
   const skip = p.getByRole('button', { name: 'Skip', exact: true });
   if (await skip.count()) await skip.click();
   await btn('Open', true).click();
   await p.waitForTimeout(2200);
-  // A brand-new player first sees the one-off drag hint; the live coach takes over after it.
   const guide = p.locator('.throw__coach, .pn-hint__bubble').first();
   await expectVisible(guide, 'coach or first-throw hint');
   console.log(`      guide: "${(await guide.textContent()).trim().slice(0, 90)}"`);
+  for (let k = 0; k < 4; k++) await drag(cx + 62, 560, cx + 58, 400, 40, 30);
+});
+await step('Done scores the throw; the first run offers only Paint and fire', async () => {
+  await btn('Done').click();
+  await expectVisible(p.locator('.pn-score, .score, [class*=score]').first(), 'score', 10000);
+  await expectVisible(btn('Paint it and fire it'), 'paint button');
+  if (await btn('Put on show').count()) throw new Error('show button visible during the first run');
+  if (await p.locator('.pn-bottomnav').count()) throw new Error('menu bar visible during the first run');
+});
+await step('Decorate: paint a band, surprise me, undo', async () => {
+  await btn('Paint it and fire it').click();
+  await expectVisible(p.locator('.deco__canvas'), 'painting table');
+  await p.waitForTimeout(1200);
+  const c = await p.locator('.deco__canvas').boundingBox();
+  await p.getByRole('radio', { name: 'Indigo' }).click();
+  await p.mouse.click(c.x + c.width / 2, c.y + c.height * 0.55);
+  await btn('Surprise me').click();
+  await btn('Undo').click();
+  if (await btn('Undo').isDisabled()) throw new Error('band was not painted (nothing to undo)');
+});
+await step('Fire it: straight into the kiln (no glaze step)', async () => {
+  await btn('Fire it in the kiln').click();
+  await expectVisible(p.getByText('Waiting for the fire'), 'waiting list', 8000);
+  await expectVisible(p.locator('.kiln__hero'), 'kiln countdown');
+  await expectVisible(p.locator('.kiln__heroInfo', { hasText: 'test firing' }), 'first pot gets a quick test firing');
+});
+await step('Next day: the first pot opens and the studio opens up', async () => {
+  await fetch(`${base}/__harness/advance-day`, { method: 'POST' });
+  await p.reload();
+  await p.locator('#boot').waitFor({ state: 'detached', timeout: 15000 });
+  if (!(await p.locator('.kiln').count())) await btn('Studio').click();
+  await btn('Open', true).click();
+  await btn('Open the kiln').click();
+  await expectVisible(p.locator('.reveal__result'), 'reveal result', 6000);
+  await expectVisible(p.locator('.unlock'), 'the studio-is-open panel', 6000);
+  await expectVisible(p.locator('.pn-bottomnav__badge', { hasText: 'New' }).first(), 'New badges on the menu bar');
+  console.log(`      reveal: ${(await p.locator('.reveal__result').textContent()).replace(/\s+/g, ' ').slice(0, 120)}`);
+});
+await step('Put the fired pot on show', async () => {
+  const show = btn('Put on show');
+  if (await show.count()) {
+    await show.click();
+    await expectVisible(btn('On show'), 'on show', 5000);
+  } else console.log('      (pot cracked: showing a level pot instead)');
+});
+await step('Studio: My pots and Codex', async () => {
+  await btn('Back to the kiln').click();
+  await p.getByRole('tab', { name: 'My pots' }).click();
+  await expectVisible(p.locator('.mypot').first(), 'my pot');
+  const n = await p.locator('.mypot').count();
+  console.log(`      my pots: ${n}`);
+  if (!(await p.locator('.mypot.is-onshow').count())) await p.locator('.mypot').first().getByRole('button', { name: 'Put on show' }).click();
+  await p.getByRole('tab', { name: 'Codex' }).click();
+  await expectVisible(p.locator('.codex__grid'), 'codex grid');
+  await p.locator('.codex__item:not(.is-found)').first().click();
+  await expectVisible(p.locator('.codex__detail.is-locked'), 'codex hint');
+});
+await step('Levels: play level 1, the coach asks for a pull', async () => {
+  await p.getByRole('button', { name: 'Levels' }).first().click();
+  await btn('Play level 1').click();
+  await expectVisible(p.getByText('Level 1 of 100'), 'level 1 header');
+  await p.waitForTimeout(800);
+  const skip = p.getByRole('button', { name: 'Skip', exact: true });
+  if (await skip.count()) await skip.click();
+  await btn('Open', true).click();
+  await p.waitForTimeout(2200);
+  await expectVisible(p.locator('.throw__coach, .pn-hint__bubble').first(), 'coach');
 });
 await step('Four pulls raise the pot', async () => {
   for (let k = 0; k < 4; k++) await drag(cx + 62, 560, cx + 58, 400, 40, 30);
@@ -103,7 +166,7 @@ await step('Four pulls raise the pot', async () => {
   const h = await p.locator('.gauge', { hasText: 'Height' }).locator('.gauge__value').textContent();
   if (parseInt(h) < 90) throw new Error(`height only ${h}`);
 });
-await step('Coach gives a shaping tip with arrows', async () => {
+await step('Coach gives a shaping tip', async () => {
   await p.waitForTimeout(400);
   const t = await p.locator('.throw__coach').textContent();
   if (!t || t.length < 10) throw new Error('no coach text');
@@ -150,66 +213,6 @@ await step('Level map: level 2 to play, the rest sealed', async () => {
   const w = await p.locator('.lv__tiles').first().evaluate((el) => el.scrollWidth - el.clientWidth);
   if (w > 1) throw new Error(`level grid overflows by ${w}px`);
 });
-await step('Daily tab: fresh lump for the ranked throw', async () => {
-  await btn('Daily').click();
-  await p.waitForTimeout(800);
-  await btn('Open', true).click();
-  await p.waitForTimeout(1500);
-  for (let k = 0; k < 4; k++) await drag(cx + 62, 560, cx + 58, 400, 40, 30);
-});
-await step('Done scores the throw', async () => {
-  await btn('Done').click();
-  await expectVisible(p.locator('.pn-score, .score, [class*=score]').first(), 'score', 10000);
-  await expectVisible(btn('Paint it and fire it'), 'paint button');
-  await expectVisible(btn('Put on show'), 'show button');
-  await expectVisible(btn('Share on Reddit'), 'share button');
-});
-await step('Decorate: paint a band, surprise me, undo', async () => {
-  await btn('Paint it and fire it').click();
-  await expectVisible(p.locator('.deco__canvas'), 'painting table');
-  await p.waitForTimeout(1200);
-  const c = await p.locator('.deco__canvas').boundingBox();
-  await p.getByRole('radio', { name: 'Indigo' }).click();
-  await p.mouse.click(c.x + c.width / 2, c.y + c.height * 0.55);
-  await btn('Surprise me').click();
-  await btn('Undo').click();
-  if (await btn('Undo').isDisabled()) throw new Error('band was not painted (nothing to undo)');
-});
-await step('Fire it: straight into the kiln (no glaze step)', async () => {
-  await btn('Fire it in the kiln').click();
-  await expectVisible(p.getByText('Waiting for the fire'), 'waiting list', 8000);
-  await expectVisible(p.locator('.kiln__hero'), 'kiln countdown');
-  await expectVisible(p.locator('.kiln__heroInfo', { hasText: 'test firing' }), 'first pot gets a quick test firing');
-});
-await step('Next day: kiln is ready and opens', async () => {
-  await fetch(`${base}/__harness/advance-day`, { method: 'POST' });
-  await p.reload();
-  await p.locator('#boot').waitFor({ state: 'detached', timeout: 15000 });
-  if (!(await p.locator('.kiln').count())) await btn('Studio').click();
-  await btn('Open', true).click();
-  await btn('Open the kiln').click();
-  await expectVisible(p.locator('.reveal__result'), 'reveal result', 6000);
-  console.log(`      reveal: ${(await p.locator('.reveal__result').textContent()).replace(/\s+/g, ' ').slice(0, 120)}`);
-});
-await step('Put the fired pot on show', async () => {
-  const show = btn('Put on show');
-  if (await show.count()) {
-    await show.click();
-    await expectVisible(btn('On show'), 'on show', 5000);
-  } else console.log('      (pot cracked: showing a level pot instead)');
-});
-await step('Studio: My pots and Codex', async () => {
-  await btn('Back to the kiln').click();
-  await p.getByRole('tab', { name: 'My pots' }).click();
-  await expectVisible(p.locator('.mypot').first(), 'my pot');
-  const n = await p.locator('.mypot').count();
-  console.log(`      my pots: ${n}`);
-  if (!(await p.locator('.mypot.is-onshow').count())) await p.locator('.mypot').first().getByRole('button', { name: 'Put on show' }).click();
-  await p.getByRole('tab', { name: 'Codex' }).click();
-  await expectVisible(p.locator('.codex__grid'), 'codex grid');
-  await p.locator('.codex__item:not(.is-found)').first().click();
-  await expectVisible(p.locator('.codex__detail.is-locked'), 'codex hint');
-});
 await step('Showcase: another player rates and likes it', async () => {
   const q = await b.newPage({ viewport: { width: 390, height: 844 } });
   q.on('pageerror', (e) => errors.push(`bob pageerror: ${e.message}`));
@@ -221,9 +224,11 @@ await step('Showcase: another player rates and likes it', async () => {
     await q.getByRole('button', { name: 'Skip, throw today’s pot' }).click({ timeout: 8000 });
     await q.waitForTimeout(800);
   }
-  // On the wheel the menu bar is hidden: leave the wheel first.
+  // Bob is on his first run (no menu bar): open the whole studio from the More menu.
   const leave = q.getByRole('button', { name: /Back to the level map|Leave the wheel/ });
   if (await leave.count()) await leave.click();
+  await q.getByRole('button', { name: 'More' }).click();
+  await q.getByRole('button', { name: 'Show the whole studio' }).click();
   await q.getByRole('button', { name: 'Showcase' }).first().click();
   await q.locator('.show__card').first().waitFor({ timeout: 8000 });
   await q.locator('.show__card').first().getByRole('radio', { name: '4 stars' }).click();

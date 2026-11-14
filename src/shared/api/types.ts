@@ -41,6 +41,8 @@ export type MeDTO = {
   patron: number;
   hintsDone: string[];
   onboarded: boolean;
+  /** True until the player opens their first fired pot: the studio shows only the daily loop. */
+  firstRun: boolean;
   canCommission: boolean;
 };
 

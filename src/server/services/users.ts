@@ -84,6 +84,8 @@ export async function meDTO(userId: string, u: Record<string, string>): Promise<
     patron: Number(u.patron ?? '0'),
     hintsDone: (u.hints ?? '').split(',').filter(Boolean),
     onboarded: u.onboarded === '1',
+    // Ends when the first fired pot is opened. Players with a few throws behind them skip it.
+    firstRun: u.graduated !== '1' && Number(u.throws ?? '0') < 3,
     canCommission: rankAtLeast(rank.id, minRank),
   };
 }

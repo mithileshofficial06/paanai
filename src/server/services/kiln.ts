@@ -174,6 +174,8 @@ export async function markOpened(userId: string, potId: string): Promise<void> {
   const pot = await getPot(potId);
   if (pot.ownerId !== userId) throw new ApiErr('forbidden', 'Not your pot.', 403);
   await platform().kv.hSet(K.pot(potId), { opened: '1' });
+  // Opening the first fired pot ends the first run: the whole studio opens up.
+  await platform().kv.hSet(K.user(userId), { graduated: '1' });
 }
 
 export async function kilnWaitingCount(userId: string): Promise<number> {

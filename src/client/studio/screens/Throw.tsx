@@ -7,7 +7,7 @@ import { HintBubble } from '../../ui/HintBubble';
 import { IconCheck, IconChevron, IconInfo, IconOpen, IconUndo } from '../../ui/icons';
 import { useReducedMotion } from '../../ui/hooks';
 import * as S from '../store';
-import { completeHint, go, haptic, profileOf, startTour, submitThrow, throwStarted, updateHint } from '../controller';
+import { completeHint, go, goStudio, haptic, profileOf, startTour, submitThrow, throwStarted, updateHint } from '../controller';
 import { tourStage } from '../Tour';
 import { coach, type Coach } from '../coach';
 
@@ -123,7 +123,7 @@ export function Throw() {
       <header class="throw__top">
         <div class="throw__brief pn-glass pn-radius-lg" data-tour="brief">
           {focus ? (
-            <IconButton class="throw__leave" label={c.kind === 'level' ? 'Back to the level map' : 'Leave the wheel'} variant="ghost" onClick={() => go('levels')} icon={<IconChevron direction="left" />} />
+            <IconButton class="throw__leave" label={c.kind === 'level' ? 'Back to the level map' : 'Leave the wheel'} variant="ghost" onClick={() => (S.firstRun.value && c.kind !== 'level' ? goStudio() : go('levels'))} icon={<IconChevron direction="left" />} />
           ) : null}
           <div class="throw__brief-main">
             <p class="pn-eyebrow">

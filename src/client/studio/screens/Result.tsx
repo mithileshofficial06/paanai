@@ -107,10 +107,14 @@ export function Result() {
             Log in to keep and fire your pots
           </Button>
         )}
-        {res.potId ? <PotActions pot={{ potId: res.potId, profile: lt.profile, glaze: null, fired: null, decor: S.decor.value }} thumb={thumb} /> : null}
-        <Button variant="ghost" block icon={<IconRetry />} onClick={() => newThrow()}>
-          Throw again
-        </Button>
+        {S.firstRun.value ? null : (
+          <>
+            {res.potId ? <PotActions pot={{ potId: res.potId, profile: lt.profile, glaze: null, fired: null, decor: S.decor.value }} thumb={thumb} /> : null}
+            <Button variant="ghost" block icon={<IconRetry />} onClick={() => newThrow()}>
+              Throw again
+            </Button>
+          </>
+        )}
       </div>
     </section>
   );

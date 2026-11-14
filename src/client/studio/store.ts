@@ -105,3 +105,9 @@ export const mode = computed<'daily' | 'level' | 'tutorial'>(() => {
 export const me = computed(() => today.value?.me ?? null);
 export const loggedIn = computed(() => !!today.value?.me);
 export const kilnBadge = computed(() => today.value?.kilnWaiting ?? 0);
+/** Set once the player opens their first fired pot (or asks to see everything) in this session. */
+export const graduated = signal(false);
+/** First run: only the daily loop (throw, paint, kiln, open) is shown until the first pot is opened. */
+export const firstRun = computed(() => !!me.value?.firstRun && !graduated.value);
+/** Bottom tabs that just opened up after the first run; they carry a "New" badge until visited. */
+export const newTabs = signal<Set<string>>(new Set());

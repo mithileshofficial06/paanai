@@ -156,6 +156,7 @@ const ROOMS: { id: Route; label: string }[] = [
 
 /** The switcher at the top of the Studio tab. */
 export function StudioRooms() {
+  if (S.firstRun.value) return null;
   return (
     <div class="rooms">
       <Tabs label="Studio" fitted value={S.route.value} onChange={(id) => go(id as Route)} items={ROOMS.map((r) => ({ ...r, badge: r.id === 'kiln' && S.kilnBadge.value ? S.kilnBadge.value : undefined }))} />

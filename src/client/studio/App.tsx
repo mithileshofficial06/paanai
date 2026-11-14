@@ -21,7 +21,7 @@ import {
 } from '../ui/icons';
 import * as S from './store';
 import type { Route } from './store';
-import { boot, go, goStudio, haptic, login, playDaily, setMuted, startTour } from './controller';
+import { boot, go, goStudio, graduate, haptic, login, playDaily, setMuted, startTour } from './controller';
 import { Levels, LevelResult } from './screens/Levels';
 import { Decorate } from './screens/Decorate';
 import { Tour } from './Tour';
@@ -99,6 +99,7 @@ export function App() {
     if (t) pushToast({ title: t.text, tone: t.tone === 'neutral' ? 'neutral' : t.tone });
   }, [t?.id]);
   const chrome = !['loading', 'error', 'welcome'].includes(r);
+  const first = S.firstRun.value;
   const levelMode = S.mode.value !== 'daily';
   const navValue =
     r === 'levelResult' || ((r === 'throw' || r === 'decorate') && levelMode)
@@ -121,7 +122,7 @@ export function App() {
             {S.today.value ? <span class="topbar__day">Day {S.today.value.dayNumber}</span> : null}
           </div>
           <div class="topbar__right">
-            {me ? (
+            {me && first ? null : me ? (
               <span class="pn-chip pn-chip--sm topbar__rank" title={`${me.rankPoints} rank points`}>
                 {me.rankLabel}
                 {me.streakDays > 1 ? ` · ${me.streakDays}-day streak` : ''}
@@ -138,21 +139,27 @@ export function App() {
       <main class="app__main" id="main">
         <Screen r={r} />
       </main>
-      {chrome && !(r === 'throw' && !S.tour.value) ? (
+      {chrome && !first && !(r === 'throw' && !S.tour.value) ? (
         <BottomNav
           fixed
           value={navValue}
           onChange={(id) => (haptic(6), id === 'throw' ? playDaily() : id === 'studio' ? goStudio() : go(id as Route))}
-          items={NAV.map((n) => ({ id: n.id, label: n.label, icon: NAV_ICONS[n.id], badge: n.id === 'studio' && S.kilnBadge.value > 0 ? S.kilnBadge.value : undefined }))}
+          items={NAV.map((n) => ({ id: n.id, label: n.label, icon: NAV_ICONS[n.id], badge: n.id === 'studio' && S.kilnBadge.value > 0 ? S.kilnBadge.value : S.newTabs.value.has(n.id) ? 'New' : undefined }))}
         />
       ) : null}
       {S.tour.value && r === 'throw' ? <Tour /> : null}
       <ToastHost placement="top" />
       <Sheet open={more} onClose={() => setMore(false)} title="More" eyebrow="Paanai">
         <div class="more">
-          <Button variant="secondary" block icon={<IconTrophy />} onClick={() => (setMore(false), go('leaderboard'))}>
-            Today's leaderboard
-          </Button>
+          {first ? (
+            <Button variant="secondary" block icon={<IconLevels />} onClick={() => (setMore(false), graduate(), go('levels'))}>
+              Show the whole studio
+            </Button>
+          ) : (
+            <Button variant="secondary" block icon={<IconTrophy />} onClick={() => (setMore(false), go('leaderboard'))}>
+              Today's leaderboard
+            </Button>
+          )}
           <Button variant="secondary" block icon={<IconInfo />} onClick={() => (setMore(false), startTour())}>
             Tutorial
           </Button>
