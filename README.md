@@ -19,16 +19,16 @@
 </p>
 
 <p align="center">
-  <a href="#-how-to-play">How to play</a> ·
-  <a href="#-features">Features</a> ·
-  <a href="#-screenshots">Screenshots</a> ·
-  <a href="#-fair-play">Fair play</a> ·
-  <a href="#-run-it-locally">Run it</a>
+  <a href="#how-to-play">How to play</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#fair-play">Fair play</a> ·
+  <a href="#run-it-locally">Run it</a>
 </p>
 
 ---
 
-## 🏺 What is Paanai?
+## What is Paanai?
 
 Every day the subreddit gets a new **commission**: a real vessel from a real tradition, such as a Korean moon jar, a Tamil *paanai* or a Song dynasty meiping. Everyone throws the same pot. You shape it on a spinning wheel with your finger, paint it, and put it in the **shared kiln**. All the pots fire together overnight, and the next day the whole community opens the kiln to see what the fire made.
 
@@ -54,40 +54,40 @@ Built with **Devvit Web** for Reddit's **Game of the Day Hackathon**.
 
 ---
 
-## 🎮 How to play
+## How to play
 
-| Step | | What you do |
+| Step | Action | What you do |
 |:---:|---|---|
-| **1** | 📜 **See the commission** | The post shows today's vessel, where it comes from, and the score to beat. |
-| **2** | 🖐️ **Throw it** | Tap **Open** to open the clay. Drag up the wall to pull it taller and thinner, or sideways to push it in or out. A glowing outline shows the target. The **Done** button glows when your pot passes. |
-| **3** | 🎯 **Get scored** | The server replays your strokes and scores the shape, how even the walls are, and the commission's rules. Your first throw each day is ranked; later throws are practice. |
-| **4** | 🎨 **Paint it** | Turn the pot and paint bands, patterns, the body or the rim. Or leave it bare. |
-| **5** | 🔥 **Fire it** | Pots fire together at **00:00 UTC**. Thin or uneven walls can crack. Your **very first pot** gets a quick 90-second test firing, so you see the whole loop on your first visit. |
-| **6** | ✨ **Show it off** | Open the kiln, put your pot on show in the Showcase, or share it as a comment on the day's post with one tap. |
+| **1** | **See the commission** | The post shows today's vessel, where it comes from, and the score to beat. |
+| **2** | **Throw it** | Tap **Open** to open the clay. Drag up the wall to pull it taller and thinner, or sideways to push it in or out. A glowing outline shows the target. The **Done** button glows when your pot passes. |
+| **3** | **Get scored** | The server replays your strokes and scores the shape, how even the walls are, and the commission's rules. Your first throw each day is ranked; later throws are practice. |
+| **4** | **Paint it** | Turn the pot and paint bands, patterns, the body or the rim. Or leave it bare. |
+| **5** | **Fire it** | Pots fire together at **00:00 UTC**. Thin or uneven walls can crack. Your **very first pot** gets a quick 90-second test firing, so you see the whole loop on your first visit. |
+| **6** | **Show it off** | Open the kiln, put your pot on show in the Showcase, or share it as a comment on the day's post with one tap. |
 
 > New players get a starter pot fresh from the kiln, a short narrated tutorial, and hints during their first throw. After the tutorial they land straight on today's pot.
 
 ---
 
-## 🧱 Features
+## Features
 
-| | Feature | What it does |
-|:---:|---|---|
-| 📅 | **Daily Commission** | 35 real vessels in rotation. Everyone throws the same one each day, against a score to beat. |
-| 🏛️ | **100 Levels** | A hundred sealed kilns, each a vessel to match. Clear one to unseal the next and earn up to three stars. |
-| 🌀 | **Realistic wheel** | Wet clay that dries as you work (add water), throwing rings, wheel spin-up, wobble before a collapse, haptics and sound. |
-| 🖌️ | **Painting** | Bands, patterns, body and rim colours painted straight onto the 3D pot. |
-| 🔥 | **The Kiln** | One overnight firing for the whole subreddit. Your shape and the fire decide the result. |
-| 📖 | **Glaze Codex** | 24 effects to discover, from celadon to oil spots. The first potter to fire each one gets their name on it. |
-| 🏆 | **The Showcase** | Put pots on show. Everyone can rate them out of five and like them; the most liked becomes **Pot of the Week**. |
-| 💬 | **Share on Reddit** | Posts your pot as a comment on today's post, with its picture and score. |
-| ⚔️ | **Beat the Commissioner** | Turn one of your fired pots into a challenge post for others to beat. The maker earns patron points. |
-| 🎖️ | **Ranks and flair** | Apprentice, Journeyman, Artisan and Master Potter, shown as user flair. |
-| 📊 | **Leaderboard** | Today's ranked throws for the commission. |
+| Feature | What it does |
+|---|---|
+| **Daily Commission** | 35 real vessels in rotation. Everyone throws the same one each day, against a score to beat. |
+| **100 Levels** | A hundred sealed kilns, each a vessel to match. Clear one to unseal the next and earn up to three stars. |
+| **Realistic wheel** | Wet clay that dries as you work (add water), throwing rings, wheel spin-up, wobble before a collapse, haptics and sound. |
+| **Painting** | Bands, patterns, body and rim colours painted straight onto the 3D pot. |
+| **The Kiln** | One overnight firing for the whole subreddit. Your shape and the fire decide the result. |
+| **Glaze Codex** | 24 effects to discover, from celadon to oil spots. The first potter to fire each one gets their name on it. |
+| **The Showcase** | Put pots on show. Everyone can rate them out of five and like them; the most liked becomes **Pot of the Week**. |
+| **Share on Reddit** | Posts your pot as a comment on today's post, with its picture and score. |
+| **Beat the Commissioner** | Turn one of your fired pots into a challenge post for others to beat. The maker earns patron points. |
+| **Ranks and flair** | Apprentice, Journeyman, Artisan and Master Potter, shown as user flair. |
+| **Leaderboard** | Today's ranked throws for the commission. |
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
 <table>
   <tr>
@@ -109,16 +109,16 @@ Built with **Devvit Web** for Reddit's **Game of the Day Hackathon**.
 
 ---
 
-## 🔒 Fair play
+## Fair play
 
-- 🔢 **Scores can't be faked.** The shaping core is integer-only and deterministic. The client sends only a compact log of strokes, and the server replays it from a fresh lump of clay to score it.
-- ⏱️ **One ranked throw per commission**, with rate limits; duplicate submissions are ignored.
-- 🚩 **Community moderation.** Reports auto-hide a pot or challenge after a threshold set by moderators.
-- 🧰 **Mod tools.** Menu items to post today's commission, fire the kiln now, view stats and remove a challenge. Moderators can also require a rank before players can post challenges.
+- **Scores can't be faked.** The shaping core is integer-only and deterministic. The client sends only a compact log of strokes, and the server replays it from a fresh lump of clay to score it.
+- **One ranked throw per commission**, with rate limits; duplicate submissions are ignored.
+- **Community moderation.** Reports auto-hide a pot or challenge after a threshold set by moderators.
+- **Mod tools.** Menu items to post today's commission, fire the kiln now, view stats and remove a challenge. Moderators can also require a rank before players can post challenges.
 
 ---
 
-## ⚙️ Tech
+## Tech
 
 | Layer | Details |
 |---|---|
@@ -131,7 +131,7 @@ Built with **Devvit Web** for Reddit's **Game of the Day Hackathon**.
 
 ---
 
-## 🚀 Run it locally
+## Run it locally
 
 ```bash
 npm install
