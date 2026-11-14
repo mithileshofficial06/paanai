@@ -1,44 +1,48 @@
 # Paanai
 
-**A daily pottery game that lives inside a Reddit post.** Every day the subreddit gets a new commission: a real vessel from a real tradition, such as a Korean moon jar, a Tamil paanai or a Song dynasty meiping. You throw it on a spinning wheel with your finger, glaze it, and put it in the shared kiln. The next day you open the kiln to find out whether your pot survived and what the fire did to the glaze.
+**A daily pottery game that lives inside a Reddit post.** Every day the subreddit gets a new commission: a real vessel from a real tradition, such as a Korean moon jar, a Tamil paanai or a Song dynasty meiping. You throw it on a spinning wheel with your finger, paint it, and put it in the shared kiln. Every pot fires together overnight, and the next day you open the kiln to see what the fire made.
 
-Built with Devvit Web for Reddit's Daily Games Hackathon.
+Built with Devvit Web for Reddit's Game of the Day Hackathon.
 
-## How a day plays
+## How to play
 
-1. **See the commission.** The post shows today's vessel, where it comes from, its target silhouette and the score to beat.
-2. **Throw it.** Press and hold to centre the clay, tap to open it, then drag up the wall to pull it taller and thinner. Drag sideways to push the clay in or out. A glowing outline shows the target shape, and you can turn on a ghost of the Master's own throw to see it form beside yours.
-3. **Get scored.** The server replays your strokes and scores shape match (60%), even walls (20%), constraints (10%) and efficiency (10%). Your first throw of each commission is ranked; later throws are practice.
-4. **Glaze and fire.** Choose up to two of eight glazes and an application. The kiln's atmosphere (oxidation or reduction) is shown before you choose, because it changes every glaze.
-5. **Open the kiln tomorrow.** All pots fire together at 00:00 UTC. Thin or uneven walls can crack, and overhangs can slump. Glaze, wall thickness, shape and atmosphere decide which of 24 effects appear, from celadon to oil spots.
+1. **See the commission.** The post shows today's vessel, where it comes from, and the score to beat.
+2. **Throw it.** Tap **Open** to open the clay, then drag up the wall to pull it taller and thinner, or sideways to push it in or out. A glowing outline shows the target shape. Tap **Done** when it matches.
+3. **Get scored.** The server replays your strokes and scores how well the shape matches, how even the walls are, and the commission's constraints. Your first throw of each commission is ranked; later throws are practice.
+4. **Paint it.** Turn the pot and tap to paint with a brush, colours and patterns, or leave it bare.
+5. **Fire it.** Painted pots fire together at 00:00 UTC. The kiln master picks the glaze, so every firing is a surprise. Thin or uneven walls can crack. Come back the next day to open the kiln.
+6. **Show it off.** Put any pot on show in the Showcase, or share it as a comment on the day's post with one tap.
+
+New players get a starter pot fresh from the kiln, a short tutorial, and hints during their first throw.
 
 ## Features
 
 | Feature | What it does |
 |---|---|
-| Daily Commission | 35 real vessels in rotation, each with a scripted Master throw that sets the target and the bar |
-| Realistic wheel | Wet clay that dries as you work (add water), throwing rings that keep your finger marks, slip spray, wheel spin-up, wobble before a collapse, haptics and sound |
-| The Kiln | A shared overnight firing; the result depends on your skill, not luck alone |
-| Glaze Codex | 24 effects to discover; the first potter to fire each one gets their name on it |
-| The Shelf | Every fired pot in the community; likes and Pot of the Week |
-| Beat the Commissioner | Journeymen post their own pot as a commission; others try to beat it, with the maker's ghost |
-| Ranks and flair | Apprentice, Journeyman, Artisan, Master Potter |
-| Share to comments | Post a 3D render of your pot to the thread with one labelled tap |
-| Onboarding | A starter pot from "an old potter", an animated How to play, three first-throw hints, and a What's in Paanai screen |
+| Daily Commission | 35 real vessels in rotation. Everyone throws the same one each day, against a score to beat |
+| 100 Levels | A hundred sealed boxes, each a vessel to match. Clear one to unseal the next and earn up to three stars |
+| Realistic wheel | Wet clay that dries as you work, throwing rings, wheel spin-up, wobble before a collapse, haptics and sound |
+| Painting | Brush, colours and patterns painted straight onto the 3D pot |
+| The Kiln | A shared overnight firing for the whole subreddit; your shape and the fire decide the result |
+| Glaze Codex | 24 effects to discover, from celadon to oil spots; the first potter to fire each one gets their name on it |
+| The Showcase | Put pots on show; everyone can rate them out of five and like them; the most liked becomes Pot of the Week |
+| Share on Reddit | Posts your pot as a comment on today's post, with its picture and score |
+| Beat the Commissioner | Journeymen post their own pot as a commission; others try to beat it, and the maker earns patron points |
+| Ranks and flair | Apprentice, Journeyman, Artisan, Master Potter, shown as user flair |
+| Leaderboard | Today's ranked throws for the commission |
 
 ## Fair play
 
-- The shaping core is **integer-only and deterministic**. The client sends only a compact stroke log. The server replays it from a fresh lump, so the score cannot be faked.
-- The bar to beat assumes an 85% shape match, so the Master's own score is beatable.
-- One ranked throw per commission, rate limits, and idempotent submits.
-- Reports auto-hide a pot or commission after a moderator-set threshold. Mods also get menu items to post today's commission, fire the kiln now, view stats and remove a commission.
+- The shaping core is **integer-only and deterministic**. The client sends only a compact stroke log. The server replays it from a fresh lump of clay, so scores can't be faked.
+- One ranked throw per commission, rate limits, and duplicate submissions are ignored.
+- Reports auto-hide a pot or commission after a moderator-set threshold. Moderators also get menu items to post today's commission, fire the kiln now, view stats and remove a commission.
 
 ## Tech
 
-- Devvit Web 0.15, Hono server, Redis. Scheduler jobs handle the daily rollover, kiln batches, the Kiln Report comment and the weekly tally.
-- Client: Preact with signals, and three.js for the wheel, wet clay shader, glazed pots and the ghost replay. The inline post preview (`splash.html`) has no three.js, so the feed stays fast.
+- Devvit Web 0.15, Hono server, Redis. Scheduler jobs handle the daily rollover, kiln firings, the Kiln Report comment and the weekly tally.
+- Client: Preact with signals, and three.js for the wheel, wet clay, painted and glazed pots, and the ghost replay. The inline post preview (`splash.html`) doesn't use three.js, so the feed stays fast.
 - Audio is synthesised with Web Audio, so there are no sound files to license.
-- Fonts: Fraunces and Atkinson Hyperlegible Next, bundled.
+- Fonts: Bagel Fat One, Fraunces and Outfit (SIL Open Font License, bundled with their licence files).
 
 ## Run it
 
