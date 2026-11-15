@@ -249,6 +249,74 @@ class Sfx {
   chime(): void {
     [1, 1.25, 1.5].forEach((m, i) => setTimeout(() => this.tink(0.5 * m), i * 90));
   }
+
+  // ---- Recorded voice clips (the tutorial narration) ----
+  private clips = new Map<string, Promise<AudioBuffer | null>>();
+  private voiceSrc: AudioBufferSourceNode | null = null;
+
+  /** Start downloading a clip early so it plays without a gap. */
+  preloadClip(url: string): void {
+    void this.loadClip(url);
+  }
+
+  private loadClip(url: string): Promise<AudioBuffer | null> {
+    let p = this.clips.get(url);
+    if (!p) {
+      p = (async () => {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) return null;
+          const data = await res.arrayBuffer();
+          // decodeAudioData needs a context; an offline one works before the first gesture.
+          const ctx = this.ctx ?? new OfflineAudioContext(1, 1, 44100);
+          return await ctx.decodeAudioData(data);
+        } catch {
+          return null;
+        }
+      })();
+      this.clips.set(url, p);
+    }
+    return p;
+  }
+
+  /**
+   * Play a recorded clip through Web Audio (works in the Reddit app's webview once unlock() has run).
+   * Resolves true when it finished playing, false if it could not play (missing file, no audio).
+   * Not tied to the sound-effects mute: the tutorial has its own voice switch.
+   */
+  async playClip(url: string): Promise<boolean> {
+    this.stopClip();
+    const buf = await this.loadClip(url);
+    const ctx = this.ctx;
+    if (!buf || !ctx) return false;
+    if (ctx.state === 'suspended') await ctx.resume().catch(() => {});
+    if (ctx.state !== 'running') return false;
+    return new Promise<boolean>((resolve) => {
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const g = ctx.createGain();
+      g.gain.value = 1;
+      src.connect(g).connect(ctx.destination);
+      src.onended = () => {
+        if (this.voiceSrc === src) this.voiceSrc = null;
+        resolve(true);
+      };
+      this.voiceSrc = src;
+      src.start();
+    });
+  }
+
+  stopClip(): void {
+    const s = this.voiceSrc;
+    this.voiceSrc = null;
+    if (s) {
+      try {
+        s.stop();
+      } catch {
+        /* already stopped */
+      }
+    }
+  }
 }
 
 export const sfx = new Sfx();

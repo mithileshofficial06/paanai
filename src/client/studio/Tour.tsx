@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import type { ThrowStage } from '../three/throwStage';
 import * as S from './store';
 import { finishTutorial } from './controller';
+import { sfx } from '../app/audio';
+import { clipFor, NARRATION } from './narration';
 import { tutorialData } from '../../shared/content/levels';
 
 /** The live wheel, registered by the Throw screen. */
@@ -88,8 +90,8 @@ const STEPS: Step[] = [
   {
     title: 'After you tap Done',
     beats: [
-      { target: '.pn-bottomnav__cell:nth-child(1)', say: 'Clear a level and the next one unlocks on the Levels map. Replay any level for more stars.' },
-      { target: '.pn-bottomnav__cell:nth-child(2)', say: 'Every day there is also a daily commission. Paint it and fire it in the kiln overnight.' },
+      { target: '.pn-bottomnav__cell:nth-child(2)', say: 'Clear a level and the next one unlocks on the Levels map. Replay any level for more stars.' },
+      { target: '.pn-bottomnav__cell:nth-child(3)', say: 'Every day there is also a daily commission. Paint it and fire it in the kiln overnight.' },
       { target: '[data-tour=info]', say: 'Tap here to watch this again. Now it is your turn.' },
     ],
   },
@@ -116,10 +118,22 @@ function pickVoice() {
   }
   return vs[0] ?? null;
 }
-function speak(text: string, on: boolean): Promise<void> {
-  const fallback = 900 + text.split(/\s+/).length * 330;
+/** Speak a line: the recorded clip when there is one, else the browser's voice, else just wait long enough to read it. */
+async function speak(text: string, on: boolean): Promise<void> {
+  const words = text.split(/\s+/).length;
+  const readMs = 900 + words * 330;
+  if (!on) return new Promise((r) => setTimeout(r, readMs));
+  const clip = clipFor(text);
+  if (clip && (await sfx.playClip(clip))) return;
+  return ttsSpeak(text, readMs, words);
+}
+function stopSpeaking() {
+  sfx.stopClip();
+  window.speechSynthesis?.cancel();
+}
+function ttsSpeak(text: string, readMs: number, words: number): Promise<void> {
   const synth = window.speechSynthesis;
-  if (!on || !synth || typeof SpeechSynthesisUtterance === 'undefined') return new Promise((r) => setTimeout(r, fallback));
+  if (!synth || typeof SpeechSynthesisUtterance === 'undefined') return new Promise((r) => setTimeout(r, readMs));
   return new Promise((resolve) => {
     synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
@@ -129,7 +143,7 @@ function speak(text: string, on: boolean): Promise<void> {
     u.pitch = 1;
     let done = false;
     const t0 = Date.now();
-    const minMs = 700 + text.split(/\s+/).length * 220; // if the voice errors out instantly, still give time to read
+    const minMs = 700 + words * 220; // if the voice errors out instantly, still give time to read
     const end = () => {
       if (!done) {
         done = true;
@@ -138,7 +152,8 @@ function speak(text: string, on: boolean): Promise<void> {
     };
     u.onend = end;
     u.onerror = end;
-    setTimeout(end, fallback + 1500); // never hang on a stuck voice
+    // Never hang on a stuck voice, but give slow voices (about 0.45 s a word) time to finish the sentence.
+    setTimeout(end, 4000 + words * 650);
     synth.speak(u);
   });
 }
@@ -362,16 +377,23 @@ export function Tour() {
     })();
     return () => {
       run.current++;
-      window.speechSynthesis?.cancel();
+      stopSpeaking();
       if (held) fire('pointerup', held.x, held.y);
     };
   }, [i, bi, playing, voiceOn]);
 
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+  useEffect(() => {
+    // Fetch every recorded line up front so each one starts without a gap.
+    for (const l of NARRATION) {
+      const url = clipFor(l.text);
+      if (url) sfx.preloadClip(url);
+    }
+    return () => stopSpeaking();
+  }, []);
 
   function end() {
     run.current++;
-    window.speechSynthesis?.cancel();
+    stopSpeaking();
     void finishTutorial();
   }
 
