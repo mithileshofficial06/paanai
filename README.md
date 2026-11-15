@@ -14,7 +14,7 @@
   <img alt="Preact" src="https://img.shields.io/badge/Preact-signals-673AB8?logo=preact&logoColor=white">
   <img alt="Hono" src="https://img.shields.io/badge/Hono-server-E36002?logo=hono&logoColor=white">
   <img alt="Redis" src="https://img.shields.io/badge/Redis-storage-DC382D?logo=redis&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-58_unit_%2B_21_e2e-2EA44F?logo=vitest&logoColor=white">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-61_unit_%2B_21_e2e-2EA44F?logo=vitest&logoColor=white">
   <img alt="Licence" src="https://img.shields.io/badge/licence-BSD--3--Clause-blue">
 </p>
 
@@ -65,7 +65,7 @@ Built with **Devvit Web** for Reddit's **Game of the Day Hackathon**.
 | **5** | **Fire it** | Pots fire together at **00:00 UTC**. Thin or uneven walls can crack. Your **very first pot** gets a 10-second test firing, so you see the whole loop on your first visit. |
 | **6** | **Show it off** | Open the kiln, put your pot on show in the Showcase, or share it as a comment on the day's post with one tap. |
 
-> New players get a starter pot fresh from the kiln, a short narrated tutorial, and hints during their first throw. After the tutorial they land straight on today's pot.
+> New players get a starter pot fresh from the kiln, a short tutorial narrated in the developer's own voice, and hints during their first throw. After the tutorial they land straight on today's pot.
 
 ---
 

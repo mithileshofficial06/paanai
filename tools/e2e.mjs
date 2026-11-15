@@ -68,15 +68,28 @@ await step('Open the kiln gives the starter pot', async () => {
   await expectVisible(p.getByText('Still warm from the'), 'opened headline');
   await expectVisible(p.locator('.kh__pot img, .kh__pot svg'), 'starter pot', 10000);
 });
-await step('Start the tutorial: narrated steps', async () => {
+const voiceClips = new Map();
+p.on('response', (r) => {
+  const m = r.url().match(/\/voice\/(tour-\d+)\.mp3/);
+  if (m) voiceClips.set(m[1], r.status());
+});
+await step('Start the tutorial: 4 narrated steps in Mithilesh’s recorded voice', async () => {
   await btn('Start the tutorial').click();
   await expectVisible(p.locator('.tour__card'), 'tour card');
+  await expectVisible(p.locator('.tour__count', { hasText: 'Step 1 of 4' }), 'four steps');
   await p.waitForTimeout(1500);
   await btn('Next', true).click();
   await expectVisible(p.locator('.tour__title', { hasText: 'Hands, Push and Thin' }), 'tour step 2');
+  const ok = [...voiceClips.values()].filter((st) => st === 200).length;
+  console.log(`      voice clips loaded: ${ok}/12`);
+  if (ok !== 12) throw new Error(`voice clips: ${JSON.stringify([...voiceClips])}`);
 });
-await step('Skip tutorial lands on today’s commission, with no menu bar yet', async () => {
-  await btn('Skip tutorial').click();
+await step('The last step goes straight to today’s commission (no practice step), with no menu bar yet', async () => {
+  await btn('Next', true).click();
+  await btn('Next', true).click();
+  await expectVisible(p.locator('.tour__count', { hasText: 'Step 4 of 4' }), 'last step');
+  if (await p.getByText('Your turn').count()) throw new Error('practice step still there');
+  await btn('Start playing').click();
   await p.locator('.tour').waitFor({ state: 'detached' });
   await expectVisible(p.locator('.throw__canvas'), 'wheel canvas');
   await expectVisible(p.locator('.throw__beat-label', { hasText: 'Beat' }), 'daily score to beat');
@@ -116,14 +129,18 @@ await step('Fire it: straight into the kiln (no glaze step)', async () => {
   await btn('Fire it in the kiln').click();
   await expectVisible(p.getByText('Waiting for the fire'), 'waiting list', 8000);
   await expectVisible(p.locator('.kiln__hero'), 'kiln countdown');
-  await expectVisible(p.locator('.kiln__heroInfo', { hasText: 'test firing' }), 'first pot gets a quick test firing');
+  await expectVisible(p.locator('.kiln__heroLabel', { hasText: 'Test firing your first pot' }), 'first pot gets a test firing');
+  const t1 = parseInt((await p.locator('.kiln__temp').textContent()).replace(/\D/g, ''));
+  await p.waitForTimeout(2000);
+  const t2 = parseInt((await p.locator('.kiln__temp').textContent()).replace(/\D/g, ''));
+  console.log(`      kiln temperature: ${t1} -> ${t2} °C, ${(await p.locator('.kiln__countdown').textContent()).trim()} left`);
+  if (!(t2 > t1)) throw new Error('temperature is not climbing');
 });
-await step('Next day: the first pot opens and the studio opens up', async () => {
-  await fetch(`${base}/__harness/advance-day`, { method: 'POST' });
-  await p.reload();
-  await p.locator('#boot').waitFor({ state: 'detached', timeout: 15000 });
-  if (!(await p.locator('.kiln').count())) await btn('Studio').click();
-  await btn('Open', true).click();
+await step('The test firing ends in about 10 seconds; the first pot opens and the studio opens up', async () => {
+  const t0 = Date.now();
+  await p.locator('.kiln__ready').first().waitFor({ timeout: 20000 });
+  console.log(`      ready to open ${((Date.now() - t0) / 1000).toFixed(1)} s after the check above`);
+  await p.locator('.kiln__ready').getByRole('button', { name: 'Open', exact: true }).click();
   await btn('Open the kiln').click();
   await expectVisible(p.locator('.reveal__result'), 'reveal result', 6000);
   await expectVisible(p.locator('.unlock'), 'the studio-is-open panel', 6000);
