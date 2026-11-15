@@ -1,8 +1,8 @@
 """Turn Mithilesh's raw tutorial recordings into the game's voice clips.
 
-Put the recordings in voice/raw/. Either name them by line number (01.mp3 ... 12.mp3), or keep the
-recorder's names ("Standard recording 11.mp3" ...): files ending in a number are taken in number
-order as lines 01, 02, 03 ... Any format ffmpeg reads works (mp3, m4a, ogg, opus, wav).
+Put the recordings in voice/raw/. Keep the recorder's names ("Standard recording 11.mp3" ...): files
+ending in a number are taken in number order as lines 01, 02, 03 ... A file named just by its line
+number (04.mp3) replaces that line, for re-recordings. Any format ffmpeg reads works.
 Run:  python tools/voice/process.py
 
 Each clip is trimmed to the voice (found from loudness, with a short margin), cleaned (rumble cut,
@@ -27,17 +27,16 @@ AUDIO = ('.mp3', '.m4a', '.ogg', '.opus', '.wav', '.aac', '.flac', '.webm')
 
 
 def recordings() -> dict:
+    """Recorder files ("Standard recording 11" ...) in number order are lines 01, 02 ...; a file named
+    just by its line number (04.mp3) replaces that line (a re-recording)."""
     files = [f for f in glob.glob(os.path.join(RAW, '*')) if f.lower().endswith(AUDIO)]
-    named = {}
-    for f in files:
-        m = re.fullmatch(r'(\d{1,2})', os.path.splitext(os.path.basename(f))[0])
-        if m:
-            named[int(m.group(1))] = f
-    if named:
-        return named
-    numbered = [f for f in files if re.search(r'(\d+)\s*$', os.path.splitext(os.path.basename(f))[0])]
-    numbered.sort(key=lambda f: int(re.search(r'(\d+)\s*$', os.path.splitext(os.path.basename(f))[0]).group(1)))
-    return {i + 1: f for i, f in enumerate(numbered)}
+    stem = lambda f: os.path.splitext(os.path.basename(f))[0]
+    named = {int(stem(f)): f for f in files if re.fullmatch(r'\d{1,2}', stem(f))}
+    numbered = [f for f in files if not re.fullmatch(r'\d{1,2}', stem(f)) and re.search(r'(\d+)\s*$', stem(f))]
+    numbered.sort(key=lambda f: int(re.search(r'(\d+)\s*$', stem(f)).group(1)))
+    out = {i + 1: f for i, f in enumerate(numbered)}
+    out.update(named)
+    return out
 
 
 def voice_span(path: str) -> tuple:

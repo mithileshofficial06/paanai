@@ -8,15 +8,9 @@ import { HintBubble } from '../../ui/HintBubble';
 import { IconCheck, IconChevron, IconInfo, IconOpen, IconUndo } from '../../ui/icons';
 import { useReducedMotion } from '../../ui/hooks';
 import * as S from '../store';
-import { completeHint, go, goStudio, haptic, profileOf, startTour, submitThrow, throwStarted, updateHint } from '../controller';
+import { completeHint, go, goStudio, profileOf, startTour, submitThrow, throwStarted, updateHint } from '../controller';
 import { tourStage } from '../Tour';
 import { coach, type Coach } from '../coach';
-
-const TOOLS = [
-  { id: 'hands', label: 'Hands', tip: 'Drag up the wall to pull; sideways to push' },
-  { id: 'push', label: 'Push', tip: 'Sideways drag pushes the clay in or out' },
-  { id: 'thin', label: 'Thin', tip: 'Any drag along the wall thins it' },
-] as const;
 
 export function Throw() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -58,7 +52,8 @@ export function Throw() {
         if (e === 'centred') setWarn(null);
       },
     });
-    stage.setTool(S.tool.value);
+    // One natural gesture: drag up the wall to pull (it thins as it rises), sideways to shape.
+    stage.setTool('hands');
     stageRef.current = stage;
     // Local dev only (stripped from builds): lets the video capture play the Master's recorded throw.
     if (import.meta.env.DEV) {
@@ -254,26 +249,6 @@ export function Throw() {
       ) : null}
 
       <footer class="throw__dock">
-        <div class="throw__tools" role="radiogroup" aria-label="Hands" data-tour="tools">
-          {TOOLS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              data-tour={`tool-${t.id}`}
-              role="radio"
-              aria-checked={S.tool.value === t.id}
-              title={t.tip}
-              class={`throw__tool${S.tool.value === t.id ? ' is-on' : ''}`}
-              onClick={() => {
-                haptic(6);
-                S.tool.value = t.id;
-                stage?.setTool(t.id);
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
         <div class="throw__actions">
           <IconButton data-tour="undo" label="Undo last stroke" variant="glass" disabled={!started} onClick={() => stage?.undo()} icon={<IconUndo />} />
           {live && !live.opened ? (

@@ -48,11 +48,11 @@ const STEPS: Step[] = [
     ],
   },
   {
-    title: 'Hands, Push and Thin',
+    title: 'Shaping',
     beats: [
       {
-        target: '[data-tour=tool-hands]',
-        say: 'Hands: drag up along the wall to pull the pot taller.',
+        target: 'pot',
+        say: 'Drag up along the wall to pull the clay taller. It gets thinner as it rises.',
         act: async (c) => {
           if (!opened()) await c.click('[data-tour=open]');
           await c.wait(400);
@@ -60,21 +60,16 @@ const STEPS: Step[] = [
         },
       },
       {
-        target: '[data-tour=tool-push]',
-        say: 'Push: drag sideways to swell the belly out or squeeze a neck in.',
+        target: 'pot',
+        say: 'Drag sideways to swell the belly out, or squeeze a neck in.',
         act: async (c) => {
-          await c.click('[data-tour=tool-push]');
+          await c.wait(300);
           await c.push(30, 0.45);
         },
       },
       {
-        target: '[data-tour=tool-thin]',
-        say: 'Thin: thins the wall. Too thin and the pot wobbles, then collapses.',
-        act: async (c) => {
-          await c.click('[data-tour=tool-thin]');
-          await c.wait(900);
-          await c.click('[data-tour=tool-hands]');
-        },
+        target: 'pot',
+        say: 'Pull it too thin and the pot wobbles, then collapses.',
       },
       { target: '[data-tour=water]', say: 'Tap Water when the clay dries out. Undo takes back your last stroke.' },
     ],

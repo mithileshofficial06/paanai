@@ -1,5 +1,5 @@
-// Plays the new-player path: welcome -> tutorial (4 narrated steps + the hands-on step 5)
-// -> Enter level 1 -> throw -> level result -> level map. Screenshots each stage.
+// Plays the new-player path: welcome -> tutorial (4 narrated steps) -> today's pot -> whole studio
+// -> level 1 -> throw -> level result -> level map. Screenshots each stage.
 //   node tools/shoot-levels.mjs [baseUrl]     (a harness must be running)
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -39,43 +39,26 @@ for (let k = 0; k < 3; k++) {
   await btn('Next', true).click();
   await p.waitForTimeout(1200);
 }
-await btn('Try it').click();
-await p.waitForTimeout(1500);
-await shot('02-practice-start');
-
-const box = await p.locator('.throw__canvas').boundingBox();
-const cx = box.x + box.width / 2;
-// 1. centre: press and hold the clay
-await p.mouse.move(cx, 560);
-await p.mouse.down();
-await p.waitForTimeout(3200);
-await p.mouse.up();
-await p.waitForTimeout(600);
-// 2. open
-await p.locator('[data-tour=open]').click();
-await p.waitForTimeout(1800);
-await shot('03-practice-opened');
-// 3. pull up
-for (let k = 0; k < 3; k++) await drag(cx + 62, 560, cx + 58, 400, 40, 30);
-await p.waitForTimeout(400);
-// 4. push the belly out
-await p.locator('[data-tour=tool-push]').click();
-await p.waitForTimeout(300);
-await drag(cx + 50, 500, cx + 90, 500, 16, 30);
-await p.waitForTimeout(500);
-await shot('04-practice-shaped');
-// 5. done
-await p.locator('[data-tour=done]').click();
-await p.waitForTimeout(1500);
-await shot('05-tutorial-complete');
-await btn('Enter level 1').click();
+await shot('02-tutorial-step4');
+await btn('Start playing').click();
+await p.waitForTimeout(2000);
+await shot('03-after-tutorial-daily');
+// A first-time player lands on today's pot with no menu bar: open the whole studio, then level 1.
+const leave = p.getByRole('button', { name: /Back to the level map|Leave the wheel/ });
+if (await leave.count()) await leave.click();
+await p.getByRole('button', { name: 'More' }).click();
+await p.getByRole('button', { name: 'Show the whole studio' }).click();
+await p.getByRole('button', { name: 'Levels' }).last().click();
+await btn('Play level 1').click();
 await p.waitForTimeout(2000);
 await shot('06-level1-wheel');
+const box = await p.locator('.throw__canvas').boundingBox();
+const cx = box.x + box.width / 2;
 
 await p.locator('[data-tour=open]').click();
 await p.waitForTimeout(1800);
 for (let k = 0; k < 2; k++) await drag(cx + 62, 560, cx + 58, 400, 40, 30);
-const match = await p.locator('.gauge', { hasText: 'Match' }).locator('.gauge__value').textContent();
+const match = await p.locator('.matchbar__num').textContent();
 console.log('level 1 match before Done:', match);
 await p.locator('[data-tour=done]').click();
 await p.waitForTimeout(3200);

@@ -79,7 +79,7 @@ await step('Start the tutorial: 4 narrated steps in Mithilesh’s recorded voice
   await expectVisible(p.locator('.tour__count', { hasText: 'Step 1 of 4' }), 'four steps');
   await p.waitForTimeout(1500);
   await btn('Next', true).click();
-  await expectVisible(p.locator('.tour__title', { hasText: 'Hands, Push and Thin' }), 'tour step 2');
+  await expectVisible(p.locator('.tour__title', { hasText: 'Shaping' }), 'tour step 2');
   const ok = [...voiceClips.values()].filter((st) => st === 200).length;
   console.log(`      voice clips loaded: ${ok}/12`);
   if (ok !== 12) throw new Error(`voice clips: ${JSON.stringify([...voiceClips])}`);
@@ -189,9 +189,11 @@ await step('Coach gives a shaping tip', async () => {
   if (!t || t.length < 10) throw new Error('no coach text');
   console.log(`      coach: "${t.trim()}"`);
 });
-await step('Over-thinning collapses: card with Undo / Start again', async () => {
-  await p.locator('[data-tour=water]').click(); // wet clay thins (and collapses) faster
-  await p.locator('[data-tour=tool-thin]').click();
+await step('One gesture only: no Hands / Push / Thin buttons', async () => {
+  if (await p.locator('.throw__tools, [data-tour^=tool-]').count()) throw new Error('mode buttons still on the wheel');
+});
+await step('Over-pulling collapses: card with Undo / Start again', async () => {
+  await p.locator('[data-tour=water]').click(); // wet clay thins (and collapses) faster; every pull thins the wall
   for (let k = 0; k < 22 && !(await p.locator('.throw__alert--slump').count()); k++) await drag(cx + 52, 540, cx + 50, 380, 24, 20);
   await expectVisible(p.locator('.throw__alert--slump'), 'collapse card', 10000);
   await expectVisible(p.locator('.throw__alert-btn', { hasText: 'Undo' }), 'Undo button');
@@ -203,7 +205,6 @@ await step('Undo from the card restores the pot', async () => {
   await p.locator('.throw__alert-btn', { hasText: 'Undo' }).click({ timeout: 5000 });
   await p.waitForTimeout(500);
   if (await p.locator('.throw__alert--slump').count()) throw new Error('still collapsed after undo');
-  await p.locator('[data-tour=tool-hands]').click();
 });
 await step('Home after reload, then clear level 1: result, next box unsealed', async () => {
   await p.reload();

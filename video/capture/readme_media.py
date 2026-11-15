@@ -13,3 +13,18 @@ for src, dst in MAP.items():
     im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
     im.save(os.path.join(OUT, f'{dst}.jpg'), quality=86, optimize=True, progressive=True)
     print(dst, im.size)
+
+
+# ---- The README GIF (frames from video/capture/throw_gif.mjs) ----
+import glob as _glob
+
+frames = sorted(_glob.glob(os.path.join(ROOT, 'video', 'footage', 'gif', 'f*.png')))
+if frames:
+    imgs = []
+    for f in frames[::2] if len(frames) > 60 else frames:
+        im = Image.open(f).convert('RGB')
+        s = im.width / 390  # device pixel ratio
+        im = im.crop((0, int(168 * s), im.width, int(798 * s))).resize((280, 452), Image.LANCZOS)
+        imgs.append(im.convert('P', palette=Image.ADAPTIVE, colors=128))
+    imgs[0].save(os.path.join(OUT, 'throw.gif'), save_all=True, append_images=imgs[1:], duration=90, loop=0, optimize=True)
+    print('throw.gif', len(imgs), 'frames')
