@@ -97,7 +97,7 @@ Built with **Devvit Web** for Reddit's **Game of the Day Hackathon**.
   </tr>
   <tr>
     <td align="center"><img src="docs/media/paint.jpg" width="200" alt="Painting the pot"><br><sub><b>Paint</b><br>bands, patterns, rim</sub></td>
-    <td align="center"><img src="docs/media/kiln.jpg" width="200" alt="Kiln countdown"><br><sub><b>Kiln</b><br>everyone's pots fire together</sub></td>
+    <td align="center"><img src="docs/media/kiln.jpg" width="200" alt="Kiln test firing your first pot"><br><sub><b>Kiln</b><br>first pot fires in 10 seconds</sub></td>
     <td align="center"><img src="docs/media/reveal.jpg" width="200" alt="Kiln reveal"><br><sub><b>Reveal</b><br>a new glaze for the Codex</sub></td>
   </tr>
   <tr>

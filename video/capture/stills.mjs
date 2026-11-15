@@ -1,5 +1,6 @@
 // High-resolution stills (DPR 2.5) of the four core steps, for the "How to play" post.
-// Run after seed.mjs. Writes brand/howto/*.png
+// Run after seed.mjs. Writes brand/howto/*.png; extra shots (0-welcome, 1b-score, 6-codex, 7-levels) feed the README.
+// Then: python video/capture/readme_media.py
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 
@@ -13,6 +14,8 @@ const snap = async (name) => { await p.screenshot({ path: `${OUT}/${name}.png`, 
 
 await p.goto(`${base}/studio.html?user=nila`);
 await p.locator('#boot').waitFor({ state: 'detached', timeout: 20000 });
+await p.waitForTimeout(2500);
+await snap('0-welcome');
 await btn('Open the kiln').click();
 await btn('Skip, throw today’s pot').click();
 await p.locator('.throw__canvas').waitFor();
@@ -27,6 +30,7 @@ await snap('1-shape');
 
 await btn('Done').click();
 await p.waitForTimeout(3500);
+await snap('1b-score');
 await btn('Paint it and fire it').click();
 await p.locator('.deco__canvas').waitFor();
 await p.waitForTimeout(1500);
@@ -66,4 +70,13 @@ await p.locator('.show__card').first().waitFor();
 await p.getByRole('tab', { name: 'Top rated' }).click();
 await p.waitForTimeout(2500);
 await snap('5-showcase');
+
+await p.getByRole('button', { name: 'Studio' }).last().click();
+await p.waitForTimeout(800);
+await p.getByRole('tab', { name: 'Codex' }).click();
+await p.waitForTimeout(2000);
+await snap('6-codex');
+await p.getByRole('button', { name: 'Levels' }).last().click();
+await p.waitForTimeout(3000);
+await snap('7-levels');
 await b.close();
