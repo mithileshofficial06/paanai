@@ -115,4 +115,14 @@ describe('rollover', () => {
     expect(p.posts.length).toBe(1);
     expect(p.posts[0]!.title).toMatch(/^Day \d+ · .+ · Beat \d+$/);
   });
+
+  it('creates exactly one daily post when the midnight jobs start at the same moment', async () => {
+    await Promise.all([
+      call('POST', '/internal/cron/daily-rollover'),
+      call('POST', '/internal/cron/kiln-report'),
+      call('POST', '/internal/menu/post-today'),
+      call('POST', '/internal/triggers/install'),
+    ]);
+    expect(p.posts.length).toBe(1);
+  });
 });

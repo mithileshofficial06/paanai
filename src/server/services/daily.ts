@@ -28,9 +28,12 @@ export async function getDaily(date: string): Promise<DailyRecord | null> {
   return { date, commissionId: h.commissionId, postId: h.postId || null, format: (h.format as Format) ?? 'match' };
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 /**
- * Make sure today's daily exists (commission chosen, post created). Safe to run twice:
- * the commission is fixed with SET NX semantics and the post is only created once.
+ * Make sure today's daily exists (commission chosen, post created). Safe to run twice, even at the
+ * same moment (the midnight jobs start together): the commission and the post are each claimed
+ * with SET NX, so only one caller creates the post and the others wait for it.
  */
 export async function ensureDaily(date: string, createPost: boolean): Promise<DailyRecord> {
   const kv = platform().kv;
@@ -46,14 +49,33 @@ export async function ensureDaily(date: string, createPost: boolean): Promise<Da
     rec = (await getDaily(date)) ?? { date, commissionId, postId: null, format };
   }
   if (createPost && !rec.postId) {
+    const lockKey = `${K.daily(date)}:postlock`;
+    const mine = await kv.set(lockKey, '1', { nx: true, expiration: new Date(platform().now() + 120_000) });
+    if (!mine) {
+      // Another job is creating the post right now: wait for it instead of posting a second one.
+      for (let i = 0; i < 20; i++) {
+        await sleep(500);
+        const r = await getDaily(date);
+        if (r?.postId) return r;
+      }
+      return rec;
+    }
+    const again = await getDaily(date);
+    if (again?.postId) return again;
     const c = await resolveCommission(rec.commissionId, rec.format);
     const title = `Day ${dayNumber(date)} · ${c.dto.title} · Beat ${c.dto.bar}`;
-    const post = await platform().reddit.submitPost({
-      title,
-      entry: 'default',
-      postData: { date, commissionId: rec.commissionId, format: rec.format },
-      textFallback: `Paanai daily pottery, ${prettyDate(date)}: throw a ${c.dto.title} on the wheel and beat ${c.dto.bar}. Open this post in the Reddit app or on new Reddit to play.`,
-    });
+    let post: { id: string };
+    try {
+      post = await platform().reddit.submitPost({
+        title,
+        entry: 'default',
+        postData: { date, commissionId: rec.commissionId, format: rec.format },
+        textFallback: `Paanai daily pottery, ${prettyDate(date)}: throw a ${c.dto.title} on the wheel and beat ${c.dto.bar}. Open this post in the Reddit app or on new Reddit to play.`,
+      });
+    } catch (err) {
+      await kv.del(lockKey); // let the next run try again
+      throw err;
+    }
     await kv.hSet(K.daily(date), { postId: post.id });
     await kv.hSet(K.post(post.id), { date, commissionId: rec.commissionId, kind: 'daily' });
     await kv.expire(K.post(post.id), TTL.post);

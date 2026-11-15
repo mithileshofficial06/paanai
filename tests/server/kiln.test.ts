@@ -59,7 +59,9 @@ describe('kiln', () => {
     const codex = await call<{ effects: { id: string; discoverer: string | null }[]; discovered: number }>('GET', '/api/codex');
     const colour = mine.fired!.effects[0]!;
     expect(codex.json.effects.find((e) => e.id === colour)?.discoverer).toBe('alice');
-    // Kiln report posts once.
+    // Kiln report waits for the day's post (the rollover job makes it), then comments once.
+    expect((await call<{ status: string }>('POST', '/internal/cron/kiln-report')).json.status).toBe('waiting');
+    await call('POST', '/internal/cron/daily-rollover');
     await call('POST', '/internal/cron/kiln-report');
     await call('POST', '/internal/cron/kiln-report');
     expect(p.comments.filter((c) => c.text?.startsWith('**Kiln Report')).length).toBe(1);

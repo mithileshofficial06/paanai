@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { platform } from '../platform';
 import { K, TTL } from '../store/keys';
-import { ensureDaily } from '../services/daily';
+import { ensureDaily, getDaily } from '../services/daily';
 import { addDays, today } from '../services/time';
 import { kilnBatch, kilnReportText } from '../services/kiln';
 import { weeklyTally } from '../services/community';
@@ -34,9 +34,11 @@ internal.post('/cron/kiln-report', async (c) => {
   if ((await kv.get(K.job('kiln-report', date))) === 'done') return c.json({ status: 'skipped' });
   const left = await kilnBatch(400);
   if (left.remaining > 0) return c.json({ status: 'waiting', remaining: left.remaining });
+  // The rollover job creates the day's post; this job only comments on it (it runs every 15 minutes, so it waits).
+  const daily = await getDaily(date);
+  if (!daily?.postId) return c.json({ status: 'waiting', reason: 'no daily post yet' });
   const text = await kilnReportText(kilnDate);
-  const daily = await ensureDaily(date, true);
-  if (text && daily.postId) await platform().reddit.submitComment({ postId: daily.postId, text });
+  if (text) await platform().reddit.submitComment({ postId: daily.postId, text });
   await kv.set(K.job('kiln-report', date), 'done', { expiration: new Date(platform().now() + TTL.job * 1000) });
   return c.json({ status: 'ok', posted: !!text });
 });
