@@ -62,7 +62,7 @@ Built with **Devvit Web** for Reddit's **Game of the Day Hackathon**.
 | **2** | **Throw it** | Tap **Open** to open the clay. Drag up the wall to pull it taller and thinner, or sideways to push it in or out. A glowing outline shows the target. The **Done** button glows when your pot passes. |
 | **3** | **Get scored** | The server replays your strokes and scores the shape, how even the walls are, and the commission's rules. Your first throw each day is ranked; later throws are practice. |
 | **4** | **Paint it** | Turn the pot and paint bands, patterns, the body or the rim. Or leave it bare. |
-| **5** | **Fire it** | Pots fire together at **00:00 UTC**. Thin or uneven walls can crack. Your **very first pot** gets a quick 90-second test firing, so you see the whole loop on your first visit. |
+| **5** | **Fire it** | Pots fire together at **00:00 UTC**. Thin or uneven walls can crack. Your **very first pot** gets a 10-second test firing, so you see the whole loop on your first visit. |
 | **6** | **Show it off** | Open the kiln, put your pot on show in the Showcase, or share it as a comment on the day's post with one tap. |
 
 > New players get a starter pot fresh from the kiln, a short narrated tutorial, and hints during their first throw. After the tutorial they land straight on today's pot.

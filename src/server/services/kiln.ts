@@ -1,5 +1,5 @@
 import { decodeProfile } from '../../shared/core/profile';
-import { fire } from '../../shared/core/fire';
+import { fire, QUICK_FIRE_MS } from '../../shared/core/fire';
 import { APPLICATIONS, EFFECT_BY_ID, GLAZES, type EffectId, type GlazeSpec, validGlazeSpec } from '../../shared/core/glazes';
 import { hash32, mulberry32 } from '../../shared/core/rng';
 import type { ScoreBreakdown } from '../../shared/core/score';
@@ -27,8 +27,7 @@ export function kilnGlaze(potId: string): GlazeSpec {
   return { glazes, application: APPLICATIONS[rnd() % APPLICATIONS.length]! };
 }
 
-/** A player's very first kiln pot gets a quick test firing, so a first visit sees the whole loop. */
-export const QUICK_FIRE_MS = 90_000;
+export { QUICK_FIRE_MS };
 
 /** Queue the pot for the next kiln (fires at the next 00:00 UTC). No choice = the kiln glazes it. */
 export async function glazePot(userId: string, potId: string, choice: unknown): Promise<{ kilnDate: string; atmosphere: string; quickAt: number | null }> {

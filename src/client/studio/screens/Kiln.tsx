@@ -1,6 +1,7 @@
 // The kiln: pots waiting for the next firing, and fired pots to open (the reveal).
 import { useEffect, useState } from 'preact/hooks';
 import { EFFECTS } from '../../../shared/core/glazes';
+import { FIRE_PEAK_C, FIRE_START_C, QUICK_FIRE_MS } from '../../../shared/core/fire';
 import type { KilnItem } from '../../app/api';
 import { Button } from '../../ui/Button';
 import { GlassPanel } from '../../ui/GlassPanel';
@@ -26,15 +27,30 @@ function effectName(id: string): string {
   return EFFECTS.find((e) => e.id === id)?.name ?? titleCase(id);
 }
 
+/** How far along the first pot's test firing is, for the firing show (null when no test firing is running). */
+function testFiring(items: KilnItem[], now: number) {
+  const nextKilnAt = S.today.value?.nextKilnAt ?? Infinity;
+  const q = items.find((i) => !i.fired && i.firesAt != null && i.firesAt < nextKilnAt);
+  if (!q || q.firesAt == null) return null;
+  const left = Math.max(0, q.firesAt - now);
+  const t = Math.min(1, Math.max(0, 1 - left / QUICK_FIRE_MS));
+  // A real kiln climbs fast at first, then creeps up to peak heat.
+  const heat = 1 - (1 - t) * (1 - t);
+  return { left, t, temp: Math.round(FIRE_START_C + (FIRE_PEAK_C - FIRE_START_C) * heat) };
+}
+
 export function Kiln() {
-  const now = useNow();
   const items = S.kilnItems.value;
+  const quickRunning = items.some((i) => !i.fired && i.firesAt != null && i.firesAt < (S.today.value?.nextKilnAt ?? Infinity));
+  // Tick fast during the 10-second test firing so the temperature climbs smoothly.
+  const now = useNow(quickRunning ? 100 : 1000);
   const [revealing, setRevealing] = useState<KilnItem | null>(null);
-  // A quick test firing finishes while the player watches: reload once it is due.
+  // The test firing finishes while the player watches: reload the moment it is due, then retry until the pot is out.
   const due = items.some((i) => !i.fired && i.firesAt != null && i.firesAt <= now);
   useEffect(() => {
     if (due && !S.kilnLoading.value) void loadKiln();
-  }, [due ? Math.floor(now / 5000) : -1]);
+  }, [due ? Math.floor(now / 1200) : -1]);
+  const quick = testFiring(items, now);
   if (!S.loggedIn.value)
     return (
       <section class="sc">
@@ -56,7 +72,7 @@ export function Kiln() {
       <StudioRooms />
       <h1 id="kiln-title" class="pn-headline">{ready.length ? `${ready.length} pot${ready.length > 1 ? 's' : ''} ready to open` : 'Your kiln'}</h1>
       {S.today.value ? (
-        <div class={`kiln__hero${waiting.length ? ' is-loaded' : ''}`}>
+        <div class={`kiln__hero${waiting.length ? ' is-loaded' : ''}${quick ? ' is-quick' : ''}`} style={quick ? { '--heat': quick.t.toFixed(3) } : undefined}>
           <div class="kiln__heroArt">
             <KilnHero
               state="closed"
@@ -65,13 +81,28 @@ export function Kiln() {
             />
           </div>
           <span class="kiln__sparks" aria-hidden="true">
-            {Array.from({ length: waiting.length ? 14 : 6 }, (_, i) => (
+            {Array.from({ length: quick ? 26 : waiting.length ? 14 : 6 }, (_, i) => (
               <i key={i} style={{ '--i': i, '--x': `${(i * 37) % 100}%` }} />
             ))}
           </span>
           <div class="kiln__heroInfo">
-            <span class="kiln__heroLabel">{waiting.length ? 'Fires in' : 'Next firing in'}</span>
-            <strong class="kiln__countdown">{fmtCountdown(Math.min(S.today.value.nextKilnAt, ...waiting.map((w) => w.firesAt ?? Infinity)) - now)}</strong>
+            {quick ? (
+              <>
+                <span class="kiln__heroLabel">Test firing your first pot</span>
+                <strong class="kiln__countdown" aria-live="off">{quick.left > 0 ? `${Math.ceil(quick.left / 1000)}s` : 'Done'}</strong>
+                <span class="kiln__temp" role="img" aria-label={`Kiln temperature ${quick.temp} degrees Celsius`}>
+                  {quick.temp.toLocaleString('en-US')} °C
+                </span>
+                <span class="kiln__heatbar" aria-hidden="true">
+                  <i style={{ width: `${(quick.t * 100).toFixed(1)}%` }} />
+                </span>
+              </>
+            ) : (
+              <>
+                <span class="kiln__heroLabel">{waiting.length ? 'Fires in' : 'Next firing in'}</span>
+                <strong class="kiln__countdown">{fmtCountdown(Math.min(S.today.value.nextKilnAt, ...waiting.map((w) => w.firesAt ?? Infinity)) - now)}</strong>
+              </>
+            )}
             <span class="pn-meta">
               {waiting.length ? `${waiting.length} pot${waiting.length > 1 ? 's' : ''} loaded` : 'Nothing loaded yet'} · {S.today.value.atmosphere} · {waiting.some((w) => w.firesAt != null && w.firesAt < S.today.value!.nextKilnAt) ? 'test firing' : '00:00 UTC'}
             </span>
@@ -109,7 +140,7 @@ export function Kiln() {
           <PotView pot={it} width={52} height={68} />
           <div class="kiln__info">
             <h3 class="pn-title">{it.title}</h3>
-            <p class="pn-meta">Glazed by the kiln master · {it.firesAt != null && it.firesAt <= now ? 'firing now…' : `fires in ${fmtCountdown((it.firesAt ?? now) - now)}`}</p>
+            <p class="pn-meta">Glazed by the kiln master · {it.firesAt != null && it.firesAt <= now ? 'cooling, almost ready…' : quick && it.firesAt != null && it.firesAt < S.today.value!.nextKilnAt ? `test firing · ${Math.ceil((it.firesAt - now) / 1000)}s` : `fires in ${fmtCountdown((it.firesAt ?? now) - now)}`}</p>
           </div>
         </GlassPanel>
       ))}

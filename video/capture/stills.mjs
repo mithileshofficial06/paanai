@@ -50,10 +50,10 @@ await snap('2-paint');
 
 await btn('Fire it in the kiln').click();
 await p.locator('.kiln__hero').waitFor();
-await p.waitForTimeout(5000);
+await p.waitForTimeout(6500); // mid test firing: the temperature is climbing
 await snap('3-fire');
 
-await p.locator('.kiln__ready').first().waitFor({ timeout: 150000 });
+await p.locator('.kiln__ready').first().waitFor({ timeout: 30000 });
 await p.waitForTimeout(1000);
 await p.locator('.kiln__ready').getByRole('button', { name: 'Open' }).click();
 await p.waitForTimeout(1200);

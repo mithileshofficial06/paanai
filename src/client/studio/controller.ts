@@ -370,7 +370,7 @@ export async function placeInKiln(potId: string): Promise<boolean> {
     const lt = S.lastThrow.value;
     if (lt) journeys.end(true, lt.res.beatBar, lt.res.score.total);
     sfx.whoosh();
-    say(res.quickAt ? 'Your first pot gets a quick test firing. It will be ready to open in about 90 seconds.' : 'In the kiln. It fires at 00:00 UTC. Come back to open it.', 'success');
+    say(res.quickAt ? 'Test firing your first pot… ready in 10 seconds.' : 'In the kiln. It fires at 00:00 UTC. Come back to open it.', 'success');
     go('kiln');
     return true;
   } catch (err) {

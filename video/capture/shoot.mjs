@@ -101,16 +101,13 @@ await clip('c05_paint', async () => {
   await wait(1600);
 });
 
+// The first pot's test firing takes 10 s: record all of it, up to the pot being ready to open.
 await clip('c06_fire', async () => {
   await tap(btn('Fire it in the kiln'));
   await p.locator('.kiln__hero').waitFor();
-  await wait(4500);
+  await p.locator('.kiln__ready').first().waitFor({ timeout: 30000 });
+  await wait(1500);
 });
-
-// The quick test firing takes about 90 s of real time: wait without recording.
-console.log('waiting for the test firing...');
-await p.locator('.kiln__ready').first().waitFor({ timeout: 150000 });
-await wait(1500);
 
 await clip('c07_reveal', async () => {
   await tap(p.locator('.kiln__ready').getByRole('button', { name: 'Open' }));

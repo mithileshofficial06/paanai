@@ -71,7 +71,7 @@ describe('kiln', () => {
     const g = await call<{ quickAt: number | null }>('POST', '/api/glaze', { potId: a });
     expect(g.json.quickAt).toBeGreaterThan(p.now());
     expect(await firePot(a)).toBeNull();
-    p.shiftDays(0.0011); // about 95 seconds, same day
+    p.shiftDays(0.0011); // about 95 seconds: well past the 10-second test firing, same day
     const k = await call<{ items: (PotSummary & { firesAt: number | null })[] }>('GET', '/api/kiln');
     expect(k.json.items.find((i) => i.potId === a)?.fired).not.toBeNull();
     const b = await throwMaster('alice', 'q2');

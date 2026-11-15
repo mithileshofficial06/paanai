@@ -114,3 +114,16 @@
 .throw .pn-btn--primary.is-ready { animation: done-ready 1.6s var(--ease-in-out) infinite; }
 @keyframes done-ready { 50% { box-shadow: 0 0 0 8px rgba(255, 196, 120, 0.22), var(--glow-red); } }
 @media (prefers-reduced-motion: reduce) { .throw .pn-btn--primary.is-ready { animation: none; } }
+
+/* ---------- Kiln: the 10-second test firing of a player's first pot ---------- */
+.kiln__hero.is-quick { --heat: 0; }
+.kiln__hero.is-quick::after { scale: calc(1 + var(--heat) * 0.45); filter: blur(10px) brightness(calc(1 + var(--heat) * 1.2)); animation-duration: 0.9s; }
+.kiln__hero.is-quick .kiln__heroArt { filter: brightness(calc(1 + var(--heat) * 0.3)) saturate(calc(1 + var(--heat) * 0.4)); transition: filter 0.2s linear; }
+.kiln__hero.is-quick .kiln__sparks i { animation-duration: 1.5s; animation-delay: calc(var(--i) * -0.13s); }
+.kiln__temp { font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; font-variant-numeric: tabular-nums; letter-spacing: 0.02em;
+  color: color-mix(in srgb, #ffd27a calc(var(--heat) * 100%), #ff8a5c); text-shadow: 0 0 calc(4px + var(--heat) * 14px) rgba(255, 120, 40, 0.7); }
+.kiln__heatbar { display: block; width: min(220px, 60vw); height: 6px; margin-top: 4px; border-radius: 99px; overflow: hidden; background: rgba(255, 255, 255, 0.08); }
+.kiln__heatbar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ff3a3a, #ff7a2c 55%, #ffd07a); box-shadow: 0 0 10px rgba(255, 120, 40, 0.8); transition: width 0.12s linear; }
+@media (prefers-reduced-motion: reduce) {
+  .kiln__heatbar i { transition: none; }
+}
