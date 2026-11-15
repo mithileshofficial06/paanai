@@ -1,5 +1,7 @@
 # Tutorial voice: recording script
 
+Recorded by Mithilesh on 2026-11-15. The tutorial now has 4 steps and speaks lines 01-12; lines 13-18 (the old practice step) were recorded but are no longer used.
+
 18 short lines. Record each one as its own file and name it by its number (01, 02 ... 18).
 Read the words exactly as written: the game matches each clip to its line.
 

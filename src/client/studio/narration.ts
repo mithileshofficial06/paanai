@@ -16,12 +16,6 @@ export const NARRATION: readonly { id: string; text: string }[] = [
   { id: '10', text: 'After you tap Done. Clear a level and the next one unlocks on the Levels map. Replay any level for more stars.' },
   { id: '11', text: 'Every day there is also a daily commission. Paint it and fire it in the kiln overnight.' },
   { id: '12', text: 'Tap here to watch this again. Now it is your turn.' },
-  { id: '13', text: 'Press and hold on the clay until it stops wobbling.' },
-  { id: '14', text: 'Tap Open to press a hollow into the middle.' },
-  { id: '15', text: 'With Hands, drag up along the wall, two or three times, to pull it taller.' },
-  { id: '16', text: 'Tap Push, then drag the middle of the wall outward.' },
-  { id: '17', text: 'Happy with it? Tap Done.' },
-  { id: '18', text: 'Well thrown! The tutorial is complete. Enter level one when you are ready.' },
 ];
 
 const byText = new Map(NARRATION.map((l) => [l.text, l.id]));

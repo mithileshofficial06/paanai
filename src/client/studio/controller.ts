@@ -133,8 +133,8 @@ export async function openStarter(): Promise<PotSummary | null> {
 }
 
 /**
- * The tutorial: four narrated steps that throw a practice cup by themselves, then a fifth
- * where the player throws it with a guide. It ends with "Enter level 1". Separate from level 1.
+ * The tutorial: four narrated steps that throw a practice cup by themselves, then the player
+ * goes straight to play (today's commission the first time, else the next level).
  */
 export function startTour(): void {
   sfx.unlock();

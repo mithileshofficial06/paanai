@@ -4,19 +4,16 @@ import { describe, expect, it } from 'vitest';
 import { clipFor, NARRATION } from '../../src/client/studio/narration';
 
 // Every line the tutorial speaks must have a recorded clip, word for word. Tour.tsx speaks the first
-// beat of each step as "<title>. <say>", the practice tasks as their say, and a closing line.
+// beat of each step as "<title>. <say>", and every other beat as its say.
 function spokenLines(): string[] {
   const src = readFileSync(resolve(__dirname, '../../src/client/studio/Tour.tsx'), 'utf8');
-  const steps = src.slice(src.indexOf('const STEPS'), src.indexOf('/** Step 5'));
+  const steps = src.slice(src.indexOf('const STEPS'), src.indexOf('// ---------- narration'));
   const lines: string[] = [];
   for (const block of steps.split(/\n\s*\{\n\s*title: /).slice(1)) {
     const title = block.match(/^'([^']+)'/)![1]!;
     const says = [...block.matchAll(/say: '([^']+)'/g)].map((m) => m[1]!);
     says.forEach((s, i) => lines.push(i === 0 ? `${title}. ${s}` : s));
   }
-  const tasks = src.slice(src.indexOf('const TASKS'), src.indexOf('// ---------- narration'));
-  lines.push(...[...tasks.matchAll(/say: '([^']+)'/g)].map((m) => m[1]!));
-  lines.push(src.match(/: '(Well thrown![^']+)'/)![1]!);
   return lines;
 }
 
