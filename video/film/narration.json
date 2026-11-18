@@ -1,0 +1,98 @@
+{
+ "voice": "en-US-AndrewMultilingualNeural",
+ "rate": "-4%",
+ "lines": [
+  {
+   "id": "open1",
+   "text": "Every pot in history began the same way."
+  },
+  {
+   "id": "open2",
+   "text": "A lump of wet clay. A spinning wheel. And a pair of hands."
+  },
+  {
+   "id": "hook1",
+   "text": "Paanai is a daily pottery game that lives inside a Reddit post.",
+   "say": "Pah-nye is a daily pottery game that lives inside a Reddit post."
+  },
+  {
+   "id": "hook2",
+   "text": "Every day, the subreddit gets one commission: a real vessel from a real tradition. A Korean moon jar. A Song dynasty meiping. A Tamil paanai.",
+   "say": "Every day, the subreddit gets one commission: a real vessel from a real tradition. A Korean moon jar. A Song dynasty may-ping. A Tamil pah-nye."
+  },
+  {
+   "id": "hook3",
+   "text": "And everyone throws the same pot."
+  },
+  {
+   "id": "throw1",
+   "text": "Tap Open, and the clay opens on the wheel."
+  },
+  {
+   "id": "throw2",
+   "text": "Then it is one natural gesture. Drag up the wall to pull the clay taller. Drag sideways to swell the belly, or squeeze in a neck."
+  },
+  {
+   "id": "throw3",
+   "text": "A glowing outline shows the shape you are chasing, and the Done button lights up the moment your pot passes."
+  },
+  {
+   "id": "clay1",
+   "text": "And the clay behaves like clay. It dries as you work. It thins as it rises. Push it too far, and it wobbles, and collapses."
+  },
+  {
+   "id": "score1",
+   "text": "Tap Done, and the server takes over."
+  },
+  {
+   "id": "score2",
+   "text": "It replays every stroke from a fresh lump of clay, and scores the shape, the evenness of the walls, and the rules of the commission. Nobody can fake a score."
+  },
+  {
+   "id": "score3",
+   "text": "Your first throw of the day goes on the leaderboard."
+  },
+  {
+   "id": "paint1",
+   "text": "Now make it yours. Paint bands, patterns, the body and the rim, straight onto the turning pot."
+  },
+  {
+   "id": "fire1",
+   "text": "Then into the kiln. Every pot in the subreddit fires together, overnight. Thin walls can crack, and the glaze is a surprise."
+  },
+  {
+   "id": "fire2",
+   "text": "Your very first pot gets a ten second test firing, so a new player sees the whole loop on their first visit."
+  },
+  {
+   "id": "reveal1",
+   "text": "Open the kiln, and see what the fire made."
+  },
+  {
+   "id": "comm1",
+   "text": "Put your best pots on show. Rate them, like them, and share yours to the day's post with a single tap. The most loved becomes Pot of the Week."
+  },
+  {
+   "id": "comm2",
+   "text": "Discover twenty four glazes in the Codex, and climb a hundred levels, each one a vessel to master."
+  },
+  {
+   "id": "tech1",
+   "text": "Under the hood, Paanai runs on Devvit Web. Three dot j s renders the wheel. Hono and Redis run the server. And an integer only shaping core makes every replay exact.",
+   "say": "Under the hood, Pah-nye runs on Devvit Web. Three dot j s renders the wheel. Hoh-no and Redis run the server. And an integer only shaping core makes every replay exact."
+  },
+  {
+   "id": "tech2",
+   "text": "Every level and every daily vessel is tested to be finishable with one gesture."
+  },
+  {
+   "id": "out1",
+   "text": "Paanai. Throw it. Paint it. Fire it, together.",
+   "say": "Pah-nye. Throw it. Paint it. Fire it, together."
+  },
+  {
+   "id": "out2",
+   "text": "Today's pot is waiting on Reddit."
+  }
+ ]
+}
